@@ -153,11 +153,11 @@ def process_group(group_name):
     return True
 
 def main():
-    """Main function to process the Development (POC) group"""
+    """Main function to process the AI-ML-Services subgroup"""
     print("GitLab Branch Rename Tool: 'trunk' → 'main'")
     print("=" * 50)
     
-    group_name = "Development (POC)"
+    group_name = "AI-ML-Services"
     
     if process_group(group_name):
         print("\nOperation completed successfully!")
