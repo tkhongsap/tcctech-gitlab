@@ -140,4 +140,54 @@ You can modify the group name to extract information from other groups on your G
 
 ## License
 
-This project is provided as-is for internal use. 
+This project is provided as-is for internal use.
+
+# GitLab Branch Rename Tool
+
+A Python script to rename the "trunk" branch to "main" branch across multiple GitLab projects.
+
+## Prerequisites
+
+- Python 3.6+
+- GitLab Personal Access Token with API access
+
+## Setup
+
+1. Clone this repository or download the script files
+2. Install required dependencies:
+   ```
+   pip install python-dotenv requests
+   ```
+3. Create a `.env` file based on the `.env.example` template:
+   ```
+   GITLAB_URL=your_gitlab_instance_url
+   GITLAB_API_TOKEN=your_personal_access_token
+   ```
+
+## Usage
+
+Run the script with:
+
+```
+python rename_trunk_to_main.py
+```
+
+By default, the script will:
+1. Find all projects under the "Development (POC)" group and its subgroups
+2. For each project:
+   - Check if the "trunk" branch exists
+   - Create a new "main" branch from "trunk"
+   - Set "main" as the default branch
+   - Delete the "trunk" branch
+
+## Customization
+
+If you need to target different groups or branches, you can modify the `main()` function in the script to specify different:
+- Group names
+- Branch names (source and target)
+
+## Notes
+
+- The script includes error handling and logs all actions
+- A small delay is added between API calls to avoid rate limiting
+- Make sure your GitLab token has sufficient permissions (API access, read/write repository) 
