@@ -1,0 +1,996 @@
+{
+  "parent_group": {
+    "name": "DS and ML Research Sandbox",
+    "id": 1266,
+    "path": "ds-and-ml-research-sandbox",
+    "description": "This repository is only for Collection of Data Science Research Projects / Products. It will collect only research, ideas. DS and MLE and mess anything up here.",
+    "visibility": "private",
+    "web_url": "https://git.lab.tcctech.app/groups/ds-and-ml-research-sandbox"
+  },
+  "subgroups": [
+    {
+      "name": "Development (POC)",
+      "id": 1268,
+      "path": "ds-and-ml-research-sandbox/development-poc",
+      "description": "",
+      "visibility": "private",
+      "web_url": "https://git.lab.tcctech.app/groups/ds-and-ml-research-sandbox/development-poc",
+      "projects": [
+        {
+          "name": "Employee Network",
+          "id": 811,
+          "path": "ds-and-ml-research-sandbox/development-poc/employee-network",
+          "description": null,
+          "default_branch": "trunk",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/development-poc/employee-network",
+          "summary": {
+            "branch_count": 2,
+            "main_branch": {
+              "name": "trunk",
+              "last_update": "2024-09-26 13:15:00",
+              "updated_by": "Attawat Thaninsiripittayar",
+              "commit_message": "Merge branch 'dev-attawat' into 'trunk'"
+            },
+            "contributor_count": 2
+          },
+          "branches": [
+            {
+              "name": "pre-alpha",
+              "last_update": "2024-10-08 20:13:47",
+              "updated_by": "Attawat.T",
+              "commit_message": "update website and logic",
+              "commit_id": "bb6bcf34835a17c76ae61d9dd648b139a66366bd"
+            },
+            {
+              "name": "trunk",
+              "last_update": "2024-09-26 13:15:00",
+              "updated_by": "Attawat Thaninsiripittayar",
+              "commit_message": "Merge branch 'dev-attawat' into 'trunk'",
+              "commit_id": "61dd324990552685ce5808de8ed6ddbd28bc4711"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Internal Services",
+      "id": 1269,
+      "path": "ds-and-ml-research-sandbox/internal-services",
+      "description": "",
+      "visibility": "private",
+      "web_url": "https://git.lab.tcctech.app/groups/ds-and-ml-research-sandbox/internal-services",
+      "projects": [
+        {
+          "name": "airflow-pipeline",
+          "id": 905,
+          "path": "ds-and-ml-research-sandbox/internal-services/airflow-pipeline",
+          "description": null,
+          "default_branch": "trunk",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/internal-services/airflow-pipeline",
+          "summary": {
+            "branch_count": 3,
+            "main_branch": {
+              "name": "trunk",
+              "last_update": "2024-12-16 08:48:58",
+              "updated_by": "Sirapop Huangwilai",
+              "commit_message": "Merge branch 'audio_transcription' into 'trunk'"
+            },
+            "contributor_count": 3
+          },
+          "branches": [
+            {
+              "name": "audio_transcription",
+              "last_update": "2024-12-16 16:37:49",
+              "updated_by": "sirapopModel",
+              "commit_message": "Fix:DateTIme",
+              "commit_id": "9dfab47567594c4e2e24b7eec2c82254eae73aa4"
+            },
+            {
+              "name": "entity_extraction",
+              "last_update": "2024-12-11 15:22:38",
+              "updated_by": "JedsadaSrijunpoe",
+              "commit_message": "Update SSHHook command timeout parameter in SSH operator example DAG",
+              "commit_id": "cb5fce9b178bfa108f606e5aabfeafcedbc71145"
+            },
+            {
+              "name": "trunk",
+              "last_update": "2024-12-16 08:48:58",
+              "updated_by": "Sirapop Huangwilai",
+              "commit_message": "Merge branch 'audio_transcription' into 'trunk'",
+              "commit_id": "ed37d97d28751cb08429829bb704402a4a9f7830"
+            }
+          ]
+        },
+        {
+          "name": "label studio",
+          "id": 843,
+          "path": "ds-and-ml-research-sandbox/internal-services/label-studio",
+          "description": "",
+          "default_branch": "trunk",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/internal-services/label-studio",
+          "summary": {
+            "branch_count": 1,
+            "main_branch": {
+              "name": "trunk",
+              "last_update": "2024-10-03 06:57:49",
+              "updated_by": "Attawat Thaninsiripittayar",
+              "commit_message": "Initial commit"
+            },
+            "contributor_count": 1
+          },
+          "branches": [
+            {
+              "name": "trunk",
+              "last_update": "2024-10-03 06:57:49",
+              "updated_by": "Attawat Thaninsiripittayar",
+              "commit_message": "Initial commit",
+              "commit_id": "86067dd4a6e0b99c6a883b3afe55af207ad94240"
+            }
+          ]
+        },
+        {
+          "name": "open-webui-function-azure-search",
+          "id": 836,
+          "path": "ds-and-ml-research-sandbox/internal-services/open-webui-function-azure-search",
+          "description": null,
+          "default_branch": "trunk",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/internal-services/open-webui-function-azure-search",
+          "summary": {
+            "branch_count": 1,
+            "main_branch": {
+              "name": "trunk",
+              "last_update": "2024-09-25 17:03:19",
+              "updated_by": "Tharathip Kulchotirat",
+              "commit_message": "add code"
+            },
+            "contributor_count": 2
+          },
+          "branches": [
+            {
+              "name": "trunk",
+              "last_update": "2024-09-25 17:03:19",
+              "updated_by": "Tharathip Kulchotirat",
+              "commit_message": "add code",
+              "commit_id": "d7354bcbcc74e862a82852a00cdfeb79ee7833b5"
+            }
+          ]
+        },
+        {
+          "name": "logging-handler",
+          "id": 808,
+          "path": "ds-and-ml-research-sandbox/internal-services/logging-handler",
+          "description": null,
+          "default_branch": "trunk",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/internal-services/logging-handler",
+          "summary": {
+            "branch_count": 1,
+            "main_branch": {
+              "name": "trunk",
+              "last_update": "2024-09-30 17:35:14",
+              "updated_by": "Tharathip Kulchotirat",
+              "commit_message": "update readme"
+            },
+            "contributor_count": 3
+          },
+          "branches": [
+            {
+              "name": "trunk",
+              "last_update": "2024-09-30 17:35:14",
+              "updated_by": "Tharathip Kulchotirat",
+              "commit_message": "update readme",
+              "commit_id": "47bbe05d11e379b9bf796c3f9bba4234d75ae006"
+            }
+          ]
+        },
+        {
+          "name": "how-to-create-systemd-services",
+          "id": 807,
+          "path": "ds-and-ml-research-sandbox/internal-services/how-to-create-systemd-services",
+          "description": null,
+          "default_branch": "trunk",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/internal-services/how-to-create-systemd-services",
+          "summary": {
+            "branch_count": 1,
+            "main_branch": {
+              "name": "trunk",
+              "last_update": "2024-08-26 15:14:52",
+              "updated_by": "Tharathip Kulchotirat",
+              "commit_message": "write short article"
+            },
+            "contributor_count": 2
+          },
+          "branches": [
+            {
+              "name": "trunk",
+              "last_update": "2024-08-26 15:14:52",
+              "updated_by": "Tharathip Kulchotirat",
+              "commit_message": "write short article",
+              "commit_id": "1a7c207e42af6cd980482cbe54557a151148ece9"
+            }
+          ]
+        },
+        {
+          "name": "mlflow-manager",
+          "id": 805,
+          "path": "ds-and-ml-research-sandbox/internal-services/mlflow-manager",
+          "description": null,
+          "default_branch": "trunk",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/internal-services/mlflow-manager",
+          "summary": {
+            "branch_count": 1,
+            "main_branch": {
+              "name": "trunk",
+              "last_update": "2024-08-29 12:15:57",
+              "updated_by": "Tharathipk",
+              "commit_message": "Update README.md"
+            },
+            "contributor_count": 2
+          },
+          "branches": [
+            {
+              "name": "trunk",
+              "last_update": "2024-08-29 12:15:57",
+              "updated_by": "Tharathipk",
+              "commit_message": "Update README.md",
+              "commit_id": "dcc4c60a85a9dfc5fe2f6b4256f7a230381f5283"
+            }
+          ]
+        },
+        {
+          "name": "open-webui",
+          "id": 781,
+          "path": "ds-and-ml-research-sandbox/internal-services/open-webui",
+          "description": null,
+          "default_branch": "trunk",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/internal-services/open-webui",
+          "summary": {
+            "branch_count": 1,
+            "main_branch": {
+              "name": "trunk",
+              "last_update": "2024-08-09 10:19:55",
+              "updated_by": "Tharathip Kulchotirat",
+              "commit_message": "start open-webui with systemd"
+            },
+            "contributor_count": 1
+          },
+          "branches": [
+            {
+              "name": "trunk",
+              "last_update": "2024-08-09 10:19:55",
+              "updated_by": "Tharathip Kulchotirat",
+              "commit_message": "start open-webui with systemd",
+              "commit_id": "8a82c74a5ee45e14c1e4016f6ef6696a87111b0b"
+            }
+          ]
+        },
+        {
+          "name": "The little jupyterhub service",
+          "id": 780,
+          "path": "ds-and-ml-research-sandbox/internal-services/the-little-jupyterhub-service",
+          "description": "",
+          "default_branch": "main",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/internal-services/the-little-jupyterhub-service",
+          "summary": {
+            "branch_count": 3,
+            "main_branch": {
+              "name": "main",
+              "last_update": "2024-08-25 08:41:29",
+              "updated_by": "Attawat Thaninsiripittayar",
+              "commit_message": "Merge branch 'feature/attawat.t' into 'main'"
+            },
+            "contributor_count": 2
+          },
+          "branches": [
+            {
+              "name": "1.0.0",
+              "last_update": "2024-08-08 12:39:43",
+              "updated_by": "Ml User",
+              "commit_message": "Add ignore file",
+              "commit_id": "09b50decdd0da2c6c9966de79ef16bff579c3628"
+            },
+            {
+              "name": "1.1.0",
+              "last_update": "2024-08-25 08:41:29",
+              "updated_by": "Attawat Thaninsiripittayar",
+              "commit_message": "Merge branch 'feature/attawat.t' into 'main'",
+              "commit_id": "2b78447336e53ac3800faf164dc1ebd5352930bf"
+            },
+            {
+              "name": "main",
+              "last_update": "2024-08-25 08:41:29",
+              "updated_by": "Attawat Thaninsiripittayar",
+              "commit_message": "Merge branch 'feature/attawat.t' into 'main'",
+              "commit_id": "2b78447336e53ac3800faf164dc1ebd5352930bf"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Packages",
+      "id": 1353,
+      "path": "ds-and-ml-research-sandbox/packages",
+      "description": "",
+      "visibility": "private",
+      "web_url": "https://git.lab.tcctech.app/groups/ds-and-ml-research-sandbox/packages",
+      "projects": [
+        {
+          "name": "tcc-llm-entity-extractor",
+          "id": 830,
+          "path": "ds-and-ml-research-sandbox/packages/tcc-llm-entity-extractor",
+          "description": null,
+          "default_branch": "trunk",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/packages/tcc-llm-entity-extractor",
+          "summary": {
+            "branch_count": 3,
+            "main_branch": {
+              "name": "trunk",
+              "last_update": "2025-01-10 09:16:13",
+              "updated_by": "Jirakit Boonmunewai",
+              "commit_message": "Merge branch 'tae/fix-build-v016' into 'trunk'"
+            },
+            "contributor_count": 4
+          },
+          "branches": [
+            {
+              "name": "dev-langchain",
+              "last_update": "2024-10-17 12:52:52",
+              "updated_by": "JedsadaSrijunpoe",
+              "commit_message": "refactor(entity extractor): LangChain version",
+              "commit_id": "8ba0f0cb0308667eb4a5e8d43e669ed8043f1a62"
+            },
+            {
+              "name": "evaluation-and-finetuning",
+              "last_update": "2025-01-10 10:03:56",
+              "updated_by": "JedsadaSrijunpoe",
+              "commit_message": "Merge remote-tracking branch 'origin/dev_schema_as_input' into evaluation-and-finetuning",
+              "commit_id": "968b845de53ccc10cf963631186f19f921bcbf75"
+            },
+            {
+              "name": "trunk",
+              "last_update": "2025-01-10 09:16:13",
+              "updated_by": "Jirakit Boonmunewai",
+              "commit_message": "Merge branch 'tae/fix-build-v016' into 'trunk'",
+              "commit_id": "b851e1da77551271e142e787f222538438decb0a"
+            }
+          ]
+        },
+        {
+          "name": "tcc-resume-parser",
+          "id": 829,
+          "path": "ds-and-ml-research-sandbox/packages/tcc-resume-parser",
+          "description": null,
+          "default_branch": "trunk",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/packages/tcc-resume-parser",
+          "summary": {
+            "branch_count": 4,
+            "main_branch": {
+              "name": "trunk",
+              "last_update": "2024-10-18 07:54:34",
+              "updated_by": "Attawat Thaninsiripittayar",
+              "commit_message": "Merge branch 'dev2' into 'trunk'"
+            },
+            "contributor_count": 3
+          },
+          "branches": [
+            {
+              "name": "dev",
+              "last_update": "2024-10-02 11:14:20",
+              "updated_by": "Crparichaya",
+              "commit_message": "commit test",
+              "commit_id": "b266e761eca5e1da252b0b639fd3aea14839188b"
+            },
+            {
+              "name": "dspy_version",
+              "last_update": "2024-10-17 12:18:11",
+              "updated_by": "Crparichaya",
+              "commit_message": "test the code",
+              "commit_id": "10a8701d865493a16427db18f1133afd6a098b04"
+            },
+            {
+              "name": "keras",
+              "last_update": "2024-11-08 10:07:44",
+              "updated_by": "Crparichaya",
+              "commit_message": "add keras",
+              "commit_id": "dc9b727b9e939c832e45d1c1ff98f9b12e693fd7"
+            },
+            {
+              "name": "trunk",
+              "last_update": "2024-10-18 07:54:34",
+              "updated_by": "Attawat Thaninsiripittayar",
+              "commit_message": "Merge branch 'dev2' into 'trunk'",
+              "commit_id": "8145f31cbe1119fbce52b966cbd0c8626a3b6847"
+            }
+          ]
+        },
+        {
+          "name": "tcc-domain-knowledge-graph",
+          "id": 820,
+          "path": "ds-and-ml-research-sandbox/packages/tcc-domain-knowledge-graph",
+          "description": null,
+          "default_branch": "trunk",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/packages/tcc-domain-knowledge-graph",
+          "summary": {
+            "branch_count": 10,
+            "main_branch": {
+              "name": "trunk",
+              "last_update": "2024-12-26 11:48:03",
+              "updated_by": "Pawarit Akepitaktam",
+              "commit_message": "Merge branch 'Sui-Ton' into 'trunk'"
+            },
+            "contributor_count": 6
+          },
+          "branches": [
+            {
+              "name": "Cream",
+              "last_update": "2024-12-26 08:49:31",
+              "updated_by": "Kamonchanok Sinraksa",
+              "commit_message": "Merge branch 'trunk' into 'Cream'",
+              "commit_id": "c5d0e318d2748362bc8aeee568f9dbf3c1864892"
+            },
+            {
+              "name": "Neptune",
+              "last_update": "2025-03-14 08:53:48",
+              "updated_by": "sittipak",
+              "commit_message": "Prepare for deploy",
+              "commit_id": "cb30ce0d65404a043935e86a0cccc6e4cd5f7afb"
+            },
+            {
+              "name": "Sui",
+              "last_update": "2025-01-08 15:32:48",
+              "updated_by": "zolo_capricorn",
+              "commit_message": "Edit the variable name.",
+              "commit_id": "c3bcd1a5df7a2c528d1b50a383d2e4da667bbcd5"
+            },
+            {
+              "name": "Talent-Lens",
+              "last_update": "2024-12-17 15:59:09",
+              "updated_by": "Totrakool Khongsap",
+              "commit_message": "initial commit: add backend and frontend for talent-lens app",
+              "commit_id": "a9e6a476e482ef0197c90f8186a7b3678afe628f"
+            },
+            {
+              "name": "Talent-Lens-Backend-Ton",
+              "last_update": "2024-12-26 18:46:57",
+              "updated_by": "TonJK",
+              "commit_message": "delete pycache",
+              "commit_id": "fec9be88507aa377ac91c714715b70405656730f"
+            },
+            {
+              "name": "dev",
+              "last_update": "2025-02-27 14:30:03",
+              "updated_by": "sittipak",
+              "commit_message": "Put node_modules and .next out.",
+              "commit_id": "4447e5f0fb4caec0e5372c2d81d6d05db68ce59e"
+            },
+            {
+              "name": "main-recommend",
+              "last_update": "2024-10-31 13:31:31",
+              "updated_by": "TonJK",
+              "commit_message": "Merge branch 'main-recommend' of https://git.lab.tcctech.app/ds-and-ml-research-sandbox/packages/tcc-domain-knowledge-graph into main-recommend",
+              "commit_id": "9889c25460d68e4e80d6e581d701510fb070359d"
+            },
+            {
+              "name": "new_branch_ton",
+              "last_update": "2024-11-12 11:24:08",
+              "updated_by": "TonJK",
+              "commit_message": "fix multiple input",
+              "commit_id": "4c3bab4221d44cb97c36c260c5f9dbb08006b8f9"
+            },
+            {
+              "name": "test_cicd",
+              "last_update": "2024-09-06 02:28:41",
+              "updated_by": "Tharathip Kulchotirat",
+              "commit_message": "Initial commit",
+              "commit_id": "f787f0de776e06c9e642b5c6ac1a68b76c7a4162"
+            },
+            {
+              "name": "trunk",
+              "last_update": "2024-12-26 11:48:03",
+              "updated_by": "Pawarit Akepitaktam",
+              "commit_message": "Merge branch 'Sui-Ton' into 'trunk'",
+              "commit_id": "ce391ace44db7bac303ec4e8a14305975a7a170d"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Research Repos",
+      "id": 1267,
+      "path": "ds-and-ml-research-sandbox/research-repos",
+      "description": "",
+      "visibility": "private",
+      "web_url": "https://git.lab.tcctech.app/groups/ds-and-ml-research-sandbox/research-repos",
+      "projects": [
+        {
+          "name": "AZURE-OCR",
+          "id": 952,
+          "path": "ds-and-ml-research-sandbox/research-repos/azure-ocr",
+          "description": null,
+          "default_branch": "dev",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/research-repos/azure-ocr",
+          "summary": {
+            "branch_count": 1,
+            "main_branch": {
+              "name": "dev",
+              "last_update": "2025-03-14 06:31:35",
+              "updated_by": "Phuvit Jaruratkit",
+              "commit_message": "Merge branch 'ocr-dev' into 'dev'"
+            },
+            "contributor_count": 2
+          },
+          "branches": [
+            {
+              "name": "dev",
+              "last_update": "2025-03-14 06:31:35",
+              "updated_by": "Phuvit Jaruratkit",
+              "commit_message": "Merge branch 'ocr-dev' into 'dev'",
+              "commit_id": "190db38a29b7babe4ae5902108b7d527339af4bc"
+            }
+          ]
+        },
+        {
+          "name": "replit_mockup_command_center",
+          "id": 951,
+          "path": "ds-and-ml-research-sandbox/research-repos/replit_mockup_command_center",
+          "description": null,
+          "default_branch": "trunk",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/research-repos/replit_mockup_command_center",
+          "summary": {
+            "branch_count": 0,
+            "main_branch": null,
+            "contributor_count": 0
+          },
+          "branches": []
+        },
+        {
+          "name": "rag_knowledge_management",
+          "id": 949,
+          "path": "ds-and-ml-research-sandbox/research-repos/rag_knowledge_management",
+          "description": null,
+          "default_branch": "trunk",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/research-repos/rag_knowledge_management",
+          "summary": {
+            "branch_count": 3,
+            "main_branch": {
+              "name": "trunk",
+              "last_update": "2025-03-13 03:03:48",
+              "updated_by": "Jirakit Boonmunewai",
+              "commit_message": "Initial commit"
+            },
+            "contributor_count": 1
+          },
+          "branches": [
+            {
+              "name": "dev",
+              "last_update": "2025-03-13 15:39:27",
+              "updated_by": "Jedsada Srijunpoe",
+              "commit_message": "Improve query input handling in main.py to allow immediate exit with 's' or 'stop'",
+              "commit_id": "156ec8839592e6f72a8999a017b21d1bb4c266b7"
+            },
+            {
+              "name": "sse_query_api",
+              "last_update": "2025-03-14 02:05:25",
+              "updated_by": "sirapopModel",
+              "commit_message": "Initail Commit of SSE Backend for Rag Query API",
+              "commit_id": "88f99b5122885c9370db2e4fbfa0e2189f47e987"
+            },
+            {
+              "name": "trunk",
+              "last_update": "2025-03-13 03:03:48",
+              "updated_by": "Jirakit Boonmunewai",
+              "commit_message": "Initial commit",
+              "commit_id": "416af4eefcdfdb43487b166914dde6337bfd22ea"
+            }
+          ]
+        },
+        {
+          "name": "mockup-command-center",
+          "id": 947,
+          "path": "ds-and-ml-research-sandbox/research-repos/mockup-command-center",
+          "description": null,
+          "default_branch": "trunk",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/research-repos/mockup-command-center",
+          "summary": {
+            "branch_count": 3,
+            "main_branch": {
+              "name": "trunk",
+              "last_update": "2025-03-05 10:05:30",
+              "updated_by": "Jirapat Kaewsongsang",
+              "commit_message": "Add README.md"
+            },
+            "contributor_count": 2
+          },
+          "branches": [
+            {
+              "name": "master",
+              "last_update": "2025-03-07 11:51:46",
+              "updated_by": "TonJK",
+              "commit_message": "edit call to action page and more info step method",
+              "commit_id": "d3f3e4c882d52e0151d6fa64c20c2c2bb5b3ce54"
+            },
+            {
+              "name": "tae/frontend-keycloak",
+              "last_update": "2025-03-10 11:32:01",
+              "updated_by": "Jedsada Srijunpoe",
+              "commit_message": "feat(auth): Implement NextAuth with Keycloak provider and session management",
+              "commit_id": "139bcc4459bac0357e772e1e08b4b5e5bd1953e7"
+            },
+            {
+              "name": "trunk",
+              "last_update": "2025-03-05 10:05:30",
+              "updated_by": "Jirapat Kaewsongsang",
+              "commit_message": "Add README.md",
+              "commit_id": "ab438ab49cc645d868ee75d17ec05d77cdf208df"
+            }
+          ]
+        },
+        {
+          "name": "Test_Connect_Git_Action",
+          "id": 942,
+          "path": "ds-and-ml-research-sandbox/research-repos/test_connect_git_action",
+          "description": null,
+          "default_branch": "trunk",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/research-repos/test_connect_git_action",
+          "summary": {
+            "branch_count": 2,
+            "main_branch": {
+              "name": "trunk",
+              "last_update": "2025-02-21 03:41:09",
+              "updated_by": "natdanai sriapai",
+              "commit_message": "Merge branch 'dev' into 'trunk'"
+            },
+            "contributor_count": 3
+          },
+          "branches": [
+            {
+              "name": "dev",
+              "last_update": "2025-03-13 12:03:33",
+              "updated_by": "TonJK",
+              "commit_message": "update yml",
+              "commit_id": "d4459feca7e7983d462d151d7f9989739f25c199"
+            },
+            {
+              "name": "trunk",
+              "last_update": "2025-02-21 03:41:09",
+              "updated_by": "natdanai sriapai",
+              "commit_message": "Merge branch 'dev' into 'trunk'",
+              "commit_id": "e97fae8abae105c772c8b7c947d73637edc8d6bb"
+            }
+          ]
+        },
+        {
+          "name": "test-CICD",
+          "id": 938,
+          "path": "ds-and-ml-research-sandbox/research-repos/test-cicd",
+          "description": null,
+          "default_branch": "trunk",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/research-repos/test-cicd",
+          "summary": {
+            "branch_count": 4,
+            "main_branch": {
+              "name": "trunk",
+              "last_update": "2025-02-28 10:21:26",
+              "updated_by": "Jedsada Srijunpoe",
+              "commit_message": "Merge branch 'dev' into 'trunk'"
+            },
+            "contributor_count": 5
+          },
+          "branches": [
+            {
+              "name": "dev",
+              "last_update": "2025-02-28 17:16:07",
+              "updated_by": "Jedsada Srijunpoe",
+              "commit_message": "ci: create directory for code review scores before execution",
+              "commit_id": "03cd1b806d2ac70361695022ce6ed29e6e8b5c00"
+            },
+            {
+              "name": "test",
+              "last_update": "2025-03-13 13:50:58",
+              "updated_by": "Jedsada Srijunpoe",
+              "commit_message": "test: add print statement for output verification",
+              "commit_id": "7431c291c1586dc40914a453dc2f1b8299f644d9"
+            },
+            {
+              "name": "top",
+              "last_update": "2025-02-19 09:26:35",
+              "updated_by": "natdanai sriapai",
+              "commit_message": "Merge branch 'trunk' into 'top'",
+              "commit_id": "6389e5b60fcf05718b7308bbc9acfcf6cdea83f5"
+            },
+            {
+              "name": "trunk",
+              "last_update": "2025-02-28 10:21:26",
+              "updated_by": "Jedsada Srijunpoe",
+              "commit_message": "Merge branch 'dev' into 'trunk'",
+              "commit_id": "d5a8dc45825c3a9ff4236df006f7596572228fec"
+            }
+          ]
+        },
+        {
+          "name": "BRD-Agentic",
+          "id": 936,
+          "path": "ds-and-ml-research-sandbox/research-repos/brd-agentic",
+          "description": null,
+          "default_branch": "trunk",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/research-repos/brd-agentic",
+          "summary": {
+            "branch_count": 4,
+            "main_branch": {
+              "name": "trunk",
+              "last_update": "2025-02-18 02:16:24",
+              "updated_by": "Henry Millard",
+              "commit_message": "Merge branch 'dev' into 'trunk'"
+            },
+            "contributor_count": 4
+          },
+          "branches": [
+            {
+              "name": "dev",
+              "last_update": "2025-02-25 16:14:29",
+              "updated_by": "Henry Millard",
+              "commit_message": "Merge branch 'tae/frontend-fix-api-timeout' into 'dev'",
+              "commit_id": "14972d157c1639f2af165d8377ed9f79283288d6"
+            },
+            {
+              "name": "model/backend-adding-more-brd-detailed",
+              "last_update": "2025-02-25 16:14:29",
+              "updated_by": "Henry Millard",
+              "commit_message": "Merge branch 'tae/frontend-fix-api-timeout' into 'dev'",
+              "commit_id": "14972d157c1639f2af165d8377ed9f79283288d6"
+            },
+            {
+              "name": "tae/frontend-jira-integration",
+              "last_update": "2025-03-07 14:25:17",
+              "updated_by": "Jedsada Srijunpoe",
+              "commit_message": "feat: Add user retrieval from email for JIRA project creation and clean up unused code",
+              "commit_id": "78d7e29e3be1d280a655fb60a5fd5c699783a5c2"
+            },
+            {
+              "name": "trunk",
+              "last_update": "2025-02-18 02:16:24",
+              "updated_by": "Henry Millard",
+              "commit_message": "Merge branch 'dev' into 'trunk'",
+              "commit_id": "12f59630bfa6c3a245a6fd538f516cdaeb308238"
+            }
+          ]
+        },
+        {
+          "name": "Gitlab Action Code Review",
+          "id": 934,
+          "path": "ds-and-ml-research-sandbox/research-repos/gitlab-action-code-review",
+          "description": null,
+          "default_branch": "trunk",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/research-repos/gitlab-action-code-review",
+          "summary": {
+            "branch_count": 2,
+            "main_branch": {
+              "name": "trunk",
+              "last_update": "2025-02-27 08:07:48",
+              "updated_by": "Totrakool Khongsap",
+              "commit_message": "fix: improve code review and update README"
+            },
+            "contributor_count": 3
+          },
+          "branches": [
+            {
+              "name": "dev",
+              "last_update": "2025-02-04 14:47:12",
+              "updated_by": "Natdanai Sriapai",
+              "commit_message": "Remove unnecessary 'git fetch --unshallow' command from CI/CD pipeline",
+              "commit_id": "58dd4e050d3731b4d6bf24aeca7b87e2d8c0d3ff"
+            },
+            {
+              "name": "trunk",
+              "last_update": "2025-02-27 08:07:48",
+              "updated_by": "Totrakool Khongsap",
+              "commit_message": "fix: improve code review and update README",
+              "commit_id": "58215c04034087e720779edb1ff2614ec675eb2c"
+            }
+          ]
+        },
+        {
+          "name": "DTS Assistant ",
+          "id": 926,
+          "path": "ds-and-ml-research-sandbox/research-repos/dts-assistant",
+          "description": null,
+          "default_branch": "trunk",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/research-repos/dts-assistant",
+          "summary": {
+            "branch_count": 8,
+            "main_branch": {
+              "name": "trunk",
+              "last_update": "2025-01-14 10:00:18",
+              "updated_by": "Jirakit Boonmunewai",
+              "commit_message": "Initial commit"
+            },
+            "contributor_count": 1
+          },
+          "branches": [
+            {
+              "name": "dev",
+              "last_update": "2025-02-26 17:01:48",
+              "updated_by": "TonJK",
+              "commit_message": "git pull",
+              "commit_id": "8a7eb9aa0e8e231c216b313f3ee9e30f2b1a15f4"
+            },
+            {
+              "name": "history-inject",
+              "last_update": "2025-01-27 08:54:00",
+              "updated_by": "itthisak.pra",
+              "commit_message": "add: implement chat history insertion and update SQL statements in HistoryInsert class",
+              "commit_id": "dba64411ad92ce5e8bf86b6b78ad26ac38193e13"
+            },
+            {
+              "name": "prototype-code",
+              "last_update": "2025-01-15 11:40:44",
+              "updated_by": "Totrakool Khongsap",
+              "commit_message": "add: original and parsed docs for references",
+              "commit_id": "744e85083524d8e367283bcd18d7fd638a1f2f24"
+            },
+            {
+              "name": "tae/new-parse-instruction",
+              "last_update": "2025-01-28 15:30:20",
+              "updated_by": "Jedsada Srijunpoe",
+              "commit_message": "refactor: remove first page extraction and add continuous mode option",
+              "commit_id": "c6c08bd0870d70c8a34faa703b4564053e185238"
+            },
+            {
+              "name": "thread",
+              "last_update": "2025-01-20 09:38:19",
+              "updated_by": "itthisak.pra",
+              "commit_message": "add: implement GenResponse class for OpenAI interaction",
+              "commit_id": "559ae62d73e40beb034655d222ca3174fe8282f1"
+            },
+            {
+              "name": "topic-analysis",
+              "last_update": "2025-02-03 16:40:15",
+              "updated_by": "itthisak.pra",
+              "commit_message": "feat: implement topic analysis utility for user queries and chat summaries",
+              "commit_id": "d0851fe87938c1015fa07ed713537163cbbe3087"
+            },
+            {
+              "name": "toptap",
+              "last_update": "2025-02-03 15:35:36",
+              "updated_by": "Natdanai Sriapai",
+              "commit_message": "for evaluate response from assistant",
+              "commit_id": "1d1bf5a84e082697ee4e7fe2692915d6c965ab5d"
+            },
+            {
+              "name": "trunk",
+              "last_update": "2025-01-14 10:00:18",
+              "updated_by": "Jirakit Boonmunewai",
+              "commit_message": "Initial commit",
+              "commit_id": "866d7b6eb5e0fcbb28aced6886e2648bc9c024fa"
+            }
+          ]
+        },
+        {
+          "name": "TBL Create Loadingplan",
+          "id": 916,
+          "path": "ds-and-ml-research-sandbox/research-repos/tbl-create-loadingplan",
+          "description": "",
+          "default_branch": "trunk",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/research-repos/tbl-create-loadingplan",
+          "summary": {
+            "branch_count": 2,
+            "main_branch": {
+              "name": "trunk",
+              "last_update": "2025-01-07 06:51:56",
+              "updated_by": "Jirakit Boonmunewai",
+              "commit_message": "Merge branch 'toptap' into 'trunk'"
+            },
+            "contributor_count": 3
+          },
+          "branches": [
+            {
+              "name": "toptap",
+              "last_update": "2025-01-07 10:13:46",
+              "updated_by": "Natdanai Sriapai",
+              "commit_message": "update description check_solution.py script",
+              "commit_id": "78a05bb34462777dd43fbe92041a2286b0f2cd76"
+            },
+            {
+              "name": "trunk",
+              "last_update": "2025-01-07 06:51:56",
+              "updated_by": "Jirakit Boonmunewai",
+              "commit_message": "Merge branch 'toptap' into 'trunk'",
+              "commit_id": "bd18ebac31fd48b6a7dc421f8915c774c8f2d595"
+            }
+          ]
+        },
+        {
+          "name": "employee-network",
+          "id": 804,
+          "path": "ds-and-ml-research-sandbox/research-repos/employee-network",
+          "description": null,
+          "default_branch": "trunk",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/research-repos/employee-network",
+          "summary": {
+            "branch_count": 1,
+            "main_branch": {
+              "name": "trunk",
+              "last_update": "2024-08-21 06:04:25",
+              "updated_by": "Tharathip Kulchotirat",
+              "commit_message": "Initial commit"
+            },
+            "contributor_count": 1
+          },
+          "branches": [
+            {
+              "name": "trunk",
+              "last_update": "2024-08-21 06:04:25",
+              "updated_by": "Tharathip Kulchotirat",
+              "commit_message": "Initial commit",
+              "commit_id": "b79b5f60f054c6f2828a6dac2342432ed8536260"
+            }
+          ]
+        },
+        {
+          "name": "call-center-audio-analysis",
+          "id": 803,
+          "path": "ds-and-ml-research-sandbox/research-repos/call-center-audio-analysis",
+          "description": null,
+          "default_branch": "trunk",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/research-repos/call-center-audio-analysis",
+          "summary": {
+            "branch_count": 6,
+            "main_branch": {
+              "name": "trunk",
+              "last_update": "2024-08-21 06:03:59",
+              "updated_by": "Tharathip Kulchotirat",
+              "commit_message": "Initial commit"
+            },
+            "contributor_count": 1
+          },
+          "branches": [
+            {
+              "name": "audio_analysis",
+              "last_update": "2025-01-06 18:26:57",
+              "updated_by": "sirapopModel",
+              "commit_message": "Fix: Label Studio Audio Link Generator in audio analysis api",
+              "commit_id": "ff483536961c6551c4b8f4e94aafc8cf4d9459a4"
+            },
+            {
+              "name": "backend",
+              "last_update": "2025-01-23 15:45:51",
+              "updated_by": "sirapopModel",
+              "commit_message": "Update: Parallel Service to /audio/analysis",
+              "commit_id": "581a52dec668e3cd5ba8cb5037cbb5e1a037e61f"
+            },
+            {
+              "name": "evaluation_and_finetuning",
+              "last_update": "2025-01-07 21:19:25",
+              "updated_by": "sirapopModel",
+              "commit_message": "Update: Evaluation From Minio DataBucket with maxmimum 30sec chunks",
+              "commit_id": "4a0f4daefaa182f6b8c97860637ab23dca432272"
+            },
+            {
+              "name": "frontend",
+              "last_update": "2024-11-29 12:06:30",
+              "updated_by": "JedsadaSrijunpoe",
+              "commit_message": "feat: add summary report functionality to DynamicSchemaForm",
+              "commit_id": "69df9e0bf3f4f16a98b50f30ffa93fe4fc43fa5a"
+            },
+            {
+              "name": "tae-frontend",
+              "last_update": "2025-01-13 19:09:57",
+              "updated_by": "Jedsada Srijunpoe",
+              "commit_message": "feat: enhance UI components and add schema input toggle functionality",
+              "commit_id": "e0416d590f4d70b078da1f083ee50338b24257f8"
+            },
+            {
+              "name": "trunk",
+              "last_update": "2024-08-21 06:03:59",
+              "updated_by": "Tharathip Kulchotirat",
+              "commit_message": "Initial commit",
+              "commit_id": "e8cc196226436f32cd2b104807ffc9c993b7bd2d"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "direct_projects": []
+}
