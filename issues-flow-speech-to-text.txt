@@ -1,0 +1,43 @@
+1. Architecture & Design
+[Task] Define Speech-to-Order Service Architecture
+•	Description: Draft a high-level design outlining how the mobile app, voice-to-text conversion, LLM, product search, and fulfillment integration will work together.
+•	Acceptance: Architecture document reviewed and approved by the team.
+•	Labels: architecture, design, planning
+________________________________________
+2. Voice-to-Text Integration
+[Feature] Integrate Mobile Voice-to-Text Converter
+•	Description: Leverage the mobile phone's native voice-to-text functionality to capture spoken order input from the user.
+•	Acceptance: Voice input is successfully converted to text in sample tests.
+•	Labels: voice-to-text, mobile, frontend
+________________________________________
+3. Intent Extraction & Order Processing
+[Feature] Implement LLM for Order Intent Extraction
+•	Description: Integrate an LLM to analyze the transcribed text and determine the user’s intended food and beverage order.
+•	Acceptance: The LLM accurately identifies the order intent and extracts relevant keywords.
+•	Labels: llm, backend, high-priority
+[Feature] Search Product Catalogue & Map Order
+•	Description: Develop a module to search the product category (including SKU, brand, and price) based on the extracted intent and map it to an order list.
+•	Acceptance: System returns a list of products with quantities and prices that match the order intent.
+•	Labels: product-search, backend, high-priority
+________________________________________
+4. Order Confirmation & Fulfillment Integration
+[Feature] Build Order Confirmation Interface
+•	Description: Design a UI component (e.g., checklist) that displays the generated order list with checkboxes for user confirmation.
+•	Acceptance: Users can review and confirm the order list before submission.
+•	Labels: frontend, ui, integration
+[Feature] Prepare Order for Fulfillment
+•	Description: Implement functionality to package the confirmed order details and send them to the fulfillment system.
+•	Acceptance: Confirmed orders are successfully transmitted to the fulfillment system in a test environment.
+•	Labels: fulfillment, integration, backend
+________________________________________
+5. Testing & Monitoring
+[Task] Implement Testing and Logging
+•	Description: Set up unit and integration tests for the voice-to-text, LLM processing, product search, and fulfillment modules. Implement logging for error tracking and performance monitoring.
+•	Acceptance: All tests pass; logs provide actionable insights during end-to-end testing.
+•	Labels: testing, logging, infra
+________________________________________
+6. Deployment
+[Task] Set Up Deployment Strategy
+•	Description: Define and implement a deployment strategy (e.g., Docker, cloud services) for the speech-to-order service, ensuring smooth transitions between development and staging environments.
+•	Acceptance: Deployment pipelines are documented and successfully tested.
+•	Labels: deployment, devops, infra

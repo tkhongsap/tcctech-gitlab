@@ -1,0 +1,49 @@
+1. Data Extraction & Parsing
+[Feature] Implement Data Extraction Pipeline
+•	Description: Develop a pipeline to extract raw data from various sources (e.g., PDFs, web pages, databases) and capture metadata. Use LlamaIndex’s SimpleDirectoryReader or custom loaders.
+•	Acceptance: Data is extracted and stored in a structured format.
+•	Labels: data-pipeline, backend, high-priority
+[Feature] Implement Data Parsing & Preprocessing
+•	Description: Clean and normalize extracted data. Implement text chunking for efficient indexing and remove extraneous content.
+•	Acceptance: Data is processed into consistent chunks ready for indexing.
+•	Labels: data-processing, backend, high-priority
+________________________________________
+2. Indexing & Vector Database
+[Feature] Set Up Vector Database
+•	Description: Choose and configure a vector database for storing embeddings and support similarity searches.
+•	Acceptance: Database is set up, and CRUD operations work with sample embeddings.
+•	Labels: indexing, vector-db, backend
+[Feature] Integrate LlamaIndex with Vector Database
+•	Description: Use LlamaIndex to generate embeddings and connect retrieval queries to the vector database.
+•	Acceptance: Embeddings are stored correctly and retrieval returns relevant results.
+•	Labels: llamaindex, retrieval, backend
+________________________________________
+3. Query Processing & RAG Pipeline
+[Feature] Implement RAG Pipeline
+•	Description: Build a RAG pipeline using LlamaIndex to integrate retrieval with response generation from indexed data.
+•	Acceptance: The system returns relevant responses with acceptable latency.
+•	Labels: rag-pipeline, backend, llamaindex
+[Feature] Optimize Query Processing & Ranking
+•	Description: Enhance query processing by implementing reranking and performance optimizations.
+•	Acceptance: Queries are processed faster and results are ranked effectively.
+•	Labels: optimization, retrieval, backend
+________________________________________
+4. Frontend & API
+[Feature] Build Frontend UI for Query Testing
+•	Description: Develop a simple UI for users to enter queries and view responses, including confidence scores and document snippets.
+•	Acceptance: UI is responsive and integrated with the backend API.
+•	Labels: frontend, ui, medium-priority
+[Feature] Implement API for Query Requests
+•	Description: Create an API to handle user queries and return responses from the RAG pipeline.
+•	Acceptance: API is documented, secure, and performs within acceptable latency limits.
+•	Labels: api, backend, frontend
+________________________________________
+5. Deployment & Infrastructure
+[Task] Set Up Deployment Strategy
+•	Description: Define and implement a deployment strategy (e.g., Docker, Kubernetes) for both development and production environments.
+•	Acceptance: Deployment pipelines are established and tested, with clear documentation.
+•	Labels: devops, deployment, infra
+[Task] Implement Logging & Monitoring
+•	Description: Set up logging to capture key data flows and errors. Integrate basic monitoring and alerts for the RAG pipeline.
+•	Acceptance: Logs are accessible and provide actionable insights; monitoring is tested for reliability.
+•	Labels: monitoring, infra
