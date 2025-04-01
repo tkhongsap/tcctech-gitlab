@@ -3,20 +3,36 @@
 GitLab Information Extractor
 
 This script extracts information about groups and subgroups from a GitLab instance.
+It provides a comprehensive view of the GitLab structure including:
+- Groups and subgroups
+- Projects within each group
+- Branches within each project
+- Commit information for each branch
+- Contributor statistics
+
+Output formats: JSON, Markdown, and CSV
 """
 
+# Standard library imports
 import os
 import sys
 import json
 import csv
-import requests
-from typing import Dict, List, Any, Optional, Set, Tuple
-from dotenv import load_dotenv
 from datetime import datetime
+from typing import Dict, List, Any, Optional, Set, Tuple
+
+# Third-party imports
+import requests
+from dotenv import load_dotenv
 
 
 def validate_env_vars() -> None:
-    """Validate that required environment variables exist."""
+    """
+    Validate that required environment variables exist.
+    
+    Checks for GITLAB_URL and GITLAB_API_TOKEN in environment.
+    If any are missing, prints an error message and exits the program.
+    """
     required_vars = ['GITLAB_URL', 'GITLAB_API_TOKEN']
     missing_vars = [var for var in required_vars if not os.getenv(var)]
     
@@ -27,7 +43,13 @@ def validate_env_vars() -> None:
 
 
 def get_gitlab_headers() -> Dict[str, str]:
-    """Create headers for GitLab API requests with authentication."""
+    """
+    Create headers for GitLab API requests with authentication.
+    
+    Returns:
+        Dictionary containing the Private-Token and Content-Type headers
+        needed for GitLab API authentication.
+    """
     return {
         'Private-Token': os.getenv('GITLAB_API_TOKEN'),
         'Content-Type': 'application/json'
@@ -37,6 +59,8 @@ def get_gitlab_headers() -> Dict[str, str]:
 def get_group_by_name(group_name: str) -> Optional[Dict[str, Any]]:
     """
     Find a group by its name.
+    
+    Searches for a GitLab group with the exact name provided.
     
     Args:
         group_name: The name of the group to find
@@ -74,11 +98,14 @@ def get_subgroups(group_id: int) -> List[Dict[str, Any]]:
     """
     Get all subgroups for a given group ID.
     
+    Retrieves all subgroups that belong to the specified parent group.
+    Uses pagination to fetch up to 100 subgroups per request.
+    
     Args:
         group_id: The ID of the parent group
         
     Returns:
-        List of subgroups
+        List of subgroups with their details
     """
     base_url = os.getenv('GITLAB_URL')
     headers = get_gitlab_headers()
@@ -102,11 +129,15 @@ def get_projects(group_id: int) -> List[Dict[str, Any]]:
     """
     Get all projects for a given group ID.
     
+    Retrieves all projects within the specified group, including projects
+    in subgroups if the include_subgroups parameter is set to True.
+    Uses pagination to fetch up to 100 projects per request.
+    
     Args:
         group_id: The ID of the group
         
     Returns:
-        List of projects
+        List of projects with their details
     """
     base_url = os.getenv('GITLAB_URL')
     headers = get_gitlab_headers()
@@ -114,6 +145,7 @@ def get_projects(group_id: int) -> List[Dict[str, Any]]:
     try:
         projects_url = f"{base_url}/api/v4/groups/{group_id}/projects"
         # Get all projects (GitLab API typically paginates results)
+        # include_subgroups=True to include projects from subgroups
         params = {'per_page': 100, 'include_subgroups': True}
         
         response = requests.get(projects_url, headers=headers, params=params)
@@ -130,11 +162,14 @@ def get_project_branches(project_id: int) -> List[Dict[str, Any]]:
     """
     Get all branches for a given project ID.
     
+    Retrieves all branches within the specified project.
+    Uses pagination to fetch up to 100 branches per request.
+    
     Args:
         project_id: The ID of the project
         
     Returns:
-        List of branches
+        List of branches with their details
     """
     base_url = os.getenv('GITLAB_URL')
     headers = get_gitlab_headers()
@@ -156,6 +191,9 @@ def get_project_branches(project_id: int) -> List[Dict[str, Any]]:
 def get_branch_info(project_id: int, branch_name: str) -> Optional[Dict[str, Any]]:
     """
     Get detailed information about a specific branch.
+    
+    Retrieves detailed information about a specific branch in a project,
+    including commit information and protection status.
     
     Args:
         project_id: The ID of the project
@@ -183,6 +221,9 @@ def get_branch_info(project_id: int, branch_name: str) -> Optional[Dict[str, Any
 def get_last_commit(project_id: int, branch_name: str) -> Optional[Dict[str, Any]]:
     """
     Get the last commit for a specific branch.
+    
+    Retrieves the most recent commit on a specific branch in a project.
+    Limits to 1 result to get only the latest commit.
     
     Args:
         project_id: The ID of the project
@@ -217,11 +258,14 @@ def get_project_contributors(project_id: int) -> List[Dict[str, Any]]:
     """
     Get all contributors for a given project.
     
+    Retrieves a list of all users who have contributed to the project.
+    Uses pagination to fetch up to 100 contributors per request.
+    
     Args:
         project_id: The ID of the project
         
     Returns:
-        List of contributors
+        List of contributors with their details
     """
     base_url = os.getenv('GITLAB_URL')
     headers = get_gitlab_headers()
@@ -244,6 +288,9 @@ def count_unique_contributors(project_id: int) -> int:
     """
     Count the number of unique contributors to a project.
     
+    A simple count of unique contributor accounts that have made commits
+    to the project repository.
+    
     Args:
         project_id: The ID of the project
         
@@ -258,12 +305,17 @@ def find_main_branch(project_id: int, default_branch: str) -> str:
     """
     Find the main/trunk branch of a project.
     
+    Attempts to identify the main development branch of a project by:
+    1. First checking the project's default branch
+    2. Then looking for common main branch names (main, master, trunk, develop)
+    3. Falling back to the first available branch if no standard main branch is found
+    
     Args:
         project_id: The ID of the project
         default_branch: The default branch of the project
         
     Returns:
-        Name of the main branch
+        Name of the main branch, or empty string if no branches are found
     """
     # First try the default branch
     if default_branch and default_branch != 'N/A':
@@ -286,11 +338,14 @@ def format_datetime(datetime_str: str) -> str:
     """
     Format a datetime string from GitLab API to a more readable format.
     
+    Converts ISO 8601 formatted dates returned by the GitLab API to a 
+    more human-readable format (YYYY-MM-DD HH:MM:SS).
+    
     Args:
-        datetime_str: The datetime string from GitLab API
+        datetime_str: The datetime string from GitLab API (ISO 8601 format)
         
     Returns:
-        Formatted datetime string
+        Formatted datetime string in the format YYYY-MM-DD HH:MM:SS
     """
     try:
         dt = datetime.fromisoformat(datetime_str.replace('Z', '+00:00'))
@@ -303,9 +358,12 @@ def print_group_info(group: Dict[str, Any], level: int = 0) -> None:
     """
     Print information about a group.
     
+    Displays key information about a GitLab group with appropriate indentation
+    to show hierarchy levels.
+    
     Args:
         group: Dictionary containing group information
-        level: Indentation level for display hierarchy
+        level: Indentation level for display hierarchy (0 for parent, 1+ for nested groups)
     """
     indent = "  " * level
     print(f"{indent}Group: {group['name']}")
@@ -320,6 +378,12 @@ def print_group_info(group: Dict[str, Any], level: int = 0) -> None:
 def print_project_info(project: Dict[str, Any], level: int = 0) -> None:
     """
     Print information about a project.
+    
+    Displays comprehensive information about a GitLab project including:
+    - Basic project metadata
+    - Summary statistics (branch count, contributor count)
+    - Main branch information
+    - Detailed information about all branches
     
     Args:
         project: Dictionary containing project information
@@ -384,12 +448,15 @@ def collect_branch_info(project_id: int, branch_name: str) -> Dict[str, Any]:
     """
     Collect detailed information about a branch.
     
+    Gathers key information about a specific branch, including its last commit details.
+    Used for structured data collection (JSON/CSV/Markdown output).
+    
     Args:
         project_id: The ID of the project
         branch_name: The name of the branch
         
     Returns:
-        Dictionary with branch information
+        Dictionary with branch information including last update details
     """
     branch_info = {"name": branch_name}
     
@@ -414,6 +481,14 @@ def collect_branch_info(project_id: int, branch_name: str) -> Dict[str, Any]:
 def collect_project_info(project: Dict[str, Any]) -> Dict[str, Any]:
     """
     Collect detailed information about a project.
+    
+    Gathers comprehensive data about a project including:
+    - Basic project metadata
+    - Summary statistics (branches, contributors)
+    - Main branch information
+    - Detailed information about all branches
+    
+    This structured data is used for JSON/CSV/Markdown output.
     
     Args:
         project: Dictionary containing project information
@@ -475,6 +550,18 @@ def collect_project_info(project: Dict[str, Any]) -> Dict[str, Any]:
 def collect_gitlab_info(parent_group_name: str) -> Dict[str, Any]:
     """
     Collect information about a GitLab group and its subgroups in a structured format.
+    
+    This is the main data collection function that:
+    1. Finds the parent group
+    2. Collects information about the parent group
+    3. Collects information about all subgroups
+    4. Collects information about all projects in the parent group and subgroups
+    
+    The structured data returned by this function is used for:
+    - Console output
+    - JSON export
+    - Markdown report generation
+    - CSV export
     
     Args:
         parent_group_name: Name of the parent group to extract information for
@@ -542,8 +629,10 @@ def save_to_json(data: Dict[str, Any], filename: str) -> None:
     """
     Save data to a JSON file.
     
+    Serializes the collected GitLab data into a formatted JSON file.
+    
     Args:
-        data: The data to save
+        data: The structured data to save
         filename: The name of the file to save to
     """
     try:
@@ -557,6 +646,12 @@ def save_to_json(data: Dict[str, Any], filename: str) -> None:
 def generate_markdown(data: Dict[str, Any]) -> str:
     """
     Generate Markdown content from GitLab data.
+    
+    Creates a comprehensive Markdown report including:
+    - Parent group information
+    - Subgroup information
+    - Project information with summaries
+    - Branch details in tabular format
     
     Args:
         data: Dictionary with GitLab information
@@ -688,6 +783,8 @@ def save_to_markdown(data: Dict[str, Any], filename: str) -> None:
     """
     Generate and save Markdown content to a file.
     
+    Creates a well-formatted Markdown report and saves it to a file.
+    
     Args:
         data: Dictionary with GitLab information
         filename: The name of the file to save to
@@ -706,6 +803,11 @@ def save_to_markdown(data: Dict[str, Any], filename: str) -> None:
 def generate_csv_data(data: Dict[str, Any]) -> List[List[str]]:
     """
     Generate CSV data from GitLab information.
+    
+    Creates a tabular representation of the GitLab data in a format suitable for CSV export.
+    Each row represents a branch with associated project, group, and commit information.
+    
+    The CSV format allows for easier filtering and analysis in spreadsheet applications.
     
     Args:
         data: Dictionary with GitLab information
@@ -788,6 +890,8 @@ def save_to_csv(data: List[List[str]], filename: str) -> None:
     """
     Save data to a CSV file.
     
+    Writes the provided tabular data to a CSV file with UTF-8 encoding.
+    
     Args:
         data: List of rows, where each row is a list of column values
         filename: The name of the file to save to
@@ -806,6 +910,14 @@ def save_to_csv(data: List[List[str]], filename: str) -> None:
 def extract_gitlab_info(parent_group_name: str) -> None:
     """
     Extract and display information about a GitLab group and its subgroups.
+    
+    This function provides console output of the GitLab structure including:
+    - Parent group details
+    - Subgroups details
+    - Project details with branch information
+    
+    This is the main function for displaying information directly to the console
+    rather than saving to files.
     
     Args:
         parent_group_name: Name of the parent group to extract information for
@@ -848,13 +960,23 @@ def extract_gitlab_info(parent_group_name: str) -> None:
 
 
 def main() -> None:
-    """Main function to run the script."""
+    """
+    Main function to run the script.
+    
+    This function:
+    1. Loads environment variables
+    2. Validates required variables
+    3. Extracts GitLab information for specified group
+    4. Displays information to console
+    5. Saves data in JSON, Markdown, and CSV formats
+    """
     # Load environment variables from .env file
     load_dotenv()
     
     # Validate required environment variables
     validate_env_vars()
     
+    # Define the parent group name to extract information for
     parent_group_name = "DS and ML Research Sandbox"
     
     print(f"Extracting information for GitLab group: {parent_group_name}")

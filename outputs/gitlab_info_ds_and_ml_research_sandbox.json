@@ -9,6 +9,481 @@
   },
   "subgroups": [
     {
+      "name": "AI-ML-Services",
+      "id": 1721,
+      "path": "ds-and-ml-research-sandbox/ai-ml-services",
+      "description": "This subgroup encompasses projects that leverage artificial intelligence, machine learning, and advanced data processing to deliver smart, adaptive features. Projects here typically include components like natural language processing, recommendation models (e.g., collaborative filtering), and speech or image processing. The focus is on transforming raw data into actionable insights, automating decision-making processes, and enhancing user experiences through intelligent systems.",
+      "visibility": "private",
+      "web_url": "https://git.lab.tcctech.app/groups/ds-and-ml-research-sandbox/ai-ml-services",
+      "projects": [
+        {
+          "name": "cyber-security",
+          "id": 969,
+          "path": "ds-and-ml-research-sandbox/ai-ml-services/cyber-security",
+          "description": "",
+          "default_branch": "main",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/cyber-security",
+          "summary": {
+            "branch_count": 1,
+            "main_branch": {
+              "name": "main",
+              "last_update": "2025-03-24 03:53:06",
+              "updated_by": "Tassawee Thitipak",
+              "commit_message": "Initial commit"
+            },
+            "contributor_count": 1
+          },
+          "branches": [
+            {
+              "name": "main",
+              "last_update": "2025-03-24 03:53:06",
+              "updated_by": "Tassawee Thitipak",
+              "commit_message": "Initial commit",
+              "commit_id": "bbab16c67cb24a39e14da89b2511f5bade8c722d"
+            }
+          ]
+        },
+        {
+          "name": "llm-gpu-access-thaibev",
+          "id": 968,
+          "path": "ds-and-ml-research-sandbox/ai-ml-services/llm-thaibev-gpu",
+          "description": " Focuses on enabling and validating API access to an internally hosted open-source Large Language Model (LLM) running on a GPU server. It includes scripts, configurations, and documentation to test and interact with the LLM via HTTP requests.",
+          "default_branch": "main",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/llm-thaibev-gpu",
+          "summary": {
+            "branch_count": 2,
+            "main_branch": {
+              "name": "main",
+              "last_update": "2025-03-24 03:23:12",
+              "updated_by": "Jirakit Boonmunewai",
+              "commit_message": "Initial commit"
+            },
+            "contributor_count": 1
+          },
+          "branches": [
+            {
+              "name": "demo",
+              "last_update": "2025-03-24 11:27:43",
+              "updated_by": "Jirakit",
+              "commit_message": "update notebook for test",
+              "commit_id": "64276bd8df2883b7478a487a963633d73de8c226"
+            },
+            {
+              "name": "main",
+              "last_update": "2025-03-24 03:23:12",
+              "updated_by": "Jirakit Boonmunewai",
+              "commit_message": "Initial commit",
+              "commit_id": "9931bd18cd7afabfb16b78f8d21bf7ccf8b1970e"
+            }
+          ]
+        },
+        {
+          "name": "shelf-detection",
+          "id": 967,
+          "path": "ds-and-ml-research-sandbox/ai-ml-services/shelf-detection",
+          "description": "",
+          "default_branch": "main",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/shelf-detection",
+          "summary": {
+            "branch_count": 2,
+            "main_branch": {
+              "name": "main",
+              "last_update": "2025-03-24 03:15:34",
+              "updated_by": "Tassawee Thitipak",
+              "commit_message": "Initial commit"
+            },
+            "contributor_count": 1
+          },
+          "branches": [
+            {
+              "name": "main",
+              "last_update": "2025-03-24 03:15:34",
+              "updated_by": "Tassawee Thitipak",
+              "commit_message": "Initial commit",
+              "commit_id": "e7ec8a9e60237cd4744c31bca7f33eba402b97f2"
+            },
+            {
+              "name": "trunk",
+              "last_update": "2025-03-24 03:15:34",
+              "updated_by": "Tassawee Thitipak",
+              "commit_message": "Initial commit",
+              "commit_id": "e7ec8a9e60237cd4744c31bca7f33eba402b97f2"
+            }
+          ]
+        },
+        {
+          "name": "operational-command-center",
+          "id": 965,
+          "path": "ds-and-ml-research-sandbox/ai-ml-services/command-center",
+          "description": "",
+          "default_branch": "main",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/command-center",
+          "summary": {
+            "branch_count": 1,
+            "main_branch": {
+              "name": "main",
+              "last_update": "2025-03-24 02:02:02",
+              "updated_by": "Jirakit Boonmunewai",
+              "commit_message": "Initial commit"
+            },
+            "contributor_count": 1
+          },
+          "branches": [
+            {
+              "name": "main",
+              "last_update": "2025-03-24 02:02:02",
+              "updated_by": "Jirakit Boonmunewai",
+              "commit_message": "Initial commit",
+              "commit_id": "3cf6a9513271386c5989dfc71478a1479acc5a49"
+            }
+          ]
+        },
+        {
+          "name": "TBR-Oracle",
+          "id": 964,
+          "path": "ds-and-ml-research-sandbox/ai-ml-services/tbr-oracle",
+          "description": "",
+          "default_branch": "main",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/tbr-oracle",
+          "summary": {
+            "branch_count": 1,
+            "main_branch": {
+              "name": "main",
+              "last_update": "2025-03-24 01:59:13",
+              "updated_by": "Tassawee Thitipak",
+              "commit_message": "Initial commit"
+            },
+            "contributor_count": 1
+          },
+          "branches": [
+            {
+              "name": "main",
+              "last_update": "2025-03-24 01:59:13",
+              "updated_by": "Tassawee Thitipak",
+              "commit_message": "Initial commit",
+              "commit_id": "0e74e99b8febe2d376b444a3f106d74bb4b09e44"
+            }
+          ]
+        },
+        {
+          "name": "one-customer-engine",
+          "id": 961,
+          "path": "ds-and-ml-research-sandbox/ai-ml-services/one-customer",
+          "description": "One-customer is a data processing engine that intelligently groups and unifies customer records based on address similarity, tax ID, and customer codes, creating a single, accurate view of each customer across systems",
+          "default_branch": "main",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/one-customer",
+          "summary": {
+            "branch_count": 1,
+            "main_branch": {
+              "name": "main",
+              "last_update": "2025-03-23 05:46:48",
+              "updated_by": "Totrakool Khongsap",
+              "commit_message": "Merge branch '1-code-review-merge-dev-main' into 'main'"
+            },
+            "contributor_count": 2
+          },
+          "branches": [
+            {
+              "name": "main",
+              "last_update": "2025-03-23 05:46:48",
+              "updated_by": "Totrakool Khongsap",
+              "commit_message": "Merge branch '1-code-review-merge-dev-main' into 'main'",
+              "commit_id": "bd091b5538b2731eb92f637dd18960645bae4b57"
+            }
+          ]
+        },
+        {
+          "name": "flow-RAG",
+          "id": 960,
+          "path": "ds-and-ml-research-sandbox/ai-ml-services/flow-rag",
+          "description": null,
+          "default_branch": "main",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/flow-rag",
+          "summary": {
+            "branch_count": 4,
+            "main_branch": {
+              "name": "main",
+              "last_update": "2025-03-28 11:46:43",
+              "updated_by": "Totrakool Khongsap",
+              "commit_message": "update README and add diagram flow"
+            },
+            "contributor_count": 5
+          },
+          "branches": [
+            {
+              "name": "16-optimize-query-processing-ranking",
+              "last_update": "2025-03-31 10:24:54",
+              "updated_by": "Jedsada Srijunpoe",
+              "commit_message": "Refactor llamaindex_ollama_pipeline.py to improve environment variable handling and update prompt templates for clarity",
+              "commit_id": "61159ada7e28ab756397a045075c89be4b237758"
+            },
+            {
+              "name": "18-implement-api-for-query-requests",
+              "last_update": "2025-03-31 10:26:30",
+              "updated_by": "sirapopModel",
+              "commit_message": "Added: README.md for Backend Instruction",
+              "commit_id": "181b359dfdff70393f03f19db94fe603a2743ee8"
+            },
+            {
+              "name": "dev",
+              "last_update": "2025-03-27 15:45:43",
+              "updated_by": "Totrakool Khongsap",
+              "commit_message": "Merge branch 'chore-remove-unused-code' into 'dev'",
+              "commit_id": "b7bc68ca987b8080a7be646a50251c38ebfb9a0f"
+            },
+            {
+              "name": "main",
+              "last_update": "2025-03-28 11:46:43",
+              "updated_by": "Totrakool Khongsap",
+              "commit_message": "update README and add diagram flow",
+              "commit_id": "d6b8a66c6b708d59850671cefe4e390652db22ad"
+            }
+          ]
+        },
+        {
+          "name": "flow-speech-to-text",
+          "id": 959,
+          "path": "ds-and-ml-research-sandbox/ai-ml-services/flow-speech-to-text",
+          "description": null,
+          "default_branch": "main",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/flow-speech-to-text",
+          "summary": {
+            "branch_count": 1,
+            "main_branch": {
+              "name": "main",
+              "last_update": "2025-03-16 12:51:28",
+              "updated_by": "Totrakool Khongsap",
+              "commit_message": "Initial commit"
+            },
+            "contributor_count": 1
+          },
+          "branches": [
+            {
+              "name": "main",
+              "last_update": "2025-03-16 12:51:28",
+              "updated_by": "Totrakool Khongsap",
+              "commit_message": "Initial commit",
+              "commit_id": "192ea4071868ced6b708da47644949e42802d775"
+            }
+          ]
+        },
+        {
+          "name": "flow-text-to-image",
+          "id": 958,
+          "path": "ds-and-ml-research-sandbox/ai-ml-services/flow-text-to-image",
+          "description": null,
+          "default_branch": "main",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/flow-text-to-image",
+          "summary": {
+            "branch_count": 1,
+            "main_branch": {
+              "name": "main",
+              "last_update": "2025-03-16 12:50:03",
+              "updated_by": "Totrakool Khongsap",
+              "commit_message": "Initial commit"
+            },
+            "contributor_count": 1
+          },
+          "branches": [
+            {
+              "name": "main",
+              "last_update": "2025-03-16 12:50:03",
+              "updated_by": "Totrakool Khongsap",
+              "commit_message": "Initial commit",
+              "commit_id": "a63f11849241b59273d45e3b54cd2f4a1011516e"
+            }
+          ]
+        },
+        {
+          "name": "azure-ocr-pipeline",
+          "id": 954,
+          "path": "ds-and-ml-research-sandbox/ai-ml-services/azure-ocr-pipeline",
+          "description": null,
+          "default_branch": "main",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/azure-ocr-pipeline",
+          "summary": {
+            "branch_count": 4,
+            "main_branch": {
+              "name": "main",
+              "last_update": "2025-03-29 09:25:10",
+              "updated_by": "Jirakit Boonmunewai",
+              "commit_message": "Merge branch 'feature-llama-parse' into 'main'"
+            },
+            "contributor_count": 7
+          },
+          "branches": [
+            {
+              "name": "11-implement-with-openai",
+              "last_update": "2025-03-29 02:09:45",
+              "updated_by": "Jirakit Boonmunewai",
+              "commit_message": "Merge branch 'feature/data-folder' into 'main'",
+              "commit_id": "e4724c4978f7097f6c6442c8eef6cc4ff6cd495f"
+            },
+            {
+              "name": "count-missing-fields",
+              "last_update": "2025-03-28 19:59:07",
+              "updated_by": "itthisak.pra",
+              "commit_message": "jupyter notebook for exporting to check accuracy",
+              "commit_id": "fc3af0cfb948b5ca6d85fed34f0c2975676bc5fc"
+            },
+            {
+              "name": "feat/endpoint",
+              "last_update": "2025-03-26 17:23:25",
+              "updated_by": "Phuvit Jaruratkit",
+              "commit_message": "feat(endpoint): Done",
+              "commit_id": "a065a650665cc7a3b823427f38fdfaf524bd8211"
+            },
+            {
+              "name": "main",
+              "last_update": "2025-03-29 09:25:10",
+              "updated_by": "Jirakit Boonmunewai",
+              "commit_message": "Merge branch 'feature-llama-parse' into 'main'",
+              "commit_id": "7c7f3024d6c0804ea52118194502af58784dd8e3"
+            }
+          ]
+        },
+        {
+          "name": "flow-product-recommendation",
+          "id": 953,
+          "path": "ds-and-ml-research-sandbox/ai-ml-services/recommendation-engine",
+          "description": "",
+          "default_branch": "main",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/recommendation-engine",
+          "summary": {
+            "branch_count": 4,
+            "main_branch": {
+              "name": "main",
+              "last_update": "2025-03-28 04:51:17",
+              "updated_by": "Phuvit Jaruratkit",
+              "commit_message": "Merge branch 'dev' into 'main'"
+            },
+            "contributor_count": 4
+          },
+          "branches": [
+            {
+              "name": "14-prepare-data-for-model",
+              "last_update": "2025-03-28 04:51:17",
+              "updated_by": "Phuvit Jaruratkit",
+              "commit_message": "Merge branch 'dev' into 'main'",
+              "commit_id": "e72f5acb5b1a1959424ca13ded35d690cfc4a035"
+            },
+            {
+              "name": "4-develop-mvp-recommendation-model",
+              "last_update": "2025-03-16 07:45:55",
+              "updated_by": "Totrakool Khongsap",
+              "commit_message": "Initial commit",
+              "commit_id": "073089dc7d9971c244260ab3401df6c2b7a5c919"
+            },
+            {
+              "name": "dev",
+              "last_update": "2025-03-28 11:55:06",
+              "updated_by": "Natdanai Sriapai",
+              "commit_message": "Update .gitignore to exclude evaluate.py and test_api.ipynb",
+              "commit_id": "e6bf7c77e6895874bbd8c45b6b921cdf0e5dbd20"
+            },
+            {
+              "name": "main",
+              "last_update": "2025-03-28 04:51:17",
+              "updated_by": "Phuvit Jaruratkit",
+              "commit_message": "Merge branch 'dev' into 'main'",
+              "commit_id": "e72f5acb5b1a1959424ca13ded35d690cfc4a035"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dev-Tools",
+      "id": 1724,
+      "path": "ds-and-ml-research-sandbox/dev-tools",
+      "description": "This subgroup includes projects and tasks that build or integrate tools to streamline development, testing, deployment, and infrastructure management. Projects in this category often involve creating APIs, setting up automated workflows, integrating third-party services (e.g., Canva, Azure OCR), and developing robust logging, monitoring, and deployment strategies. The primary aim is to improve productivity, enforce consistency, and ensure reliability across all technical operations and product d",
+      "visibility": "private",
+      "web_url": "https://git.lab.tcctech.app/groups/ds-and-ml-research-sandbox/dev-tools",
+      "projects": [
+        {
+          "name": "dev-requirements-management",
+          "id": 957,
+          "path": "ds-and-ml-research-sandbox/dev-tools/dev-requirements-management",
+          "description": null,
+          "default_branch": "main",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/dev-tools/dev-requirements-management",
+          "summary": {
+            "branch_count": 1,
+            "main_branch": {
+              "name": "main",
+              "last_update": "2025-03-16 07:55:17",
+              "updated_by": "Totrakool Khongsap",
+              "commit_message": "Initial commit"
+            },
+            "contributor_count": 1
+          },
+          "branches": [
+            {
+              "name": "main",
+              "last_update": "2025-03-16 07:55:17",
+              "updated_by": "Totrakool Khongsap",
+              "commit_message": "Initial commit",
+              "commit_id": "9932970500ecf3dd75deecffdd3f3aa8153b74cd"
+            }
+          ]
+        },
+        {
+          "name": "dev-code-review",
+          "id": 956,
+          "path": "ds-and-ml-research-sandbox/dev-tools/dev-code-review",
+          "description": null,
+          "default_branch": "main",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/dev-tools/dev-code-review",
+          "summary": {
+            "branch_count": 1,
+            "main_branch": {
+              "name": "main",
+              "last_update": "2025-03-17 10:31:10",
+              "updated_by": "Totrakool Khongsap",
+              "commit_message": "ci: update configuration"
+            },
+            "contributor_count": 2
+          },
+          "branches": [
+            {
+              "name": "main",
+              "last_update": "2025-03-17 10:31:10",
+              "updated_by": "Totrakool Khongsap",
+              "commit_message": "ci: update configuration",
+              "commit_id": "6d3e22963abd3a9b17a64da04066a09bcc7dc4b0"
+            }
+          ]
+        },
+        {
+          "name": "dev-code-assistant",
+          "id": 955,
+          "path": "ds-and-ml-research-sandbox/dev-tools/dev-coding-assistant",
+          "description": "",
+          "default_branch": "main",
+          "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/dev-tools/dev-coding-assistant",
+          "summary": {
+            "branch_count": 1,
+            "main_branch": {
+              "name": "main",
+              "last_update": "2025-03-16 07:54:19",
+              "updated_by": "Totrakool Khongsap",
+              "commit_message": "Initial commit"
+            },
+            "contributor_count": 1
+          },
+          "branches": [
+            {
+              "name": "main",
+              "last_update": "2025-03-16 07:54:19",
+              "updated_by": "Totrakool Khongsap",
+              "commit_message": "Initial commit",
+              "commit_id": "45569ad036aadcf3c2f37aa8e782c81252b1fe1a"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Development (POC)",
       "id": 1268,
       "path": "ds-and-ml-research-sandbox/development-poc",
@@ -21,12 +496,12 @@
           "id": 811,
           "path": "ds-and-ml-research-sandbox/development-poc/employee-network",
           "description": null,
-          "default_branch": "trunk",
+          "default_branch": "main",
           "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/development-poc/employee-network",
           "summary": {
             "branch_count": 2,
             "main_branch": {
-              "name": "trunk",
+              "name": "main",
               "last_update": "2024-09-26 13:15:00",
               "updated_by": "Attawat Thaninsiripittayar",
               "commit_message": "Merge branch 'dev-attawat' into 'trunk'"
@@ -35,18 +510,18 @@
           },
           "branches": [
             {
+              "name": "main",
+              "last_update": "2024-09-26 13:15:00",
+              "updated_by": "Attawat Thaninsiripittayar",
+              "commit_message": "Merge branch 'dev-attawat' into 'trunk'",
+              "commit_id": "61dd324990552685ce5808de8ed6ddbd28bc4711"
+            },
+            {
               "name": "pre-alpha",
               "last_update": "2024-10-08 20:13:47",
               "updated_by": "Attawat.T",
               "commit_message": "update website and logic",
               "commit_id": "bb6bcf34835a17c76ae61d9dd648b139a66366bd"
-            },
-            {
-              "name": "trunk",
-              "last_update": "2024-09-26 13:15:00",
-              "updated_by": "Attawat Thaninsiripittayar",
-              "commit_message": "Merge branch 'dev-attawat' into 'trunk'",
-              "commit_id": "61dd324990552685ce5808de8ed6ddbd28bc4711"
             }
           ]
         }
@@ -430,10 +905,10 @@
             },
             {
               "name": "Neptune",
-              "last_update": "2025-03-14 08:53:48",
+              "last_update": "2025-03-18 11:14:34",
               "updated_by": "sittipak",
-              "commit_message": "Prepare for deploy",
-              "commit_id": "cb30ce0d65404a043935e86a0cccc6e4cd5f7afb"
+              "commit_message": "Edit for deployment",
+              "commit_id": "df3516adca17fbd96199b2e11ad68c246356a125"
             },
             {
               "name": "Sui",
@@ -552,7 +1027,7 @@
           "default_branch": "trunk",
           "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/research-repos/rag_knowledge_management",
           "summary": {
-            "branch_count": 3,
+            "branch_count": 4,
             "main_branch": {
               "name": "trunk",
               "last_update": "2025-03-13 03:03:48",
@@ -564,10 +1039,17 @@
           "branches": [
             {
               "name": "dev",
-              "last_update": "2025-03-13 15:39:27",
+              "last_update": "2025-03-20 09:25:53",
               "updated_by": "Jedsada Srijunpoe",
-              "commit_message": "Improve query input handling in main.py to allow immediate exit with 's' or 'stop'",
-              "commit_id": "156ec8839592e6f72a8999a017b21d1bb4c266b7"
+              "commit_message": "Integrate QueryFusionRetriever for enhanced query generation in main.py",
+              "commit_id": "5e134cfc147f701e851cee0bd305d724a202427b"
+            },
+            {
+              "name": "model-subquery",
+              "last_update": "2025-03-21 10:15:19",
+              "updated_by": "sirapopModel",
+              "commit_message": "Added: Added llama_index_agent Jupyter Notebook",
+              "commit_id": "707cfd07bf027409079b3305c8676a4f48d54ac5"
             },
             {
               "name": "sse_query_api",
@@ -798,14 +1280,14 @@
           "default_branch": "trunk",
           "web_url": "https://git.lab.tcctech.app/ds-and-ml-research-sandbox/research-repos/dts-assistant",
           "summary": {
-            "branch_count": 8,
+            "branch_count": 2,
             "main_branch": {
               "name": "trunk",
-              "last_update": "2025-01-14 10:00:18",
+              "last_update": "2025-03-18 02:42:23",
               "updated_by": "Jirakit Boonmunewai",
-              "commit_message": "Initial commit"
+              "commit_message": "Merge branch 'dev' into 'trunk'"
             },
-            "contributor_count": 1
+            "contributor_count": 6
           },
           "branches": [
             {
@@ -816,53 +1298,11 @@
               "commit_id": "8a7eb9aa0e8e231c216b313f3ee9e30f2b1a15f4"
             },
             {
-              "name": "history-inject",
-              "last_update": "2025-01-27 08:54:00",
-              "updated_by": "itthisak.pra",
-              "commit_message": "add: implement chat history insertion and update SQL statements in HistoryInsert class",
-              "commit_id": "dba64411ad92ce5e8bf86b6b78ad26ac38193e13"
-            },
-            {
-              "name": "prototype-code",
-              "last_update": "2025-01-15 11:40:44",
-              "updated_by": "Totrakool Khongsap",
-              "commit_message": "add: original and parsed docs for references",
-              "commit_id": "744e85083524d8e367283bcd18d7fd638a1f2f24"
-            },
-            {
-              "name": "tae/new-parse-instruction",
-              "last_update": "2025-01-28 15:30:20",
-              "updated_by": "Jedsada Srijunpoe",
-              "commit_message": "refactor: remove first page extraction and add continuous mode option",
-              "commit_id": "c6c08bd0870d70c8a34faa703b4564053e185238"
-            },
-            {
-              "name": "thread",
-              "last_update": "2025-01-20 09:38:19",
-              "updated_by": "itthisak.pra",
-              "commit_message": "add: implement GenResponse class for OpenAI interaction",
-              "commit_id": "559ae62d73e40beb034655d222ca3174fe8282f1"
-            },
-            {
-              "name": "topic-analysis",
-              "last_update": "2025-02-03 16:40:15",
-              "updated_by": "itthisak.pra",
-              "commit_message": "feat: implement topic analysis utility for user queries and chat summaries",
-              "commit_id": "d0851fe87938c1015fa07ed713537163cbbe3087"
-            },
-            {
-              "name": "toptap",
-              "last_update": "2025-02-03 15:35:36",
-              "updated_by": "Natdanai Sriapai",
-              "commit_message": "for evaluate response from assistant",
-              "commit_id": "1d1bf5a84e082697ee4e7fe2692915d6c965ab5d"
-            },
-            {
               "name": "trunk",
-              "last_update": "2025-01-14 10:00:18",
+              "last_update": "2025-03-18 02:42:23",
               "updated_by": "Jirakit Boonmunewai",
-              "commit_message": "Initial commit",
-              "commit_id": "866d7b6eb5e0fcbb28aced6886e2648bc9c024fa"
+              "commit_message": "Merge branch 'dev' into 'trunk'",
+              "commit_id": "cf4c05640faa1e5d4b2ba9d1153485e965ed8ada"
             }
           ]
         },

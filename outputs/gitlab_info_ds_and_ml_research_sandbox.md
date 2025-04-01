@@ -1,6 +1,6 @@
 # GitLab Group Information
 
-*Generated on: 2025-03-16 13:24:59*
+*Generated on: 2025-04-01 08:16:37*
 
 ## Parent Group: DS and ML Research Sandbox
 
@@ -11,6 +11,317 @@
 - **Web URL:** [https://git.lab.tcctech.app/groups/ds-and-ml-research-sandbox](https://git.lab.tcctech.app/groups/ds-and-ml-research-sandbox)
 
 ## Subgroups
+
+### AI-ML-Services
+
+- **ID:** 1721
+- **Path:** ds-and-ml-research-sandbox/ai-ml-services
+- **Description:** This subgroup encompasses projects that leverage artificial intelligence, machine learning, and advanced data processing to deliver smart, adaptive features. Projects here typically include components like natural language processing, recommendation models (e.g., collaborative filtering), and speech or image processing. The focus is on transforming raw data into actionable insights, automating decision-making processes, and enhancing user experiences through intelligent systems.
+- **Visibility:** private
+- **Web URL:** [https://git.lab.tcctech.app/groups/ds-and-ml-research-sandbox/ai-ml-services](https://git.lab.tcctech.app/groups/ds-and-ml-research-sandbox/ai-ml-services)
+
+#### Projects in AI-ML-Services
+
+##### cyber-security
+
+- **ID:** 969
+- **Path:** ds-and-ml-research-sandbox/ai-ml-services/cyber-security
+- **Description:** 
+- **Default Branch:** main
+- **Web URL:** [https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/cyber-security](https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/cyber-security)
+
+**Project Summary:**
+
+- **Total Branches:** 1
+- **Latest Update on 'main':** 2025-03-24 03:53:06 by Tassawee Thitipak
+- **Number of Contributors:** 1
+
+**Branches:**
+
+| Branch Name | Last Updated | Updated By | Commit Message |
+|------------|--------------|------------|----------------|
+| main | 2025-03-24 03:53:06 | Tassawee Thitipak | Initial commit |
+
+##### llm-gpu-access-thaibev
+
+- **ID:** 968
+- **Path:** ds-and-ml-research-sandbox/ai-ml-services/llm-thaibev-gpu
+- **Description:**  Focuses on enabling and validating API access to an internally hosted open-source Large Language Model (LLM) running on a GPU server. It includes scripts, configurations, and documentation to test and interact with the LLM via HTTP requests.
+- **Default Branch:** main
+- **Web URL:** [https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/llm-thaibev-gpu](https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/llm-thaibev-gpu)
+
+**Project Summary:**
+
+- **Total Branches:** 2
+- **Latest Update on 'main':** 2025-03-24 03:23:12 by Jirakit Boonmunewai
+- **Number of Contributors:** 1
+
+**Branches:**
+
+| Branch Name | Last Updated | Updated By | Commit Message |
+|------------|--------------|------------|----------------|
+| demo | 2025-03-24 11:27:43 | Jirakit | update notebook for test |
+| main | 2025-03-24 03:23:12 | Jirakit Boonmunewai | Initial commit |
+
+##### shelf-detection
+
+- **ID:** 967
+- **Path:** ds-and-ml-research-sandbox/ai-ml-services/shelf-detection
+- **Description:** 
+- **Default Branch:** main
+- **Web URL:** [https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/shelf-detection](https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/shelf-detection)
+
+**Project Summary:**
+
+- **Total Branches:** 2
+- **Latest Update on 'main':** 2025-03-24 03:15:34 by Tassawee Thitipak
+- **Number of Contributors:** 1
+
+**Branches:**
+
+| Branch Name | Last Updated | Updated By | Commit Message |
+|------------|--------------|------------|----------------|
+| main | 2025-03-24 03:15:34 | Tassawee Thitipak | Initial commit |
+| trunk | 2025-03-24 03:15:34 | Tassawee Thitipak | Initial commit |
+
+##### operational-command-center
+
+- **ID:** 965
+- **Path:** ds-and-ml-research-sandbox/ai-ml-services/command-center
+- **Description:** 
+- **Default Branch:** main
+- **Web URL:** [https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/command-center](https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/command-center)
+
+**Project Summary:**
+
+- **Total Branches:** 1
+- **Latest Update on 'main':** 2025-03-24 02:02:02 by Jirakit Boonmunewai
+- **Number of Contributors:** 1
+
+**Branches:**
+
+| Branch Name | Last Updated | Updated By | Commit Message |
+|------------|--------------|------------|----------------|
+| main | 2025-03-24 02:02:02 | Jirakit Boonmunewai | Initial commit |
+
+##### TBR-Oracle
+
+- **ID:** 964
+- **Path:** ds-and-ml-research-sandbox/ai-ml-services/tbr-oracle
+- **Description:** 
+- **Default Branch:** main
+- **Web URL:** [https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/tbr-oracle](https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/tbr-oracle)
+
+**Project Summary:**
+
+- **Total Branches:** 1
+- **Latest Update on 'main':** 2025-03-24 01:59:13 by Tassawee Thitipak
+- **Number of Contributors:** 1
+
+**Branches:**
+
+| Branch Name | Last Updated | Updated By | Commit Message |
+|------------|--------------|------------|----------------|
+| main | 2025-03-24 01:59:13 | Tassawee Thitipak | Initial commit |
+
+##### one-customer-engine
+
+- **ID:** 961
+- **Path:** ds-and-ml-research-sandbox/ai-ml-services/one-customer
+- **Description:** One-customer is a data processing engine that intelligently groups and unifies customer records based on address similarity, tax ID, and customer codes, creating a single, accurate view of each customer across systems
+- **Default Branch:** main
+- **Web URL:** [https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/one-customer](https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/one-customer)
+
+**Project Summary:**
+
+- **Total Branches:** 1
+- **Latest Update on 'main':** 2025-03-23 05:46:48 by Totrakool Khongsap
+- **Number of Contributors:** 2
+
+**Branches:**
+
+| Branch Name | Last Updated | Updated By | Commit Message |
+|------------|--------------|------------|----------------|
+| main | 2025-03-23 05:46:48 | Totrakool Khongsap | Merge branch '1-code-review-merge-dev-main' into 'main' |
+
+##### flow-RAG
+
+- **ID:** 960
+- **Path:** ds-and-ml-research-sandbox/ai-ml-services/flow-rag
+- **Description:** None
+- **Default Branch:** main
+- **Web URL:** [https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/flow-rag](https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/flow-rag)
+
+**Project Summary:**
+
+- **Total Branches:** 4
+- **Latest Update on 'main':** 2025-03-28 11:46:43 by Totrakool Khongsap
+- **Number of Contributors:** 5
+
+**Branches:**
+
+| Branch Name | Last Updated | Updated By | Commit Message |
+|------------|--------------|------------|----------------|
+| 16-optimize-query-processing-ranking | 2025-03-31 10:24:54 | Jedsada Srijunpoe | Refactor llamaindex_ollama_pipeline.py to improve environment variable handling and update prompt templates for clarity |
+| 18-implement-api-for-query-requests | 2025-03-31 10:26:30 | sirapopModel | Added: README.md for Backend Instruction |
+| dev | 2025-03-27 15:45:43 | Totrakool Khongsap | Merge branch 'chore-remove-unused-code' into 'dev' |
+| main | 2025-03-28 11:46:43 | Totrakool Khongsap | update README and add diagram flow |
+
+##### flow-speech-to-text
+
+- **ID:** 959
+- **Path:** ds-and-ml-research-sandbox/ai-ml-services/flow-speech-to-text
+- **Description:** None
+- **Default Branch:** main
+- **Web URL:** [https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/flow-speech-to-text](https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/flow-speech-to-text)
+
+**Project Summary:**
+
+- **Total Branches:** 1
+- **Latest Update on 'main':** 2025-03-16 12:51:28 by Totrakool Khongsap
+- **Number of Contributors:** 1
+
+**Branches:**
+
+| Branch Name | Last Updated | Updated By | Commit Message |
+|------------|--------------|------------|----------------|
+| main | 2025-03-16 12:51:28 | Totrakool Khongsap | Initial commit |
+
+##### flow-text-to-image
+
+- **ID:** 958
+- **Path:** ds-and-ml-research-sandbox/ai-ml-services/flow-text-to-image
+- **Description:** None
+- **Default Branch:** main
+- **Web URL:** [https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/flow-text-to-image](https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/flow-text-to-image)
+
+**Project Summary:**
+
+- **Total Branches:** 1
+- **Latest Update on 'main':** 2025-03-16 12:50:03 by Totrakool Khongsap
+- **Number of Contributors:** 1
+
+**Branches:**
+
+| Branch Name | Last Updated | Updated By | Commit Message |
+|------------|--------------|------------|----------------|
+| main | 2025-03-16 12:50:03 | Totrakool Khongsap | Initial commit |
+
+##### azure-ocr-pipeline
+
+- **ID:** 954
+- **Path:** ds-and-ml-research-sandbox/ai-ml-services/azure-ocr-pipeline
+- **Description:** None
+- **Default Branch:** main
+- **Web URL:** [https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/azure-ocr-pipeline](https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/azure-ocr-pipeline)
+
+**Project Summary:**
+
+- **Total Branches:** 4
+- **Latest Update on 'main':** 2025-03-29 09:25:10 by Jirakit Boonmunewai
+- **Number of Contributors:** 7
+
+**Branches:**
+
+| Branch Name | Last Updated | Updated By | Commit Message |
+|------------|--------------|------------|----------------|
+| 11-implement-with-openai | 2025-03-29 02:09:45 | Jirakit Boonmunewai | Merge branch 'feature/data-folder' into 'main' |
+| count-missing-fields | 2025-03-28 19:59:07 | itthisak.pra | jupyter notebook for exporting to check accuracy |
+| feat/endpoint | 2025-03-26 17:23:25 | Phuvit Jaruratkit | feat(endpoint): Done |
+| main | 2025-03-29 09:25:10 | Jirakit Boonmunewai | Merge branch 'feature-llama-parse' into 'main' |
+
+##### flow-product-recommendation
+
+- **ID:** 953
+- **Path:** ds-and-ml-research-sandbox/ai-ml-services/recommendation-engine
+- **Description:** 
+- **Default Branch:** main
+- **Web URL:** [https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/recommendation-engine](https://git.lab.tcctech.app/ds-and-ml-research-sandbox/ai-ml-services/recommendation-engine)
+
+**Project Summary:**
+
+- **Total Branches:** 4
+- **Latest Update on 'main':** 2025-03-28 04:51:17 by Phuvit Jaruratkit
+- **Number of Contributors:** 4
+
+**Branches:**
+
+| Branch Name | Last Updated | Updated By | Commit Message |
+|------------|--------------|------------|----------------|
+| 14-prepare-data-for-model | 2025-03-28 04:51:17 | Phuvit Jaruratkit | Merge branch 'dev' into 'main' |
+| 4-develop-mvp-recommendation-model | 2025-03-16 07:45:55 | Totrakool Khongsap | Initial commit |
+| dev | 2025-03-28 11:55:06 | Natdanai Sriapai | Update .gitignore to exclude evaluate.py and test_api.ipynb |
+| main | 2025-03-28 04:51:17 | Phuvit Jaruratkit | Merge branch 'dev' into 'main' |
+
+### Dev-Tools
+
+- **ID:** 1724
+- **Path:** ds-and-ml-research-sandbox/dev-tools
+- **Description:** This subgroup includes projects and tasks that build or integrate tools to streamline development, testing, deployment, and infrastructure management. Projects in this category often involve creating APIs, setting up automated workflows, integrating third-party services (e.g., Canva, Azure OCR), and developing robust logging, monitoring, and deployment strategies. The primary aim is to improve productivity, enforce consistency, and ensure reliability across all technical operations and product d
+- **Visibility:** private
+- **Web URL:** [https://git.lab.tcctech.app/groups/ds-and-ml-research-sandbox/dev-tools](https://git.lab.tcctech.app/groups/ds-and-ml-research-sandbox/dev-tools)
+
+#### Projects in Dev-Tools
+
+##### dev-requirements-management
+
+- **ID:** 957
+- **Path:** ds-and-ml-research-sandbox/dev-tools/dev-requirements-management
+- **Description:** None
+- **Default Branch:** main
+- **Web URL:** [https://git.lab.tcctech.app/ds-and-ml-research-sandbox/dev-tools/dev-requirements-management](https://git.lab.tcctech.app/ds-and-ml-research-sandbox/dev-tools/dev-requirements-management)
+
+**Project Summary:**
+
+- **Total Branches:** 1
+- **Latest Update on 'main':** 2025-03-16 07:55:17 by Totrakool Khongsap
+- **Number of Contributors:** 1
+
+**Branches:**
+
+| Branch Name | Last Updated | Updated By | Commit Message |
+|------------|--------------|------------|----------------|
+| main | 2025-03-16 07:55:17 | Totrakool Khongsap | Initial commit |
+
+##### dev-code-review
+
+- **ID:** 956
+- **Path:** ds-and-ml-research-sandbox/dev-tools/dev-code-review
+- **Description:** None
+- **Default Branch:** main
+- **Web URL:** [https://git.lab.tcctech.app/ds-and-ml-research-sandbox/dev-tools/dev-code-review](https://git.lab.tcctech.app/ds-and-ml-research-sandbox/dev-tools/dev-code-review)
+
+**Project Summary:**
+
+- **Total Branches:** 1
+- **Latest Update on 'main':** 2025-03-17 10:31:10 by Totrakool Khongsap
+- **Number of Contributors:** 2
+
+**Branches:**
+
+| Branch Name | Last Updated | Updated By | Commit Message |
+|------------|--------------|------------|----------------|
+| main | 2025-03-17 10:31:10 | Totrakool Khongsap | ci: update configuration |
+
+##### dev-code-assistant
+
+- **ID:** 955
+- **Path:** ds-and-ml-research-sandbox/dev-tools/dev-coding-assistant
+- **Description:** 
+- **Default Branch:** main
+- **Web URL:** [https://git.lab.tcctech.app/ds-and-ml-research-sandbox/dev-tools/dev-coding-assistant](https://git.lab.tcctech.app/ds-and-ml-research-sandbox/dev-tools/dev-coding-assistant)
+
+**Project Summary:**
+
+- **Total Branches:** 1
+- **Latest Update on 'main':** 2025-03-16 07:54:19 by Totrakool Khongsap
+- **Number of Contributors:** 1
+
+**Branches:**
+
+| Branch Name | Last Updated | Updated By | Commit Message |
+|------------|--------------|------------|----------------|
+| main | 2025-03-16 07:54:19 | Totrakool Khongsap | Initial commit |
 
 ### Development (POC)
 
@@ -27,21 +338,21 @@
 - **ID:** 811
 - **Path:** ds-and-ml-research-sandbox/development-poc/employee-network
 - **Description:** None
-- **Default Branch:** trunk
+- **Default Branch:** main
 - **Web URL:** [https://git.lab.tcctech.app/ds-and-ml-research-sandbox/development-poc/employee-network](https://git.lab.tcctech.app/ds-and-ml-research-sandbox/development-poc/employee-network)
 
 **Project Summary:**
 
 - **Total Branches:** 2
-- **Latest Update on 'trunk':** 2024-09-26 13:15:00 by Attawat Thaninsiripittayar
+- **Latest Update on 'main':** 2024-09-26 13:15:00 by Attawat Thaninsiripittayar
 - **Number of Contributors:** 2
 
 **Branches:**
 
 | Branch Name | Last Updated | Updated By | Commit Message |
 |------------|--------------|------------|----------------|
+| main | 2024-09-26 13:15:00 | Attawat Thaninsiripittayar | Merge branch 'dev-attawat' into 'trunk' |
 | pre-alpha | 2024-10-08 20:13:47 | Attawat.T | update website and logic |
-| trunk | 2024-09-26 13:15:00 | Attawat Thaninsiripittayar | Merge branch 'dev-attawat' into 'trunk' |
 
 ### Internal Services
 
@@ -291,7 +602,7 @@
 | Branch Name | Last Updated | Updated By | Commit Message |
 |------------|--------------|------------|----------------|
 | Cream | 2024-12-26 08:49:31 | Kamonchanok Sinraksa | Merge branch 'trunk' into 'Cream' |
-| Neptune | 2025-03-14 08:53:48 | sittipak | Prepare for deploy |
+| Neptune | 2025-03-18 11:14:34 | sittipak | Edit for deployment |
 | Sui | 2025-01-08 15:32:48 | zolo_capricorn | Edit the variable name. |
 | Talent-Lens | 2024-12-17 15:59:09 | Totrakool Khongsap | initial commit: add backend and frontend for talent-lens app |
 | Talent-Lens-Backend-Ton | 2024-12-26 18:46:57 | TonJK | delete pycache |
@@ -355,7 +666,7 @@
 
 **Project Summary:**
 
-- **Total Branches:** 3
+- **Total Branches:** 4
 - **Latest Update on 'trunk':** 2025-03-13 03:03:48 by Jirakit Boonmunewai
 - **Number of Contributors:** 1
 
@@ -363,7 +674,8 @@
 
 | Branch Name | Last Updated | Updated By | Commit Message |
 |------------|--------------|------------|----------------|
-| dev | 2025-03-13 15:39:27 | Jedsada Srijunpoe | Improve query input handling in main.py to allow immediate exit with 's' or 'stop' |
+| dev | 2025-03-20 09:25:53 | Jedsada Srijunpoe | Integrate QueryFusionRetriever for enhanced query generation in main.py |
+| model-subquery | 2025-03-21 10:15:19 | sirapopModel | Added: Added llama_index_agent Jupyter Notebook |
 | sse_query_api | 2025-03-14 02:05:25 | sirapopModel | Initail Commit of SSE Backend for Rag Query API |
 | trunk | 2025-03-13 03:03:48 | Jirakit Boonmunewai | Initial commit |
 
@@ -487,22 +799,16 @@
 
 **Project Summary:**
 
-- **Total Branches:** 8
-- **Latest Update on 'trunk':** 2025-01-14 10:00:18 by Jirakit Boonmunewai
-- **Number of Contributors:** 1
+- **Total Branches:** 2
+- **Latest Update on 'trunk':** 2025-03-18 02:42:23 by Jirakit Boonmunewai
+- **Number of Contributors:** 6
 
 **Branches:**
 
 | Branch Name | Last Updated | Updated By | Commit Message |
 |------------|--------------|------------|----------------|
 | dev | 2025-02-26 17:01:48 | TonJK | git pull |
-| history-inject | 2025-01-27 08:54:00 | itthisak.pra | add: implement chat history insertion and update SQL statements in HistoryInsert class |
-| prototype-code | 2025-01-15 11:40:44 | Totrakool Khongsap | add: original and parsed docs for references |
-| tae/new-parse-instruction | 2025-01-28 15:30:20 | Jedsada Srijunpoe | refactor: remove first page extraction and add continuous mode option |
-| thread | 2025-01-20 09:38:19 | itthisak.pra | add: implement GenResponse class for OpenAI interaction |
-| topic-analysis | 2025-02-03 16:40:15 | itthisak.pra | feat: implement topic analysis utility for user queries and chat summaries |
-| toptap | 2025-02-03 15:35:36 | Natdanai Sriapai | for evaluate response from assistant |
-| trunk | 2025-01-14 10:00:18 | Jirakit Boonmunewai | Initial commit |
+| trunk | 2025-03-18 02:42:23 | Jirakit Boonmunewai | Merge branch 'dev' into 'trunk' |
 
 ##### TBL Create Loadingplan
 

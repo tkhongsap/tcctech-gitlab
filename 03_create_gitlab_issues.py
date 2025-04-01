@@ -9,6 +9,7 @@ import os
 import sys
 import requests
 import time
+import argparse
 from typing import Dict, List, Any, Optional
 from dotenv import load_dotenv
 
@@ -137,9 +138,9 @@ def parse_issues_from_text(content: str) -> List[Dict[str, Any]]:
     
     The expected format is:
     [Feature/Task] Title
-    •	Description: Description text
-    •	Acceptance: Acceptance criteria
-    •	Labels: label1, label2, label3
+    Description: Description text
+    Acceptance: Acceptance criteria
+    Labels: label1, label2, label3
     
     Args:
         content: Text containing issue descriptions
@@ -153,29 +154,20 @@ def parse_issues_from_text(content: str) -> List[Dict[str, Any]]:
     if content.startswith("High-Level GitLab Issues"):
         content = content.split('\n', 1)[1]
     
-    # Split content by main numbered sections
-    sections = []
-    current_section = ""
+    # Split content by separator lines (underscores)
+    sections = content.split('________________________________________')
     
-    for line in content.split('\n'):
-        if line.strip() and line[0].isdigit() and '. ' in line:
-            if current_section:
-                sections.append(current_section)
-            current_section = line
-        else:
-            current_section += '\n' + line
-    
-    if current_section:
-        sections.append(current_section)
-    
-    # Process each section (category of issues)
+    # Process each section
     for section in sections:
-        lines = section.split('\n')
+        if not section.strip():
+            continue
+            
+        lines = section.strip().split('\n')
         if not lines:
             continue
             
-        # Find the section title/number
-        section_title = lines[0].strip() if lines else ""
+        # Find the first line which should contain issue type and title
+        first_line = lines[0].strip()
         
         # Variables to accumulate issue data
         current_issue_title = ""
@@ -184,101 +176,49 @@ def parse_issues_from_text(content: str) -> List[Dict[str, Any]]:
         current_acceptance = ""
         current_labels = []
         
+        # Parse issue type and title from the first line
+        if "[Feature]" in first_line:
+            current_issue_type = "Feature"
+            current_issue_title = first_line.split("[Feature]")[1].strip()
+        elif "[Task]" in first_line:
+            current_issue_type = "Task"
+            current_issue_title = first_line.split("[Task]")[1].strip()
+        else:
+            # Not a valid issue line, skip this section
+            continue
+        
         # Flags to track what we're parsing
-        parsing_feature = False
         parse_mode = None
         
-        for line in lines[1:]:  # Skip the section header line
+        # Process the remaining lines
+        for line in lines[1:]:
             line = line.strip()
             if not line:
                 continue
                 
-            # Check if this line starts a new issue (begins with [Feature] or [Task] pattern)
-            if ('[Feature]' in line or '[Task]' in line) and '•' not in line:
-                # If we were parsing an issue before, save it
-                if current_issue_title:
-                    # Format the description for GitLab
-                    formatted_description = "## Description\n"
-                    if current_description.strip():
-                        formatted_description += current_description
-                    else:
-                        formatted_description += "- No description provided.\n"
-                    
-                    formatted_description += "\n## Acceptance Criteria\n"
-                    if current_acceptance.strip():
-                        formatted_description += current_acceptance
-                    else:
-                        formatted_description += "- No acceptance criteria provided.\n"
-                    
-                    # Create issue dict
-                    issue = {
-                        'title': current_issue_title,
-                        'description': formatted_description,
-                        'labels': current_labels,
-                        'type': current_issue_type,
-                        'raw_description': current_description,
-                        'raw_acceptance': current_acceptance
-                    }
-                    
-                    issues.append(issue)
-                
-                # Start a new issue
-                if '[Feature]' in line:
-                    current_issue_type = 'Feature'
-                    current_issue_title = line.split('[Feature]')[1].strip()
-                elif '[Task]' in line:
-                    current_issue_type = 'Task'
-                    current_issue_title = line.split('[Task]')[1].strip()
-                else:
-                    current_issue_type = ""
-                    current_issue_title = line.strip()
-                
-                # Reset other fields
-                current_description = ""
-                current_acceptance = ""
-                current_labels = []
-                parsing_feature = True
-                parse_mode = None
-            
-            # Check for description, acceptance, or labels markers
-            elif parsing_feature and line.startswith('•'):
-                line = line[1:].strip()  # Remove the bullet point
-                
-                if "Description:" in line:
-                    parse_mode = "description"
-                    # Get any text after "Description:" as the first line
-                    desc_text = line.split("Description:", 1)[1].strip()
-                    if desc_text:
-                        current_description += f"- {desc_text}\n"
-                
-                elif "Acceptance Criteria:" in line or "Acceptance:" in line:
-                    parse_mode = "acceptance"
-                    # Get any text after "Acceptance:" as the first line
-                    if "Acceptance Criteria:" in line:
-                        accept_text = line.split("Acceptance Criteria:", 1)[1].strip()
-                    else:
-                        accept_text = line.split("Acceptance:", 1)[1].strip()
-                    if accept_text:
-                        current_acceptance += f"- {accept_text}\n"
-                
-                elif "Labels:" in line:
-                    parse_mode = None  # No multi-line parsing for labels
-                    labels_text = line.split("Labels:", 1)[1].strip()
-                    current_labels = [label.strip() for label in labels_text.split(',')]
-                    # Add issue type as a label if it exists
-                    if current_issue_type:
-                        current_labels.append(current_issue_type.lower())
-            
-            # Handle continuation lines for description or acceptance criteria
-            elif parsing_feature and parse_mode and (line.startswith('-') or line.startswith('\t') or line.startswith('  ')):
-                line = line.lstrip('\t -').strip()
-                if line:
-                    if parse_mode == "description":
-                        current_description += f"- {line}\n"
-                    elif parse_mode == "acceptance":
-                        current_acceptance += f"- {line}\n"
-                        
-        # Don't forget to add the last issue in the section
+            # Check for section markers
+            if line == "Description:":
+                parse_mode = "description"
+            elif line in ["Acceptance Criteria:", "Acceptance:"]:
+                parse_mode = "acceptance"
+            elif line.startswith("Labels:"):
+                parse_mode = None  # No multi-line parsing for labels
+                labels_text = line.split("Labels:", 1)[1].strip()
+                current_labels = [label.strip() for label in labels_text.split(',')]
+                # Add issue type as a label if it exists
+                if current_issue_type:
+                    current_labels.append(current_issue_type.lower())
+            # Handle content lines
+            elif parse_mode == "description":
+                if line.startswith('•'):
+                    line = line[1:].strip()
+                current_description += f"- {line}\n"
+            elif parse_mode == "acceptance":
+                if line.startswith('•'):
+                    line = line[1:].strip()
+                current_acceptance += f"- {line}\n"
+        
+        # If we found a valid issue, add it to the list
         if current_issue_title:
             # Format the description for GitLab
             formatted_description = "## Description\n"
@@ -374,6 +314,13 @@ def display_full_issue(issue: Dict[str, Any]) -> None:
 
 def main() -> None:
     """Main function to run the script."""
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description="GitLab Issue Creator - Creates issues in GitLab from text files")
+    parser.add_argument("project", nargs="?", help="GitLab project name")
+    parser.add_argument("issues_file", nargs="?", help="Path to the issues file")
+    parser.add_argument("--list", action="store_true", help="List available issue files")
+    args = parser.parse_args()
+    
     # Load environment variables from .env file
     load_dotenv()
     
@@ -383,15 +330,49 @@ def main() -> None:
     print("GitLab Issue Creator")
     print("=" * 50)
     
-    # Get project name from command line or use default
-    project_name = "flow-speech-to-text"
-    if len(sys.argv) > 1:
-        project_name = sys.argv[1]
+    # If --list flag is used, just show available issue files and exit
+    if args.list:
+        print("\nAvailable issue files:")
+        try:
+            issues_dir_files = os.listdir("issues")
+            for i, file in enumerate(issues_dir_files, 1):
+                print(f" {i}. {file}")
+        except Exception as e:
+            print(f"Error listing issues directory: {e}")
+        sys.exit(0)
     
-    # Get issues file from command line or use default
-    issues_file = "issues-flow-speech-to-text.txt"
-    if len(sys.argv) > 2:
-        issues_file = sys.argv[2]
+    # Prompt for project name or get from command line
+    if args.project:
+        project_name = args.project
+    else:
+        project_name = input("Enter project name: ")
+    
+    # Prompt for issues file or get from command line
+    if args.issues_file:
+        issues_file = args.issues_file
+    else:
+        # Show available issue files
+        print("\nAvailable issue files:")
+        try:
+            issues_dir_files = os.listdir("issues")
+            for i, file in enumerate(issues_dir_files, 1):
+                print(f" {i}. {file}")
+            print()
+            
+            file_choice = input("Enter issue file name or number from the list: ")
+            
+            # If user entered a number, get the corresponding file
+            if file_choice.isdigit() and 1 <= int(file_choice) <= len(issues_dir_files):
+                issues_file = os.path.join("issues", issues_dir_files[int(file_choice) - 1])
+            else:
+                # If user entered a filename, ensure it's in the issues directory
+                if not file_choice.startswith("issues/"):
+                    issues_file = os.path.join("issues", file_choice)
+                else:
+                    issues_file = file_choice
+        except Exception as e:
+            print(f"Error listing issues directory: {e}")
+            issues_file = input("Enter issues file path: ")
     
     # Get project ID
     project_id = get_project_id(project_name)
@@ -405,6 +386,14 @@ def main() -> None:
     # Parse issues from file
     if not os.path.exists(issues_file):
         print(f"Error: Issues file '{issues_file}' not found.")
+        print(f"Current directory: {os.getcwd()}")
+        print("Available files in issues directory:")
+        try:
+            issues_dir_files = os.listdir("issues")
+            for file in issues_dir_files:
+                print(f" - {file}")
+        except Exception as e:
+            print(f"Error listing issues directory: {e}")
         sys.exit(1)
     
     issues = parse_issues_from_file(issues_file)

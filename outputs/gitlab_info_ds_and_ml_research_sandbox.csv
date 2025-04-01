@@ -1,6 +1,31 @@
 Group,Subgroup,Project/Repository,Branch,Updated By,Last Updated,Commit Message
+DS and ML Research Sandbox,AI-ML-Services,cyber-security,main,Tassawee Thitipak,2025-03-24 03:53:06,Initial commit
+DS and ML Research Sandbox,AI-ML-Services,llm-gpu-access-thaibev,demo,Jirakit,2025-03-24 11:27:43,update notebook for test
+DS and ML Research Sandbox,AI-ML-Services,llm-gpu-access-thaibev,main,Jirakit Boonmunewai,2025-03-24 03:23:12,Initial commit
+DS and ML Research Sandbox,AI-ML-Services,shelf-detection,main,Tassawee Thitipak,2025-03-24 03:15:34,Initial commit
+DS and ML Research Sandbox,AI-ML-Services,shelf-detection,trunk,Tassawee Thitipak,2025-03-24 03:15:34,Initial commit
+DS and ML Research Sandbox,AI-ML-Services,operational-command-center,main,Jirakit Boonmunewai,2025-03-24 02:02:02,Initial commit
+DS and ML Research Sandbox,AI-ML-Services,TBR-Oracle,main,Tassawee Thitipak,2025-03-24 01:59:13,Initial commit
+DS and ML Research Sandbox,AI-ML-Services,one-customer-engine,main,Totrakool Khongsap,2025-03-23 05:46:48,Merge branch '1-code-review-merge-dev-main' into 'main'
+DS and ML Research Sandbox,AI-ML-Services,flow-RAG,16-optimize-query-processing-ranking,Jedsada Srijunpoe,2025-03-31 10:24:54,Refactor llamaindex_ollama_pipeline.py to improve environment variable handling and update prompt templates for clarity
+DS and ML Research Sandbox,AI-ML-Services,flow-RAG,18-implement-api-for-query-requests,sirapopModel,2025-03-31 10:26:30,Added: README.md for Backend Instruction
+DS and ML Research Sandbox,AI-ML-Services,flow-RAG,dev,Totrakool Khongsap,2025-03-27 15:45:43,Merge branch 'chore-remove-unused-code' into 'dev'
+DS and ML Research Sandbox,AI-ML-Services,flow-RAG,main,Totrakool Khongsap,2025-03-28 11:46:43,update README and add diagram flow
+DS and ML Research Sandbox,AI-ML-Services,flow-speech-to-text,main,Totrakool Khongsap,2025-03-16 12:51:28,Initial commit
+DS and ML Research Sandbox,AI-ML-Services,flow-text-to-image,main,Totrakool Khongsap,2025-03-16 12:50:03,Initial commit
+DS and ML Research Sandbox,AI-ML-Services,azure-ocr-pipeline,11-implement-with-openai,Jirakit Boonmunewai,2025-03-29 02:09:45,Merge branch 'feature/data-folder' into 'main'
+DS and ML Research Sandbox,AI-ML-Services,azure-ocr-pipeline,count-missing-fields,itthisak.pra,2025-03-28 19:59:07,jupyter notebook for exporting to check accuracy
+DS and ML Research Sandbox,AI-ML-Services,azure-ocr-pipeline,feat/endpoint,Phuvit Jaruratkit,2025-03-26 17:23:25,feat(endpoint): Done
+DS and ML Research Sandbox,AI-ML-Services,azure-ocr-pipeline,main,Jirakit Boonmunewai,2025-03-29 09:25:10,Merge branch 'feature-llama-parse' into 'main'
+DS and ML Research Sandbox,AI-ML-Services,flow-product-recommendation,14-prepare-data-for-model,Phuvit Jaruratkit,2025-03-28 04:51:17,Merge branch 'dev' into 'main'
+DS and ML Research Sandbox,AI-ML-Services,flow-product-recommendation,4-develop-mvp-recommendation-model,Totrakool Khongsap,2025-03-16 07:45:55,Initial commit
+DS and ML Research Sandbox,AI-ML-Services,flow-product-recommendation,dev,Natdanai Sriapai,2025-03-28 11:55:06,Update .gitignore to exclude evaluate.py and test_api.ipynb
+DS and ML Research Sandbox,AI-ML-Services,flow-product-recommendation,main,Phuvit Jaruratkit,2025-03-28 04:51:17,Merge branch 'dev' into 'main'
+DS and ML Research Sandbox,Dev-Tools,dev-requirements-management,main,Totrakool Khongsap,2025-03-16 07:55:17,Initial commit
+DS and ML Research Sandbox,Dev-Tools,dev-code-review,main,Totrakool Khongsap,2025-03-17 10:31:10,ci: update configuration
+DS and ML Research Sandbox,Dev-Tools,dev-code-assistant,main,Totrakool Khongsap,2025-03-16 07:54:19,Initial commit
+DS and ML Research Sandbox,Development (POC),Employee Network,main,Attawat Thaninsiripittayar,2024-09-26 13:15:00,Merge branch 'dev-attawat' into 'trunk'
 DS and ML Research Sandbox,Development (POC),Employee Network,pre-alpha,Attawat.T,2024-10-08 20:13:47,update website and logic
-DS and ML Research Sandbox,Development (POC),Employee Network,trunk,Attawat Thaninsiripittayar,2024-09-26 13:15:00,Merge branch 'dev-attawat' into 'trunk'
 DS and ML Research Sandbox,Internal Services,airflow-pipeline,audio_transcription,sirapopModel,2024-12-16 16:37:49,Fix:DateTIme
 DS and ML Research Sandbox,Internal Services,airflow-pipeline,entity_extraction,JedsadaSrijunpoe,2024-12-11 15:22:38,Update SSHHook command timeout parameter in SSH operator example DAG
 DS and ML Research Sandbox,Internal Services,airflow-pipeline,trunk,Sirapop Huangwilai,2024-12-16 08:48:58,Merge branch 'audio_transcription' into 'trunk'
@@ -21,7 +46,7 @@ DS and ML Research Sandbox,Packages,tcc-resume-parser,dspy_version,Crparichaya,2
 DS and ML Research Sandbox,Packages,tcc-resume-parser,keras,Crparichaya,2024-11-08 10:07:44,add keras
 DS and ML Research Sandbox,Packages,tcc-resume-parser,trunk,Attawat Thaninsiripittayar,2024-10-18 07:54:34,Merge branch 'dev2' into 'trunk'
 DS and ML Research Sandbox,Packages,tcc-domain-knowledge-graph,Cream,Kamonchanok Sinraksa,2024-12-26 08:49:31,Merge branch 'trunk' into 'Cream'
-DS and ML Research Sandbox,Packages,tcc-domain-knowledge-graph,Neptune,sittipak,2025-03-14 08:53:48,Prepare for deploy
+DS and ML Research Sandbox,Packages,tcc-domain-knowledge-graph,Neptune,sittipak,2025-03-18 11:14:34,Edit for deployment
 DS and ML Research Sandbox,Packages,tcc-domain-knowledge-graph,Sui,zolo_capricorn,2025-01-08 15:32:48,Edit the variable name.
 DS and ML Research Sandbox,Packages,tcc-domain-knowledge-graph,Talent-Lens,Totrakool Khongsap,2024-12-17 15:59:09,initial commit: add backend and frontend for talent-lens app
 DS and ML Research Sandbox,Packages,tcc-domain-knowledge-graph,Talent-Lens-Backend-Ton,TonJK,2024-12-26 18:46:57,delete pycache
@@ -31,7 +56,8 @@ DS and ML Research Sandbox,Packages,tcc-domain-knowledge-graph,new_branch_ton,To
 DS and ML Research Sandbox,Packages,tcc-domain-knowledge-graph,test_cicd,Tharathip Kulchotirat,2024-09-06 02:28:41,Initial commit
 DS and ML Research Sandbox,Packages,tcc-domain-knowledge-graph,trunk,Pawarit Akepitaktam,2024-12-26 11:48:03,Merge branch 'Sui-Ton' into 'trunk'
 DS and ML Research Sandbox,Research Repos,AZURE-OCR,dev,Phuvit Jaruratkit,2025-03-14 06:31:35,Merge branch 'ocr-dev' into 'dev'
-DS and ML Research Sandbox,Research Repos,rag_knowledge_management,dev,Jedsada Srijunpoe,2025-03-13 15:39:27,Improve query input handling in main.py to allow immediate exit with 's' or 'stop'
+DS and ML Research Sandbox,Research Repos,rag_knowledge_management,dev,Jedsada Srijunpoe,2025-03-20 09:25:53,Integrate QueryFusionRetriever for enhanced query generation in main.py
+DS and ML Research Sandbox,Research Repos,rag_knowledge_management,model-subquery,sirapopModel,2025-03-21 10:15:19,Added: Added llama_index_agent Jupyter Notebook
 DS and ML Research Sandbox,Research Repos,rag_knowledge_management,sse_query_api,sirapopModel,2025-03-14 02:05:25,Initail Commit of SSE Backend for Rag Query API
 DS and ML Research Sandbox,Research Repos,rag_knowledge_management,trunk,Jirakit Boonmunewai,2025-03-13 03:03:48,Initial commit
 DS and ML Research Sandbox,Research Repos,mockup-command-center,master,TonJK,2025-03-07 11:51:46,edit call to action page and more info step method
@@ -50,13 +76,7 @@ DS and ML Research Sandbox,Research Repos,BRD-Agentic,trunk,Henry Millard,2025-0
 DS and ML Research Sandbox,Research Repos,Gitlab Action Code Review,dev,Natdanai Sriapai,2025-02-04 14:47:12,Remove unnecessary 'git fetch --unshallow' command from CI/CD pipeline
 DS and ML Research Sandbox,Research Repos,Gitlab Action Code Review,trunk,Totrakool Khongsap,2025-02-27 08:07:48,fix: improve code review and update README
 DS and ML Research Sandbox,Research Repos,DTS Assistant ,dev,TonJK,2025-02-26 17:01:48,git pull
-DS and ML Research Sandbox,Research Repos,DTS Assistant ,history-inject,itthisak.pra,2025-01-27 08:54:00,add: implement chat history insertion and update SQL statements in HistoryInsert class
-DS and ML Research Sandbox,Research Repos,DTS Assistant ,prototype-code,Totrakool Khongsap,2025-01-15 11:40:44,add: original and parsed docs for references
-DS and ML Research Sandbox,Research Repos,DTS Assistant ,tae/new-parse-instruction,Jedsada Srijunpoe,2025-01-28 15:30:20,refactor: remove first page extraction and add continuous mode option
-DS and ML Research Sandbox,Research Repos,DTS Assistant ,thread,itthisak.pra,2025-01-20 09:38:19,add: implement GenResponse class for OpenAI interaction
-DS and ML Research Sandbox,Research Repos,DTS Assistant ,topic-analysis,itthisak.pra,2025-02-03 16:40:15,feat: implement topic analysis utility for user queries and chat summaries
-DS and ML Research Sandbox,Research Repos,DTS Assistant ,toptap,Natdanai Sriapai,2025-02-03 15:35:36,for evaluate response from assistant
-DS and ML Research Sandbox,Research Repos,DTS Assistant ,trunk,Jirakit Boonmunewai,2025-01-14 10:00:18,Initial commit
+DS and ML Research Sandbox,Research Repos,DTS Assistant ,trunk,Jirakit Boonmunewai,2025-03-18 02:42:23,Merge branch 'dev' into 'trunk'
 DS and ML Research Sandbox,Research Repos,TBL Create Loadingplan,toptap,Natdanai Sriapai,2025-01-07 10:13:46,update description check_solution.py script
 DS and ML Research Sandbox,Research Repos,TBL Create Loadingplan,trunk,Jirakit Boonmunewai,2025-01-07 06:51:56,Merge branch 'toptap' into 'trunk'
 DS and ML Research Sandbox,Research Repos,employee-network,trunk,Tharathip Kulchotirat,2024-08-21 06:04:25,Initial commit

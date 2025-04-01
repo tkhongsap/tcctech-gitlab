@@ -1,0 +1,61 @@
+1. [Task] Prepare & Access Required Data
+Description:
+Coordinate with relevant teams to obtain access to the necessary datasets, including:
+•	Purchase transaction history
+•	Product catalog with pricing details
+•	Current promotion calendar or rules
+•	Customer order history (up to the last 30 transactions)
+Prepare and clean these datasets for model training and testing.
+Acceptance Criteria:
+•	All required datasets are available, cleaned, and formatted.
+•	Sample data payloads are provided to the modeling team.
+•	The data access mechanism (API or direct database access) is documented and agreed upon.
+Labels: data-access, backend, high-priority
+________________________________________
+2. [Task] Confirm Recommendation Trigger Points and Business Logic
+Description:
+Work with business stakeholders and development teams to define:
+•	When the recommendation engine should be triggered (e.g., during product selection, cart updates, or pre-checkout).
+•	Whether upsell logic should strictly follow the promotion grid or allow for freestyle, behavior-based suggestions.
+•	The UI placement for triggering and displaying recommendations (e.g., within the back-office order form).
+Acceptance Criteria:
+•	Trigger points and integration hooks are clearly defined and approved.
+•	The business logic (promotion-based vs. behavior-based) is documented.
+•	UI/UX requirements are confirmed for integration.
+Labels: planning, logic, uiux
+________________________________________
+3. [Feature] Build Cross-Sell & Upsell Recommendation Model
+Description:
+Develop the core recommendation engine that supports both:
+•	Cross-sell: Suggesting complementary products not in the cart.
+•	Upsell: Recommending increased quantities or upgraded products.
+The model should incorporate both promotion-based logic (e.g., “Buy 7 get 2 free”) and behavior-based logic using historical transaction data.
+Acceptance Criteria:
+•	The model returns relevant suggestions for both cross-sell and upsell scenarios.
+•	It correctly handles cases with and without active promotions.
+•	Test cases using sample data produce accurate and expected recommendations.
+Labels: recommendation, ml, backend
+________________________________________
+4. [Feature] Integrate Recommendation Engine into Admin Order Flow
+Description:
+Integrate the recommendation engine into the back-office order entry interface, ensuring that:
+•	Recommendations are triggered in real time based on items selected.
+•	Both new order entry (empty cart) and order review (existing cart) scenarios are supported.
+•	Agents can view and act on the suggested recommendations within the admin UI.
+Acceptance Criteria:
+•	The recommendation engine is successfully integrated into the admin UI.
+•	Recommendations are displayed in real time during order creation.
+•	End-to-end tests with mock data confirm correct functionality.
+Labels: integration, frontend, backend, order-flow
+________________________________________
+5. [Task] Validate Model Behavior with Business Users
+Description:
+Collaborate with business stakeholders to test and validate the recommendation outputs across various scenarios, ensuring that:
+•	Sample recommendations align with the expected business strategies.
+•	Rules for edge cases (e.g., over-promotion, lack of inventory) are defined and refined.
+•	The model’s performance and output quality are reviewed and approved.
+Acceptance Criteria:
+•	Business users have reviewed and signed off on the recommendation logic.
+•	Feedback is incorporated and adjustments are made as necessary.
+•	The model meets the established performance criteria and aligns with the sales strategy.
+Labels: validation, testing, business-review
