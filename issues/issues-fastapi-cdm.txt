@@ -1,0 +1,45 @@
+________________________________________
+1. [Task] Design High-Level Architecture
+Description:
+Design the architecture of the AI-powered claim assessment system.
+Acceptance Criteria:
+•	Architecture diagram created and approved by the team
+•	Documentation includes data flow, tech stack, and integration points
+Labels: architecture, ai
+________________________________________
+2. [Task] Engineer AI Prompts for Claim Assessment
+Description:
+Create and refine AI prompts to assess product damage, determine eligibility, and extract key data.
+Acceptance Criteria:
+•	Prompts designed to detect damage types and severity
+•	Business rules integrated into prompt logic
+•	Prompts extract structured data (e.g., product ID, quantity)
+Labels: ai, prompt-engineering
+________________________________________
+3. [Task] Build Claim Data API and Output Schema
+Description:
+Extend the FastAPI backend to receive detailed claim inputs and return AI assessments in structured JSON.
+Acceptance Criteria:
+•	API accepts new claim fields and media files
+•	External product data is retrieved via integration
+•	AI output is returned in predefined JSON format
+Labels: backend, api
+________________________________________
+4. [Task] Test AI Accuracy and System Integration
+Description:
+Develop a test framework and validate the system using real-world claim scenarios.
+Acceptance Criteria:
+•	Test dataset prepared for diverse damage types and outcomes
+•	AI model tested for accuracy, precision, recall, and bias
+•	End-to-end scenarios validated from input to decision
+Labels: testing, validation
+________________________________________
+5. [Task] Deploy System and Enable Monitoring
+Description:
+Prepare infrastructure, implement CI/CD, and set up observability tools for the deployed system.
+Acceptance Criteria:
+•	Deployment environment is configured and automated via pipeline
+•	Monitoring dashboards and alerting are in place for system and AI health
+Labels: deployment, monitoring
+________________________________________
+
