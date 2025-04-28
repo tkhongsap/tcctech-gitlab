@@ -1,0 +1,41 @@
+1. OCR Data Quality Check
+
+[Feature] Implement OCV-1 Mandatory-Field & Confidence Validation
+• Description: After OCR extraction, verify Receipt Number, Date & Time, Total Amount, and Tax ID are present and each confidence score ≥ configurable threshold. Flag low-confidence or missing data for Dispute or auto-Decline.
+• Acceptance: The payload with all mandatory fields at ≥ threshold returns Valid. Payload missing a field or below threshold returns Declined with message "Could not read required information from this receipt." and audit log of confidence scores.
+• Labels: validation
+________________________________________
+2. Receipt Validity Checks
+
+[Feature] Implement RV-1 – RV-5 Rule Chain
+• Description: Build sequential checks to confirm (1) store in CMS whitelist, (2) location is One Bangkok, (3) receipt within 24 h window, (4) no duplicate redemption, (5) document type is accepted. Short-circuit on first failure.
+• Acceptance: Five unit-test payloads, each violating one rule, are rejected with the correct error message. Happy-path payload passes all rules and proceeds to Spending & Eligibility Checks.
+• Labels: validation
+________________________________________
+3. Spending & Eligibility Checks
+
+[Feature] Implement SE-1 Qualifying-Amount Calculator & SE-2 Threshold Validation
+• Description: Parse total, taxes, service charges, vouchers from OCR payload; compute qualifying amount per CMS campaign logic. Compare against minimum spend threshold (single or multi-receipt submission).
+• Acceptance: Calculator returns expected qualifying amount on three sample receipts (±0.01 tolerance). Receipt below threshold triggers "Spending amount does not meet minimum requirement."; above threshold passes.
+• Labels: validation
+________________________________________
+4. User Context Check
+
+[Feature] Implement UC-1 Active Parking Session Verification
+• Description: Query Parking-System API to confirm the user has an active parking session associated with their account before applying redemption.
+• Acceptance: Mock user with active session passes validation. Mock user without session returns "No active parking session found for this user." and halts redemption flow.
+• Labels: validation
+________________________________________
+5. Fraud & AI Prevention Check
+
+[Feature] Implement FF-1 Image Fraud Detection
+• Description: Integrate vendor or custom AI service to flag AI-generated or manipulated images prior to OCR. Fail fast on positive detection.
+• Acceptance: Known fake test image returns "Suspected fraudulent image submitted…" and logs incident. Genuine image proceeds to OCR pipeline without interference.
+• Labels: ai-detection, validation
+________________________________________
+6. Error Handling & Status Management
+
+[Task] Implement Unified Status & Logging Layer
+• Description: For every receipt, track status Pending → Success / Declined / Dispute. On rule failure, stop processing, record rule ID, error message, and handling action to logs/DB. Expose status via API for mobile app display.
+• Acceptance: End-to-end test shows correct status transitions for success, rule failure, and dispute scenarios. Logs contain rule ID, user ID, status, and message; searchable in monitoring stack.
+• Labels: backend
