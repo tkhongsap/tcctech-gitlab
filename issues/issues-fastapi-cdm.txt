@@ -1,45 +1,46 @@
 ________________________________________
-1. [Task] Design High-Level Architecture
+1.	[Task] Set Up FastAPI Bottle-Detection Service
 Description:
-Design the architecture of the AI-powered claim assessment system.
+Create the initial FastAPI micro-service that loads bottle-detection / classification models and exposes a health endpoint.
 Acceptance Criteria:
-•	Architecture diagram created and approved by the team
-•	Documentation includes data flow, tech stack, and integration points
-Labels: architecture, ai
+• /healthz returns {"status":"ok"} (HTTP 200)
+• Model weights load once on startup (≤ 3 s) and are cached per request lifecycle
+• Docker image builds and starts with docker compose up
+Labels: backend, api, models
 ________________________________________
-2. [Task] Engineer AI Prompts for Claim Assessment
+2.	[Task] Add Production-Date Endpoint (≤ 120 Days Check)
 Description:
-Create and refine AI prompts to assess product damage, determine eligibility, and extract key data.
+Implement /api/v1/mfg-date that extracts the bottle’s manufacturing date via OCR and decides eligibility (≤ 120 days from today).
 Acceptance Criteria:
-•	Prompts designed to detect damage types and severity
-•	Business rules integrated into prompt logic
-•	Prompts extract structured data (e.g., product ID, quantity)
-Labels: ai, prompt-engineering
+• Endpoint accepts one image / video (multipart/form-data)
+• Response JSON contains mfg_date, eligible, confidence
+• Unit tests cover valid, expired, and unreadable dates (≥ 90 % accuracy on sample set)
+Labels: backend, api, ocr
 ________________________________________
-3. [Task] Build Claim Data API and Output Schema
+3.	[Task] Add Claimability Endpoint for Images / Video
 Description:
-Extend the FastAPI backend to receive detailed claim inputs and return AI assessments in structured JSON.
+Expose /api/v1/claimability that takes up to 10 images or one video, runs the v3 prompt, and returns structured claim results.
 Acceptance Criteria:
-•	API accepts new claim fields and media files
-•	External product data is retrieved via integration
-•	AI output is returned in predefined JSON format
-Labels: backend, api
+• Endpoint enforces brand gate (Chang / ช้าง) and per-part ≥ 80 % rule
+• Returns english and thai fields plus part-by-part integrity in JSON
+• Integration test passes for known claimable and unclaimable samples (latency < 15 s)
+Labels: backend, api, ai
 ________________________________________
-4. [Task] Test AI Accuracy and System Integration
+4.	[Task] Refactor Codebase into Modular Service Layers
 Description:
-Develop a test framework and validate the system using real-world claim scenarios.
+Restructure backend project into api/, services/, schemas/, core/, and add Pydantic-settings config, logging, and tests.
 Acceptance Criteria:
-•	Test dataset prepared for diverse damage types and outcomes
-•	AI model tested for accuracy, precision, recall, and bias
-•	End-to-end scenarios validated from input to decision
-Labels: testing, validation
+• No circular imports; mypy and ruff pass
+• All existing endpoints continue to function after refactor
+• README updated with new structure and dev setup steps
+Labels: refactor, tech-debt
 ________________________________________
-5. [Task] Deploy System and Enable Monitoring
+5.	[Task] Redesign Front-End in React + Tailwind
 Description:
-Prepare infrastructure, implement CI/CD, and set up observability tools for the deployed system.
+Replace current static HTML with a responsive React (Vite + TS) UI using Tailwind and shadcn/ui for components.
 Acceptance Criteria:
-•	Deployment environment is configured and automated via pipeline
-•	Monitoring dashboards and alerting are in place for system and AI health
-Labels: deployment, monitoring
+• Pages: Upload, Results, (optional) History Drawer implemented
+• Axios hooks connect to new FastAPI endpoints; loading states animated with Framer Motion
+• Lighthouse scores ≥ 90 Performance and ≥ 95 Accessibility on mobile & desktop
+Labels: frontend, ui, react
 ________________________________________
-
