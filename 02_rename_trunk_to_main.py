@@ -157,7 +157,9 @@ def main():
     print("GitLab Branch Rename Tool: 'trunk' → 'main'")
     print("=" * 50)
     
-    group_name = "AI-ML-Services"
+    # group_name = "AI-ML-Services"
+    group_name = "Research Repos"
+
     
     if process_group(group_name):
         print("\nOperation completed successfully!")
