@@ -162,8 +162,8 @@ def main():
     print(f"GitLab Branch Rename Tool: '{OLD_BRANCH}' → '{NEW_BRANCH}'")
     print("=" * 50)
     
-    # group_name = "AI-ML-Services"
-    group_name = "Research Repos"
+    group_name = "AI-ML-Services"
+    # group_name = "Research Repos"
 
     
     if process_group(group_name):
