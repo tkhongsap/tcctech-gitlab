@@ -26,9 +26,9 @@ def debug_parse_issues_from_file(file_path: str, verbose: bool = True) -> None:
     print("=" * 80)
     
     try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            content = f.read()
-            
+    with open(file_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    
         print(f"File content length: {len(content)} characters")
         print(f"First 100 characters: {content[:100]}...")
         
@@ -39,15 +39,15 @@ def debug_parse_issues_from_file(file_path: str, verbose: bool = True) -> None:
             print("-" * 80)
         
         # Split content by separator lines to see sections
-        sections = content.split('________________________________________')
+    sections = content.split('________________________________________')
         print(f"\nFound {len(sections)} sections separated by underscores")
-        
+    
         for i, section in enumerate(sections, 1):
-            if not section.strip():
+        if not section.strip():
                 print(f"  Section {i}: [Empty section]")
-                continue
-                
-            lines = section.strip().split('\n')
+            continue
+            
+        lines = section.strip().split('\n')
             print(f"  Section {i}: {len(lines)} lines, starts with: {lines[0][:50]}...")
         
         # Try parsing the content

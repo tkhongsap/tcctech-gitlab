@@ -162,8 +162,13 @@ def main():
     print(f"GitLab Branch Rename Tool: '{OLD_BRANCH}' → '{NEW_BRANCH}'")
     print("=" * 50)
     
-    group_name = "AI-ML-Services"
-    # group_name = "Research Repos"
+    group_names = ["AI-ML-Services", "Research Repos"]
+    
+    for group_name in group_names:
+        if process_group(group_name):
+            print(f"\nSuccessfully processed group: {group_name}")
+        else:
+            print(f"\nFailed to process group: {group_name}")
 
     
     if process_group(group_name):
