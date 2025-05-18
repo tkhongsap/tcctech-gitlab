@@ -6,6 +6,10 @@ import requests
 from dotenv import load_dotenv
 import time
 
+OLD_BRANCH = "trunk"
+NEW_BRANCH = "main"
+REQUEST_DELAY = 0.3  # seconds between API calls to avoid rate limits
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -22,11 +26,12 @@ if not gitlab_url or not gitlab_token:
 # API endpoints
 base_api_url = f"{gitlab_url.rstrip('/')}/api/v4"
 
-# Headers for API requests
-headers = {
+# Reusable session for API requests
+session = requests.Session()
+session.headers.update({
     'Private-Token': gitlab_token,
     'Content-Type': 'application/json'
-}
+})
 
 def get_subgroup_id(subgroup_name):
     """Get subgroup ID by name"""
@@ -34,7 +39,7 @@ def get_subgroup_id(subgroup_name):
         # Search for the subgroup by name
         search_url = f"{base_api_url}/groups"
         params = {'search': subgroup_name}
-        response = requests.get(search_url, headers=headers, params=params)
+        response = session.get(search_url, params=params)
         response.raise_for_status()
         
         groups = response.json()
@@ -58,7 +63,7 @@ def get_projects_for_subgroup(subgroup_id):
         while True:
             url = f"{base_api_url}/groups/{subgroup_id}/projects"
             params = {'page': page, 'per_page': per_page, 'include_subgroups': True}
-            response = requests.get(url, headers=headers, params=params)
+            response = session.get(url, params=params)
             response.raise_for_status()
             
             batch = response.json()
@@ -77,7 +82,7 @@ def check_branch_exists(project_id, branch_name):
     """Check if a branch exists in a project"""
     try:
         url = f"{base_api_url}/projects/{project_id}/repository/branches/{branch_name}"
-        response = requests.get(url, headers=headers)
+        response = session.get(url)
         return response.status_code == 200
     except requests.exceptions.RequestException:
         return False
@@ -98,18 +103,18 @@ def rename_branch(project_id, project_name, old_branch, new_branch):
         # Create new branch based on old branch
         create_url = f"{base_api_url}/projects/{project_id}/repository/branches"
         create_params = {'branch': new_branch, 'ref': old_branch}
-        create_response = requests.post(create_url, headers=headers, params=create_params)
+        create_response = session.post(create_url, params=create_params)
         create_response.raise_for_status()
         
         # Update default branch to new branch
         update_url = f"{base_api_url}/projects/{project_id}"
         update_params = {'default_branch': new_branch}
-        update_response = requests.put(update_url, headers=headers, json=update_params)
+        update_response = session.put(update_url, json=update_params)
         update_response.raise_for_status()
         
         # Delete old branch
         delete_url = f"{base_api_url}/projects/{project_id}/repository/branches/{old_branch}"
-        delete_response = requests.delete(delete_url, headers=headers)
+        delete_response = session.delete(delete_url)
         delete_response.raise_for_status()
         
         print(f"  ✓ Successfully renamed '{old_branch}' to '{new_branch}' in project '{project_name}'")
@@ -143,18 +148,18 @@ def process_group(group_name):
         project_name = project['name']
         print(f"\nProcessing project: {project_name} (ID: {project_id})")
         
-        if rename_branch(project_id, project_name, "trunk", "main"):
+        if rename_branch(project_id, project_name, OLD_BRANCH, NEW_BRANCH):
             success_count += 1
         
         # Add a small delay to avoid rate limiting
-        time.sleep(0.5)
+        time.sleep(REQUEST_DELAY)
     
     print(f"\nSummary for '{group_name}': Renamed {success_count} out of {len(projects)} projects")
     return True
 
 def main():
     """Main function to process the AI-ML-Services subgroup"""
-    print("GitLab Branch Rename Tool: 'trunk' → 'main'")
+    print(f"GitLab Branch Rename Tool: '{OLD_BRANCH}' → '{NEW_BRANCH}'")
     print("=" * 50)
     
     # group_name = "AI-ML-Services"

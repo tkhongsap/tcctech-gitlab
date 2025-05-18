@@ -5,7 +5,7 @@ A collection of Python scripts for automating GitLab operations.
 ## Scripts
 
 1. **01_gitlab_info_extractor.py** - Extracts information about groups, subgroups, and projects from a GitLab instance.
-2. **02_rename_trunk_to_main.py** - Renames 'trunk' branch to 'main' across multiple projects in a group.
+2. **02_gitlab_rename_trunk_to_main.py** - Renames 'trunk' branch to 'main' across multiple projects in a group.
 3. **03_create_gitlab_issues.py** - Creates issues in a GitLab project based on a structured text file.
 
 ## Setup
@@ -52,7 +52,7 @@ The script outputs information to:
 ### Rename Trunk to Main
 
 ```bash
-python 02_rename_trunk_to_main.py
+python 02_gitlab_rename_trunk_to_main.py
 ```
 
 This script automates renaming the 'trunk' branch to 'main' across all projects in a specific GitLab group:
