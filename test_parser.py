@@ -1,50 +1,54 @@
 #!/usr/bin/env python3
+"""
+Test Script for GitLab Issues Parser
+
+This script directly tests the issue parser with verbose output.
+"""
 
 import os
 import sys
-from typing import Dict, List, Any
+from dotenv import load_dotenv
 
-def parse_issues_from_file(file_path: str) -> List[Dict[str, Any]]:
-    """Parse issues from a text file."""
-    try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            content = f.read()
-        
-        return parse_issues_from_text(content)
+# Create a simplified version of the parser for testing
+def test_parse_issues(file_path):
+    """Parse issues with detailed output for debugging"""
+    with open(file_path, 'r', encoding='utf-8') as f:
+        content = f.read()
     
-    except Exception as e:
-        print(f"Error reading or parsing file {file_path}: {e}")
-        return []
-
-
-def parse_issues_from_text(content: str) -> List[Dict[str, Any]]:
-    """Parse issues from text content."""
-    issues = []
+    print(f"File content length: {len(content)} characters")
     
-    # Skip the header line
-    if content.startswith("High-Level GitLab Issues"):
-        content = content.split('\n', 1)[1]
-    
-    # Split content by separator lines (underscores)
+    # Split content by separator lines
     sections = content.split('________________________________________')
-    
     print(f"Found {len(sections)} sections")
     
+    issues = []
+    
     # Process each section
-    for i, section in enumerate(sections):
-        print(f"\nProcessing section {i+1}...")
+    for section_idx, section in enumerate(sections):
         if not section.strip():
-            print("  - Empty section, skipping")
+            print(f"Section {section_idx}: [Empty section]")
             continue
             
         lines = section.strip().split('\n')
         if not lines:
-            print("  - No lines found, skipping")
+            print(f"Section {section_idx}: [No lines]")
             continue
             
-        # Find the first line which should contain issue type and title
+        print(f"\n===== SECTION {section_idx + 1} =====")
+        print(f"First few lines:")
+        for i, line in enumerate(lines[:min(5, len(lines))]):
+            print(f"  Line {i}: '{line}'")
+        
+        # Find the title line
         first_line = lines[0].strip()
-        print(f"  First line: '{first_line}'")
+        
+        # Handle optional numbered prefixes
+        if first_line and first_line[0].isdigit() and len(lines) > 1:
+            print(f"  Found numbered prefix: '{first_line}'")
+            # Skip the number prefix line and use the next line as the title
+            first_line = lines[1].strip()
+            lines = lines[1:]  # Remove the number prefix line
+            print(f"  Using next line as title: '{first_line}'")
         
         # Variables to accumulate issue data
         current_issue_title = ""
@@ -55,102 +59,117 @@ def parse_issues_from_text(content: str) -> List[Dict[str, Any]]:
         
         # Parse issue type and title from the first line
         if "[Feature]" in first_line:
-            print("  - Found [Feature] tag")
             current_issue_type = "Feature"
             current_issue_title = first_line.split("[Feature]")[1].strip()
-            print(f"  - Title: '{current_issue_title}'")
+            print(f"  Found Feature: '{current_issue_title}'")
         elif "[Task]" in first_line:
-            print("  - Found [Task] tag")
             current_issue_type = "Task"
             current_issue_title = first_line.split("[Task]")[1].strip()
-            print(f"  - Title: '{current_issue_title}'")
+            print(f"  Found Task: '{current_issue_title}'")
         else:
-            print("  ❌ Error: No [Feature] or [Task] tag found in first line")
-            print("  - This section will be skipped by the parser")
+            print(f"  ❌ No [Feature] or [Task] tag found in first line")
             continue
         
         # Flags to track what we're parsing
         parse_mode = None
         
         # Process the remaining lines
-        for line in lines[1:]:
+        for line_idx, line in enumerate(lines[1:], 1):
             line = line.strip()
             if not line:
                 continue
                 
-            # Check for section markers
-            if line == "Description:" or line.startswith("• Description:"):
+            # Check for bullet points with labels
+            if line.startswith('•'):
+                parts = line[1:].strip().split(':', 1)
+                if len(parts) == 2:
+                    label, content = parts[0].strip(), parts[1].strip()
+                    print(f"  Found bullet point with label: '{label}': '{content}'")
+                    
+                    if label.lower() == "description":
+                        parse_mode = "description"
+                        current_description += f"- {content}\n"
+                        print(f"    Added to description")
+                    elif label.lower() in ["acceptance criteria", "acceptance"]:
+                        parse_mode = "acceptance"
+                        current_acceptance += f"- {content}\n"
+                        print(f"    Added to acceptance")
+                    elif label.lower() == "labels":
+                        parse_mode = None
+                        current_labels = [l.strip() for l in content.split(',')]
+                        if current_issue_type:
+                            current_labels.append(current_issue_type.lower())
+                        print(f"    Set labels: {current_labels}")
+                else:
+                    print(f"  ❌ Bullet point line doesn't contain a colon: '{line}'")
+            # Regular section markers without bullet points
+            elif line == "Description:":
                 parse_mode = "description"
-                line = line.replace("• Description:", "").strip()
-                if line:
-                    current_description += f"- {line}\n"
-            elif line == "Acceptance:" or line.startswith("• Acceptance:"):
+                print(f"  Found Description marker")
+            elif line in ["Acceptance Criteria:", "Acceptance:"]:
                 parse_mode = "acceptance"
-                line = line.replace("• Acceptance:", "").strip()
-                if line:
-                    current_acceptance += f"- {line}\n"
-            elif line.startswith("• Labels:") or line.startswith("Labels:"):
-                parse_mode = None  # No multi-line parsing for labels
-                labels_text = line.replace("• Labels:", "").replace("Labels:", "").strip()
+                print(f"  Found Acceptance marker")
+            elif line.startswith("Labels:"):
+                parse_mode = None
+                labels_text = line.split("Labels:", 1)[1].strip()
                 current_labels = [label.strip() for label in labels_text.split(',')]
-                print(f"  - Found labels: {current_labels}")
-                # Add issue type as a label if it exists
                 if current_issue_type:
                     current_labels.append(current_issue_type.lower())
+                print(f"  Found Labels: {current_labels}")
             # Handle content lines
             elif parse_mode == "description":
                 if line.startswith('•'):
                     line = line[1:].strip()
                 current_description += f"- {line}\n"
+                print(f"  Added to description: '{line}'")
             elif parse_mode == "acceptance":
                 if line.startswith('•'):
                     line = line[1:].strip()
                 current_acceptance += f"- {line}\n"
+                print(f"  Added to acceptance: '{line}'")
+            else:
+                print(f"  Unhandled line: '{line}'")
         
         # If we found a valid issue, add it to the list
         if current_issue_title:
-            # Format the description for GitLab
-            formatted_description = "## Description\n"
-            if current_description.strip():
-                formatted_description += current_description
-            else:
-                formatted_description += "- No description provided.\n"
-            
-            formatted_description += "\n## Acceptance Criteria\n"
-            if current_acceptance.strip():
-                formatted_description += current_acceptance
-            else:
-                formatted_description += "- No acceptance criteria provided.\n"
-            
-            # Create issue dict
             issue = {
                 'title': current_issue_title,
-                'description': formatted_description,
-                'labels': current_labels,
                 'type': current_issue_type,
-                'raw_description': current_description,
-                'raw_acceptance': current_acceptance
+                'labels': current_labels,
+                'description': current_description,
+                'acceptance': current_acceptance,
             }
             
             issues.append(issue)
-            print(f"  ✓ Added issue: {current_issue_title}")
+            print(f"  ✓ Added issue: {current_issue_type} - {current_issue_title}")
+            print(f"    Description: {len(current_description)} chars")
+            print(f"    Acceptance: {len(current_acceptance)} chars")
+            print(f"    Labels: {', '.join(current_labels)}")
+        else:
+            print(f"  ❌ No valid issue found in this section")
     
-    print(f"\nTotal issues found: {len(issues)}")
     return issues
 
 
-if __name__ == "__main__":
-    file_path = sys.argv[1] if len(sys.argv) > 1 else "issues/issues-ocr-validation.txt"
+def main():
+    # Use the file passed as argument or default to issues_services_status.txt
+    file_path = sys.argv[1] if len(sys.argv) > 1 else "issues/issues_services_status.txt"
+    
+    if not os.path.exists(file_path):
+        print(f"Error: File '{file_path}' not found.")
+        sys.exit(1)
+    
     print(f"Testing parser with file: {file_path}")
-    issues = parse_issues_from_file(file_path)
+    issues = test_parse_issues(file_path)
     
-    print("\nIssues to be created:")
-    print("=" * 80)
+    print("\n===== SUMMARY =====")
+    print(f"Found {len(issues)} issues:")
+    for i, issue in enumerate(issues):
+        print(f"{i+1}. [{issue['type']}] {issue['title']}")
     
-    for i, issue in enumerate(issues, 1):
-        issue_type = f"[{issue.get('type', 'Issue')}]" if issue.get('type') else ""
-        print(f"{i}. {issue_type} {issue['title']}")
-        
-        # Show labels
-        if issue['labels']:
-            print(f"   Labels: {', '.join(issue['labels'])}") 
+    if not issues:
+        print("❌ No issues were found. Parser may need to be fixed.")
+
+
+if __name__ == "__main__":
+    main() 

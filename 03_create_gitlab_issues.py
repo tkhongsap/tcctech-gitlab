@@ -68,6 +68,36 @@ def get_project_id(project_name: str) -> Optional[int]:
         return None
 
 
+def get_available_projects() -> List[Dict[str, Any]]:
+    """
+    Get list of available GitLab projects the user has access to.
+    
+    Returns:
+        List of project dictionaries containing id, name, and path_with_namespace
+    """
+    base_url = os.getenv('GITLAB_URL')
+    headers = get_gitlab_headers()
+    
+    try:
+        # Get projects the authenticated user is a member of
+        url = f"{base_url}/api/v4/projects"
+        params = {'membership': True, 'per_page': 100}  # Limit to 100 projects
+        
+        response = requests.get(url, headers=headers, params=params)
+        response.raise_for_status()
+        
+        projects = response.json()
+        
+        # Sort projects by name for easier browsing
+        projects.sort(key=lambda x: x['name'].lower())
+        
+        return projects
+    
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching available projects: {e}")
+        return []
+
+
 def create_issue(project_id: int, title: str, description: str, labels: List[str]) -> bool:
     """
     Create a new issue in a GitLab project.
@@ -159,91 +189,87 @@ def parse_issues_from_text(content: str) -> List[Dict[str, Any]]:
     
     # Process each section
     for section in sections:
+        # Skip empty sections
         if not section.strip():
             continue
-            
+        
+        # Find title and type
+        title_line = ""
+        issue_type = ""
+        description = ""
+        acceptance = ""
+        labels = []
+        
         lines = section.strip().split('\n')
-        if not lines:
+        
+        # Find the feature/task line
+        for line in lines:
+            if "[Feature]" in line:
+                title_line = line.strip()
+                issue_type = "Feature"
+                title = title_line.split("[Feature]")[1].strip()
+                break
+            elif "[Task]" in line:
+                title_line = line.strip()
+                issue_type = "Task"
+                title = title_line.split("[Task]")[1].strip()
+                break
+        
+        # Skip if no valid title found
+        if not title_line:
             continue
-            
-        # Find the first line which should contain issue type and title
-        first_line = lines[0].strip()
         
-        # Variables to accumulate issue data
-        current_issue_title = ""
-        current_issue_type = ""
-        current_description = ""
-        current_acceptance = ""
-        current_labels = []
+        # Extract description, acceptance, and labels
+        description_line = next((line for line in lines if line.strip().startswith("Description:")), "")
+        acceptance_line = next((line for line in lines if line.strip().startswith("Acceptance:") or 
+                                line.strip().startswith("Acceptance Criteria:")), "")
+        labels_line = next((line for line in lines if line.strip().startswith("Labels:")), "")
         
-        # Parse issue type and title from the first line
-        if "[Feature]" in first_line:
-            current_issue_type = "Feature"
-            current_issue_title = first_line.split("[Feature]")[1].strip()
-        elif "[Task]" in first_line:
-            current_issue_type = "Task"
-            current_issue_title = first_line.split("[Task]")[1].strip()
+        # Process description
+        if description_line:
+            description_text = description_line.split("Description:", 1)[1].strip()
+            description = f"- {description_text}\n"
+        
+        # Process acceptance
+        if acceptance_line:
+            if acceptance_line.startswith("Acceptance Criteria:"):
+                acceptance_text = acceptance_line.split("Acceptance Criteria:", 1)[1].strip()
+            else:
+                acceptance_text = acceptance_line.split("Acceptance:", 1)[1].strip()
+            acceptance = f"- {acceptance_text}\n"
+        
+        # Process labels
+        if labels_line:
+            labels_text = labels_line.split("Labels:", 1)[1].strip()
+            labels = [label.strip() for label in labels_text.split(',')]
+            # Add issue type as a label
+            if issue_type:
+                labels.append(issue_type.lower())
+        
+        # Format the description for GitLab
+        formatted_description = "## Description\n"
+        if description:
+            formatted_description += description
         else:
-            # Not a valid issue line, skip this section
-            continue
+            formatted_description += "- No description provided.\n"
         
-        # Flags to track what we're parsing
-        parse_mode = None
+        formatted_description += "\n## Acceptance Criteria\n"
+        if acceptance:
+            formatted_description += acceptance
+        else:
+            formatted_description += "- No acceptance criteria provided.\n"
         
-        # Process the remaining lines
-        for line in lines[1:]:
-            line = line.strip()
-            if not line:
-                continue
-                
-            # Check for section markers
-            if line == "Description:":
-                parse_mode = "description"
-            elif line in ["Acceptance Criteria:", "Acceptance:"]:
-                parse_mode = "acceptance"
-            elif line.startswith("Labels:"):
-                parse_mode = None  # No multi-line parsing for labels
-                labels_text = line.split("Labels:", 1)[1].strip()
-                current_labels = [label.strip() for label in labels_text.split(',')]
-                # Add issue type as a label if it exists
-                if current_issue_type:
-                    current_labels.append(current_issue_type.lower())
-            # Handle content lines
-            elif parse_mode == "description":
-                if line.startswith('•'):
-                    line = line[1:].strip()
-                current_description += f"- {line}\n"
-            elif parse_mode == "acceptance":
-                if line.startswith('•'):
-                    line = line[1:].strip()
-                current_acceptance += f"- {line}\n"
+        # Create issue dict
+        issue = {
+            'title': title,
+            'description': formatted_description,
+            'labels': labels,
+            'type': issue_type,
+            'raw_description': description,
+            'raw_acceptance': acceptance
+        }
         
-        # If we found a valid issue, add it to the list
-        if current_issue_title:
-            # Format the description for GitLab
-            formatted_description = "## Description\n"
-            if current_description.strip():
-                formatted_description += current_description
-            else:
-                formatted_description += "- No description provided.\n"
-            
-            formatted_description += "\n## Acceptance Criteria\n"
-            if current_acceptance.strip():
-                formatted_description += current_acceptance
-            else:
-                formatted_description += "- No acceptance criteria provided.\n"
-            
-            # Create issue dict
-            issue = {
-                'title': current_issue_title,
-                'description': formatted_description,
-                'labels': current_labels,
-                'type': current_issue_type,
-                'raw_description': current_description,
-                'raw_acceptance': current_acceptance
-            }
-            
-            issues.append(issue)
+        issues.append(issue)
     
     return issues
 
@@ -342,10 +368,52 @@ def main() -> None:
         sys.exit(0)
     
     # Prompt for project name or get from command line
+    project_id = None
     if args.project:
         project_name = args.project
     else:
-        project_name = input("Enter project name: ")
+        # Fetch and display available projects
+        print("\nFetching available GitLab projects...")
+        projects = get_available_projects()
+        
+        if not projects:
+            print("No projects found or couldn't fetch projects. Please enter the project name manually.")
+            project_name = input("Enter project name: ")
+        else:
+            print("\nAvailable GitLab projects:")
+            for i, project in enumerate(projects, 1):
+                print(f" {i}. {project['name']} ({project['path_with_namespace']})")
+            print()
+            
+            project_choice = input("Enter project number from the list or project name only: ")
+            
+            # If user entered a number, get the corresponding project
+            if project_choice.isdigit() and 1 <= int(project_choice) <= len(projects):
+                project_name = projects[int(project_choice) - 1]['name']
+                project_id = projects[int(project_choice) - 1]['id']
+            else:
+                # Try to find project by name
+                project_found = False
+                for project in projects:
+                    if project['name'].lower() == project_choice.lower():
+                        project_name = project['name']
+                        project_id = project['id']
+                        project_found = True
+                        break
+                
+                if not project_found:
+                    # User entered a name we couldn't find exactly
+                    project_name = project_choice
+    
+    # Get project ID if not already set from list selection
+    if project_id is None:
+        project_id = get_project_id(project_name)
+    
+    if not project_id:
+        print(f"Error: Project '{project_name}' not found.")
+        sys.exit(1)
+    
+    print(f"Found project '{project_name}' with ID: {project_id}")
     
     # Prompt for issues file or get from command line
     if args.issues_file:
@@ -373,15 +441,6 @@ def main() -> None:
         except Exception as e:
             print(f"Error listing issues directory: {e}")
             issues_file = input("Enter issues file path: ")
-    
-    # Get project ID
-    project_id = get_project_id(project_name)
-    
-    if not project_id:
-        print(f"Error: Project '{project_name}' not found.")
-        sys.exit(1)
-    
-    print(f"Found project '{project_name}' with ID: {project_id}")
     
     # Parse issues from file
     if not os.path.exists(issues_file):
