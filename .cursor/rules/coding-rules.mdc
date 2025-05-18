@@ -3,7 +3,7 @@ description:
 globs: 
 alwaysApply: true
 ---
-## <CODING_RULES>
+## 
 •  After making changes, ALWAYS make sure to start up a new server so I can test it.
 •  Always look for existing code to iterate on instead of creating new code
 •  Do not drastically change the patterns before trying to iterate on existing patterns.
@@ -23,5 +23,4 @@ alwaysApply: true
 •  Write thorough tests for all major functionality
 •  Avoid making major changes to the patterns and architecture of how a feature works, after it has shown to work well, unless explicitly instructed
  
-</CODING_RULES>
 
