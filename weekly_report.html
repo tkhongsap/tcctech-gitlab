@@ -1,0 +1,180 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Weekly Productivity Report - TCC Tech Development Team</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+        .header { background: #667eea; color: white; padding: 20px; border-radius: 8px; text-align: center; }
+        .section { margin: 20px 0; padding: 20px; border-left: 4px solid #667eea; background: #f9f9f9; }
+        .metrics { display: flex; flex-wrap: wrap; gap: 20px; margin: 20px 0; }
+        .metric { background: white; padding: 15px; border-radius: 6px; text-align: center; flex: 1; min-width: 150px; }
+        .metric-value { font-size: 24px; font-weight: bold; color: #333; }
+        .metric-label { color: #666; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 Weekly Productivity Report</h1>
+        <p>TCC Tech Development Team • June 06 - June 13, 2025</p>
+    </div>
+    
+    <div class="section">
+        <h2>📈 Summary Metrics</h2>
+        <div class="metrics">
+            <div class="metric">
+                <div class="metric-value">48</div>
+                <div class="metric-label">Total Commits</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">15</div>
+                <div class="metric-label">Merge Requests</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">17</div>
+                <div class="metric-label">Issues</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">5</div>
+                <div class="metric-label">Active Projects</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>🏆 Top Contributors</h2>
+        <table>
+            <tr><th>Developer</th><th>Commits</th></tr>
+    <tr><td>Oraphan Poolrak</td><td>14</td></tr><tr><td>tkhongsap</td><td>12</td></tr><tr><td>Totrakool Khongsap</td><td>11</td></tr><tr><td>Jedsada Srijunpoe</td><td>10</td></tr><tr><td>Jirakit Boonmunewai</td><td>1</td></tr>
+        </table>
+    </div>
+    
+    <div class="section">
+        <h2>📁 Project Activity</h2>
+        <table>
+            <tr><th>Project</th><th>Commits</th><th>MRs</th><th>Issues</th></tr>
+    
+        <tr>
+            <td>llama-index-rag-pipeline</td>
+            <td>20</td>
+            <td>3</td>
+            <td>0</td>
+        </tr>
+        
+        <tr>
+            <td>e-recruitment-suite</td>
+            <td>9</td>
+            <td>0</td>
+            <td>5</td>
+        </tr>
+        
+        <tr>
+            <td>resume-extractor</td>
+            <td>8</td>
+            <td>1</td>
+            <td>1</td>
+        </tr>
+        
+        <tr>
+            <td>dts-code-buddy</td>
+            <td>7</td>
+            <td>5</td>
+            <td>5</td>
+        </tr>
+        
+        <tr>
+            <td>dts-po-buddy</td>
+            <td>4</td>
+            <td>3</td>
+            <td>0</td>
+        </tr>
+        
+        <tr>
+            <td>copilot-ai-survey</td>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+        </tr>
+        
+        <tr>
+            <td>llm-gpu-access-thaibev</td>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+        </tr>
+        
+        <tr>
+            <td>ai-survey</td>
+            <td>0</td>
+            <td>0</td>
+            <td>1</td>
+        </tr>
+        
+        <tr>
+            <td>service-status</td>
+            <td>0</td>
+            <td>0</td>
+            <td>4</td>
+        </tr>
+        
+        <tr>
+            <td>fastapi-claim-detection</td>
+            <td>0</td>
+            <td>3</td>
+            <td>1</td>
+        </tr>
+        
+        <tr>
+            <td>dts-sensei</td>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+        </tr>
+        
+        <tr>
+            <td>Cybersecuity Log Frontend</td>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+        </tr>
+        
+        <tr>
+            <td>git_101</td>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+        </tr>
+        
+        <tr>
+            <td>landsmap-thailand</td>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+        </tr>
+        
+        <tr>
+            <td>map-intelligent</td>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+        </tr>
+        
+        </table>
+    </div>
+    
+    <div class="section">
+        <h2>💡 Quick Insights</h2>
+        <ul>
+    <li>📉 Some projects may need attention or archiving</li>
+        </ul>
+    </div>
+    
+    <div style="text-align: center; margin: 40px 0; color: #666; font-size: 12px;">
+        Generated by GitLab Analytics - Weekly Productivity Reports
+    </div>
+</body>
+</html>
+    
