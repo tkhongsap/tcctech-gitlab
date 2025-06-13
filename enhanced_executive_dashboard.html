@@ -1,0 +1,2031 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitLab Executive Dashboard - TCC Tech Development Team</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        
+        /* Modern shadcn/ui Color Palette */
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 222.2 84% 4.9%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 222.2 84% 4.9%;
+            --primary: 221.2 83.2% 53.3%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 47.4% 11.2%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 47.4% 11.2%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 221.2 83.2% 53.3%;
+            --radius: 0.5rem;
+        }
+
+        * {
+            border-color: hsl(var(--border));
+        }
+
+        body {
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Utility Classes */
+        .bg-background { background-color: hsl(var(--background)); }
+        .text-foreground { color: hsl(var(--foreground)); }
+        .bg-card { background-color: hsl(var(--card)); }
+        .text-card-foreground { color: hsl(var(--card-foreground)); }
+        .bg-primary { background-color: hsl(var(--primary)); }
+        .text-primary-foreground { color: hsl(var(--primary-foreground)); }
+        .text-muted-foreground { color: hsl(var(--muted-foreground)); }
+        .border { border: 1px solid hsl(var(--border)); }
+        .rounded-lg { border-radius: var(--radius); }
+        .rounded-md { border-radius: calc(var(--radius) - 2px); }
+        .shadow-sm { box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+        
+        /* Layout */
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 1rem; }
+        .min-h-screen { min-height: 100vh; }
+        .sticky { position: sticky; }
+        .top-0 { top: 0; }
+        .z-50 { z-index: 50; }
+        .w-full { width: 100%; }
+        .h-16 { height: 4rem; }
+        .h-8 { height: 2rem; }
+        .w-8 { width: 2rem; }
+        .h-5 { height: 1.25rem; }
+        .w-5 { width: 1.25rem; }
+        .h-4 { height: 1rem; }
+        .w-4 { width: 1rem; }
+        .h-10 { height: 2.5rem; }
+        
+        /* Flexbox */
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-center { justify-content: center; }
+        .justify-between { justify-content: space-between; }
+        .space-x-2 > * + * { margin-left: 0.5rem; }
+        .space-x-4 > * + * { margin-left: 1rem; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-6 { gap: 1.5rem; }
+        
+        /* Grid */
+        .grid { display: grid; }
+        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .grid-cols-7 { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+        .col-span-3 { grid-column: span 3; }
+        .col-span-4 { grid-column: span 4; }
+        
+        /* Typography */
+        .text-xl { font-size: 1.25rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .text-lg { font-size: 1.125rem; }
+        .text-sm { font-size: 0.875rem; }
+        .text-xs { font-size: 0.75rem; }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+        .font-medium { font-weight: 500; }
+        .tracking-tight { letter-spacing: -0.025em; }
+        
+        /* Spacing */
+        .p-6 { padding: 1.5rem; }
+        .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mb-8 { margin-bottom: 2rem; }
+        .mr-2 { margin-right: 0.5rem; }
+        
+        /* Interactive Elements */
+        .hover\:bg-accent:hover { background-color: hsl(var(--accent)); }
+        .hover\:text-accent-foreground:hover { color: hsl(var(--accent-foreground)); }
+        .focus-visible\:outline-none:focus-visible { outline: 2px solid transparent; }
+        .focus-visible\:ring-2:focus-visible { box-shadow: 0 0 0 2px hsl(var(--ring)); }
+        .focus-visible\:ring-ring:focus-visible { --tw-ring-color: hsl(var(--ring)); }
+        .focus-visible\:ring-offset-2:focus-visible { box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring)); }
+        .disabled\:pointer-events-none:disabled { pointer-events: none; }
+        .disabled\:opacity-50:disabled { opacity: 0.5; }
+        
+        /* Status Colors */
+        .text-green-600 { color: rgb(22 163 74); }
+        .text-blue-600 { color: rgb(37 99 235); }
+        .text-yellow-600 { color: rgb(202 138 4); }
+        .text-red-600 { color: rgb(220 38 38); }
+        .bg-green-100 { background-color: rgb(220 252 231); }
+        .bg-blue-100 { background-color: rgb(219 234 254); }
+        .bg-yellow-100 { background-color: rgb(254 249 195); }
+        .bg-red-100 { background-color: rgb(254 226 226); }
+        
+        /* Health Grade Colors */
+        .grade-a-plus { color: #10b981; background-color: #d1fae5; }
+        .grade-a { color: #059669; background-color: #ecfdf5; }
+        .grade-b { color: #3b82f6; background-color: #dbeafe; }
+        .grade-c { color: #f59e0b; background-color: #fef3c7; }
+        .grade-d { color: #ef4444; background-color: #fee2e2; }
+        
+        /* Status Badges */
+        .status-active { 
+            background-color: #10b981; 
+            color: white;
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        .status-maintenance { background-color: #f59e0b; color: white; }
+        .status-inactive { background-color: #6b7280; color: white; }
+        
+        /* Custom Components */
+        .kpi-card {
+            background: linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted)));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.05);
+        }
+        
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary)) 50%, transparent 50%);
+        }
+        
+        .project-card {
+            transition: all 0.3s ease;
+            border-radius: var(--radius);
+            border: 1px solid hsl(var(--border));
+            background-color: hsl(var(--card));
+        }
+        
+        .project-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04);
+            border-color: hsl(var(--primary));
+        }
+        
+        .sparkline {
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+            font-size: 1.5rem;
+            line-height: 1;
+            letter-spacing: -0.1em;
+            color: hsl(var(--muted-foreground));
+        }
+        
+        .chart-container {
+            height: 300px;
+            position: relative;
+            background: linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--card)) 100%);
+            border-radius: calc(var(--radius) - 2px);
+            padding: 1rem;
+        }
+        
+        /* Responsive Design */
+        @media (min-width: 768px) {
+            .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .md\:grid-cols-7 { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+            .md\:h-24 { height: 6rem; }
+            .md\:flex-row { flex-direction: row; }
+            .md\:text-left { text-align: left; }
+            .md\:py-0 { padding-top: 0; padding-bottom: 0; }
+        }
+        
+        @media (min-width: 1024px) {
+            .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        }
+        
+        @media (min-width: 1280px) {
+            .xl\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        }
+        
+        /* Animations */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: hsl(var(--muted));
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: hsl(var(--muted-foreground));
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: hsl(var(--primary));
+        }
+    
+    </style>
+</head>
+<body class="bg-background text-foreground">
+    <div class="min-h-screen">
+        <!-- Header with Modern Design -->
+        <header class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div class="container flex h-16 items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+                        <svg class="h-5 w-5 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-semibold">GitLab Analytics</h1>
+                        <p class="text-sm text-muted-foreground">TCC Tech Development Team • 30-Day Analysis</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-muted-foreground">May 15 - June 14, 2025</span>
+                    <button class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+                        <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Export Report
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="container py-8">
+            <!-- Executive Summary Section -->
+            <section class="mb-8">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold tracking-tight">Executive Summary</h2>
+                    <p class="text-muted-foreground">Key performance indicators and team productivity metrics</p>
+                </div>
+                
+                <!-- KPI Cards Grid -->
+                <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
+                    
+        <div class="kpi-card">
+            <div class="flex items-center justify-between mb-2">
+                <p class="text-sm font-medium text-muted-foreground">Total Commits</p>
+                <svg class="h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div class="space-y-1">
+                <p class="text-2xl font-bold">590</p>
+                <p class="text-xs text-green-600">
+                    <span class="mr-1">↗</span>
+                    +12.5% from last period
+                </p>
+            </div>
+        </div>
+        
+
+        <div class="kpi-card">
+            <div class="flex items-center justify-between mb-2">
+                <p class="text-sm font-medium text-muted-foreground">Merge Requests</p>
+                <svg class="h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                </svg>
+            </div>
+            <div class="space-y-1">
+                <p class="text-2xl font-bold">246</p>
+                <p class="text-xs text-green-600">
+                    <span class="mr-1">↗</span>
+                    +23.1% from last period
+                </p>
+            </div>
+        </div>
+        
+
+        <div class="kpi-card">
+            <div class="flex items-center justify-between mb-2">
+                <p class="text-sm font-medium text-muted-foreground">Issues Managed</p>
+                <svg class="h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div class="space-y-1">
+                <p class="text-2xl font-bold">152</p>
+                <p class="text-xs text-red-600">
+                    <span class="mr-1">↘</span>
+                    -5.2% from last period
+                </p>
+            </div>
+        </div>
+        
+
+        <div class="kpi-card">
+            <div class="flex items-center justify-between mb-2">
+                <p class="text-sm font-medium text-muted-foreground">Active Projects</p>
+                <svg class="h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                </svg>
+            </div>
+            <div class="space-y-1">
+                <p class="text-2xl font-bold">7</p>
+                <p class="text-xs text-muted-foreground">
+                    <span class="mr-1">→</span>
+                    stable from last period
+                </p>
+            </div>
+        </div>
+        
+                </div>
+
+                <!-- Performance Chart -->
+                <div class="grid gap-4 md:grid-cols-7">
+                    <div class="col-span-4">
+                        <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
+                            <div class="p-6">
+                                <h3 class="text-lg font-semibold mb-4">Activity Trends</h3>
+                                
+        <div class="chart-container">
+            <svg width="100%" height="100%" viewBox="0 0 600 200">
+                <defs>
+                    <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:hsl(var(--primary));stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:hsl(var(--primary));stop-opacity:0.3" />
+                    </linearGradient>
+                </defs>
+                
+            <rect x="2.0" y="132.94117647058823" width="16.0" height="47.05882352941177" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="10.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                05/15
+            </text>
+        
+            <rect x="22.0" y="156.47058823529412" width="16.0" height="23.529411764705884" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="30.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                
+            </text>
+        
+            <rect x="42.0" y="180.0" width="16.0" height="0.0" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="50.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                
+            </text>
+        
+            <rect x="62.0" y="168.23529411764707" width="16.0" height="11.764705882352942" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="70.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                
+            </text>
+        
+            <rect x="82.0" y="154.11764705882354" width="16.0" height="25.88235294117647" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="90.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                
+            </text>
+        
+            <rect x="102.0" y="156.47058823529412" width="16.0" height="23.529411764705884" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="110.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                05/20
+            </text>
+        
+            <rect x="122.0" y="90.58823529411765" width="16.0" height="89.41176470588235" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="130.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                
+            </text>
+        
+            <rect x="142.0" y="76.47058823529412" width="16.0" height="103.52941176470588" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="150.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                
+            </text>
+        
+            <rect x="162.0" y="147.05882352941177" width="16.0" height="32.94117647058823" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="170.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                
+            </text>
+        
+            <rect x="182.0" y="158.8235294117647" width="16.0" height="21.176470588235293" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="190.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                
+            </text>
+        
+            <rect x="202.0" y="180.0" width="16.0" height="0.0" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="210.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                05/25
+            </text>
+        
+            <rect x="222.0" y="137.64705882352942" width="16.0" height="42.35294117647059" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="230.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                
+            </text>
+        
+            <rect x="242.0" y="154.11764705882354" width="16.0" height="25.88235294117647" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="250.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                
+            </text>
+        
+            <rect x="262.0" y="116.47058823529412" width="16.0" height="63.52941176470588" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="270.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                
+            </text>
+        
+            <rect x="282.0" y="85.88235294117646" width="16.0" height="94.11764705882354" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="290.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                
+            </text>
+        
+            <rect x="302.0" y="85.88235294117646" width="16.0" height="94.11764705882354" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="310.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                05/30
+            </text>
+        
+            <rect x="322.0" y="109.41176470588235" width="16.0" height="70.58823529411765" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="330.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                
+            </text>
+        
+            <rect x="342.0" y="156.47058823529412" width="16.0" height="23.529411764705884" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="350.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                
+            </text>
+        
+            <rect x="362.0" y="128.23529411764707" width="16.0" height="51.76470588235294" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="370.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                
+            </text>
+        
+            <rect x="382.0" y="170.58823529411765" width="16.0" height="9.411764705882353" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="390.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                
+            </text>
+        
+            <rect x="402.0" y="100.0" width="16.0" height="80.0" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="410.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                06/04
+            </text>
+        
+            <rect x="422.0" y="100.0" width="16.0" height="80.0" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="430.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                
+            </text>
+        
+            <rect x="442.0" y="132.94117647058823" width="16.0" height="47.05882352941177" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="450.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                
+            </text>
+        
+            <rect x="462.0" y="20.0" width="16.0" height="160.0" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="470.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                
+            </text>
+        
+            <rect x="482.0" y="137.64705882352942" width="16.0" height="42.35294117647059" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="490.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                
+            </text>
+        
+            <rect x="502.0" y="156.47058823529412" width="16.0" height="23.529411764705884" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="510.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                06/09
+            </text>
+        
+            <rect x="522.0" y="163.52941176470588" width="16.0" height="16.470588235294116" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="530.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                
+            </text>
+        
+            <rect x="542.0" y="128.23529411764707" width="16.0" height="51.76470588235294" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="550.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                
+            </text>
+        
+            <rect x="562.0" y="172.94117647058823" width="16.0" height="7.058823529411765" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="570.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                
+            </text>
+        
+            <rect x="582.0" y="154.11764705882354" width="16.0" height="25.88235294117647" 
+                  fill="url(#gradient)" rx="3" opacity="0.8"/>
+            <text x="590.0" y="195" 
+                  text-anchor="middle" font-size="10" fill="#6b7280">
+                
+            </text>
+        
+            </svg>
+        </div>
+    
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-span-3">
+                        <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
+                            <div class="p-6">
+                                <h3 class="text-lg font-semibold mb-4">Key Insights</h3>
+                                
+        <div class="space-y-4">
+            <div class="flex items-center space-x-2">
+                <div class="h-2 w-2 rounded-full bg-green-500"></div>
+                <span class="text-sm">High activity in AI/ML projects</span>
+            </div>
+            <div class="flex items-center space-x-2">
+                <div class="h-2 w-2 rounded-full bg-blue-500"></div>
+                <span class="text-sm">Strong collaboration patterns</span>
+            </div>
+            <div class="flex items-center space-x-2">
+                <div class="h-2 w-2 rounded-full bg-yellow-500"></div>
+                <span class="text-sm">Some projects need attention</span>
+            </div>
+            <div class="mt-4 p-3 bg-muted rounded-md">
+                <p class="text-xs text-muted-foreground">
+                    <strong>Recommendation:</strong> Focus on projects with declining activity. 
+                    Consider code review improvements for better merge rates.
+                </p>
+            </div>
+        </div>
+    
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Groups Overview -->
+            <section class="mb-8">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold tracking-tight">Group Performance</h2>
+                    <p class="text-muted-foreground">Analysis across 4 development groups</p>
+                </div>
+                <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    
+        <div class="rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-md transition-all duration-300">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold">Group 1721</h3>
+                    <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-green-600 bg-green-100">
+                        A+
+                    </span>
+                </div>
+                <div class="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                        <p class="text-2xl font-bold text-primary">21</p>
+                        <p class="text-xs text-muted-foreground">Projects</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-primary">305</p>
+                        <p class="text-xs text-muted-foreground">Commits</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-primary">5</p>
+                        <p class="text-xs text-muted-foreground">Active</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-md transition-all duration-300">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold">Group 1267</h3>
+                    <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-green-600 bg-green-100">
+                        A+
+                    </span>
+                </div>
+                <div class="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                        <p class="text-2xl font-bold text-primary">15</p>
+                        <p class="text-xs text-muted-foreground">Projects</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-primary">165</p>
+                        <p class="text-xs text-muted-foreground">Commits</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-primary">1</p>
+                        <p class="text-xs text-muted-foreground">Active</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-md transition-all duration-300">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold">Group 1269</h3>
+                    <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-green-600 bg-green-100">
+                        A+
+                    </span>
+                </div>
+                <div class="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                        <p class="text-2xl font-bold text-primary">8</p>
+                        <p class="text-xs text-muted-foreground">Projects</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-primary">0</p>
+                        <p class="text-xs text-muted-foreground">Commits</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-primary">0</p>
+                        <p class="text-xs text-muted-foreground">Active</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-md transition-all duration-300">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold">Group 119</h3>
+                    <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-green-600 bg-green-100">
+                        A+
+                    </span>
+                </div>
+                <div class="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                        <p class="text-2xl font-bold text-primary">8</p>
+                        <p class="text-xs text-muted-foreground">Projects</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-primary">120</p>
+                        <p class="text-xs text-muted-foreground">Commits</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-primary">1</p>
+                        <p class="text-xs text-muted-foreground">Active</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+                </div>
+            </section>
+
+            <!-- Project Portfolio -->
+            <section class="mb-8">
+                <div class="mb-6 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold tracking-tight">Project Portfolio</h2>
+                        <p class="text-muted-foreground">52 projects analyzed with health scoring</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <input 
+                            type="text" 
+                            placeholder="Search projects..." 
+                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 max-w-sm"
+                            onkeyup="filterProjects(this.value)"
+                        >
+                        <select 
+                            class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-w-[180px]"
+                            onchange="filterByStatus(this.value)"
+                        >
+                            <option value="">All Status</option>
+                            <option value="active">Active Projects</option>
+                            <option value="maintenance">Maintenance</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3" id="projectGrid">
+                    
+        <div class="project-card rounded-lg border bg-card text-card-foreground shadow-sm p-6" 
+             data-status="active" data-name="e-recruitment-suite">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="text-lg font-semibold leading-tight">e-recruitment-suite</h3>
+                <div class="flex space-x-1">
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium status-active">
+                        Active
+                    </span>
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium grade-a-plus">
+                        A+
+                    </span>
+                </div>
+            </div>
+            
+            <p class="text-sm text-muted-foreground mb-4 leading-relaxed">Comprehensive recruitment management system with AI-powered resume screening, candidate tracking, and interview scheduling capabilities.</p>
+            
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">16</p>
+                    <p class="text-xs text-muted-foreground">Commits</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">MRs</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">3</p>
+                    <p class="text-xs text-muted-foreground">Contributors</p>
+                </div>
+            </div>
+            
+            <div class="border-t pt-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">Activity</span>
+                    <span class="sparkline">▁▁▁▁▂▂█▁▁▂▃█▂▁</span>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="project-card rounded-lg border bg-card text-card-foreground shadow-sm p-6" 
+             data-status="active" data-name="resume-extractor">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="text-lg font-semibold leading-tight">resume-extractor</h3>
+                <div class="flex space-x-1">
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium status-active">
+                        Active
+                    </span>
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium grade-a-plus">
+                        A+
+                    </span>
+                </div>
+            </div>
+            
+            <p class="text-sm text-muted-foreground mb-4 leading-relaxed">Machine learning service for extracting structured information from resumes. Supports multiple formats and languages with high accuracy.</p>
+            
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">15</p>
+                    <p class="text-xs text-muted-foreground">Commits</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">1</p>
+                    <p class="text-xs text-muted-foreground">MRs</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">3</p>
+                    <p class="text-xs text-muted-foreground">Contributors</p>
+                </div>
+            </div>
+            
+            <div class="border-t pt-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">Activity</span>
+                    <span class="sparkline">▁▁▁▁▂▂█▁▁▂▃█▁▁</span>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="project-card rounded-lg border bg-card text-card-foreground shadow-sm p-6" 
+             data-status="maintenance" data-name="ai-survey">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="text-lg font-semibold leading-tight">ai-survey</h3>
+                <div class="flex space-x-1">
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium status-maintenance">
+                        Maintenance
+                    </span>
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium grade-a-plus">
+                        A+
+                    </span>
+                </div>
+            </div>
+            
+            <p class="text-sm text-muted-foreground mb-4 leading-relaxed">Smart survey system leveraging artificial intelligence for dynamic questionnaire creation, real-time analytics, and predictive response modeling.</p>
+            
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">25</p>
+                    <p class="text-xs text-muted-foreground">Commits</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">MRs</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">6</p>
+                    <p class="text-xs text-muted-foreground">Contributors</p>
+                </div>
+            </div>
+            
+            <div class="border-t pt-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">Activity</span>
+                    <span class="sparkline">▁▁█▁▁▁▁▁▁▁▁▁▁▁</span>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="project-card rounded-lg border bg-card text-card-foreground shadow-sm p-6" 
+             data-status="active" data-name="dts-po-buddy">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="text-lg font-semibold leading-tight">dts-po-buddy</h3>
+                <div class="flex space-x-1">
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium status-active">
+                        Active
+                    </span>
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium grade-a-plus">
+                        A+
+                    </span>
+                </div>
+            </div>
+            
+            <p class="text-sm text-muted-foreground mb-4 leading-relaxed">Product owner assistant tool featuring requirement analysis, user story generation, and backlog prioritization using NLP techniques.</p>
+            
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">63</p>
+                    <p class="text-xs text-muted-foreground">Commits</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">12</p>
+                    <p class="text-xs text-muted-foreground">MRs</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">4</p>
+                    <p class="text-xs text-muted-foreground">Contributors</p>
+                </div>
+            </div>
+            
+            <div class="border-t pt-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">Activity</span>
+                    <span class="sparkline">▁▁▁▁▄█▄▁▁▁▁▁▁▁</span>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="project-card rounded-lg border bg-card text-card-foreground shadow-sm p-6" 
+             data-status="active" data-name="dts-code-buddy">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="text-lg font-semibold leading-tight">dts-code-buddy</h3>
+                <div class="flex space-x-1">
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium status-active">
+                        Active
+                    </span>
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium grade-a-plus">
+                        A+
+                    </span>
+                </div>
+            </div>
+            
+            <p class="text-sm text-muted-foreground mb-4 leading-relaxed">AI-powered code assistant providing intelligent code suggestions, review automation, and best practices enforcement for development teams.</p>
+            
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">48</p>
+                    <p class="text-xs text-muted-foreground">Commits</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">15</p>
+                    <p class="text-xs text-muted-foreground">MRs</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">4</p>
+                    <p class="text-xs text-muted-foreground">Contributors</p>
+                </div>
+            </div>
+            
+            <div class="border-t pt-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">Activity</span>
+                    <span class="sparkline">▁▁▁▁▁▁▁▁▁▃██▁▁</span>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="project-card rounded-lg border bg-card text-card-foreground shadow-sm p-6" 
+             data-status="active" data-name="azure-ocr-pipeline">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="text-lg font-semibold leading-tight">azure-ocr-pipeline</h3>
+                <div class="flex space-x-1">
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium status-active">
+                        Active
+                    </span>
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium grade-a-plus">
+                        A+
+                    </span>
+                </div>
+            </div>
+            
+            <p class="text-sm text-muted-foreground mb-4 leading-relaxed">Cloud-based OCR pipeline leveraging Azure AI for document digitization, text recognition, and automated data extraction workflows.</p>
+            
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">106</p>
+                    <p class="text-xs text-muted-foreground">Commits</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">36</p>
+                    <p class="text-xs text-muted-foreground">MRs</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">7</p>
+                    <p class="text-xs text-muted-foreground">Contributors</p>
+                </div>
+            </div>
+            
+            <div class="border-t pt-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">Activity</span>
+                    <span class="sparkline">▁▁▁▁▁▄▁▁▁▁▁▄▂█</span>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="project-card rounded-lg border bg-card text-card-foreground shadow-sm p-6" 
+             data-status="active" data-name="llama-index-rag-pipeline">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="text-lg font-semibold leading-tight">llama-index-rag-pipeline</h3>
+                <div class="flex space-x-1">
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium status-active">
+                        Active
+                    </span>
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium grade-a-plus">
+                        A+
+                    </span>
+                </div>
+            </div>
+            
+            <p class="text-sm text-muted-foreground mb-4 leading-relaxed">Advanced RAG implementation using LlamaIndex for intelligent document retrieval and question answering. Integrates with multiple data sources and supp...</p>
+            
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">116</p>
+                    <p class="text-xs text-muted-foreground">Commits</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">4</p>
+                    <p class="text-xs text-muted-foreground">MRs</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">4</p>
+                    <p class="text-xs text-muted-foreground">Contributors</p>
+                </div>
+            </div>
+            
+            <div class="border-t pt-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">Activity</span>
+                    <span class="sparkline">▄▂▂▁▃▁▁█▂▁▁▁▁▁</span>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="project-card rounded-lg border bg-card text-card-foreground shadow-sm p-6" 
+             data-status="active" data-name="llama-index-rag-pipeline">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="text-lg font-semibold leading-tight">llama-index-rag-pipeline</h3>
+                <div class="flex space-x-1">
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium status-active">
+                        Active
+                    </span>
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium grade-a-plus">
+                        A+
+                    </span>
+                </div>
+            </div>
+            
+            <p class="text-sm text-muted-foreground mb-4 leading-relaxed">Advanced RAG implementation using LlamaIndex for intelligent document retrieval and question answering. Integrates with multiple data sources and supp...</p>
+            
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">116</p>
+                    <p class="text-xs text-muted-foreground">Commits</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">7</p>
+                    <p class="text-xs text-muted-foreground">MRs</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">4</p>
+                    <p class="text-xs text-muted-foreground">Contributors</p>
+                </div>
+            </div>
+            
+            <div class="border-t pt-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">Activity</span>
+                    <span class="sparkline">▄▂▂▁▃▁▁█▂▁▁▁▁▁</span>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="project-card rounded-lg border bg-card text-card-foreground shadow-sm p-6" 
+             data-status="maintenance" data-name="git_101">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="text-lg font-semibold leading-tight">git_101</h3>
+                <div class="flex space-x-1">
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium status-maintenance">
+                        Maintenance
+                    </span>
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium grade-a-plus">
+                        A+
+                    </span>
+                </div>
+            </div>
+            
+            <p class="text-sm text-muted-foreground mb-4 leading-relaxed">Educational platform and training materials for Git version control, best practices, workflows, and collaborative development techniques.</p>
+            
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">7</p>
+                    <p class="text-xs text-muted-foreground">Commits</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">1</p>
+                    <p class="text-xs text-muted-foreground">MRs</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">4</p>
+                    <p class="text-xs text-muted-foreground">Contributors</p>
+                </div>
+            </div>
+            
+            <div class="border-t pt-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">Activity</span>
+                    <span class="sparkline">▁▁▁▁▁▁▁▁▁▁▁▁▁▁</span>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="project-card rounded-lg border bg-card text-card-foreground shadow-sm p-6" 
+             data-status="maintenance" data-name="copilot-ai-survey">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="text-lg font-semibold leading-tight">copilot-ai-survey</h3>
+                <div class="flex space-x-1">
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium status-maintenance">
+                        Maintenance
+                    </span>
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium grade-a">
+                        A
+                    </span>
+                </div>
+            </div>
+            
+            <p class="text-sm text-muted-foreground mb-4 leading-relaxed">AI-driven survey platform with intelligent question generation, response analysis, and automated insights extraction for market research.</p>
+            
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">20</p>
+                    <p class="text-xs text-muted-foreground">Commits</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">MRs</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">6</p>
+                    <p class="text-xs text-muted-foreground">Contributors</p>
+                </div>
+            </div>
+            
+            <div class="border-t pt-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">Activity</span>
+                    <span class="sparkline">▁▁▁▁▁▁▁▁▁▁▁▁▁▁</span>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="project-card rounded-lg border bg-card text-card-foreground shadow-sm p-6" 
+             data-status="maintenance" data-name="cybersecuity log frontend">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="text-lg font-semibold leading-tight">Cybersecuity Log Frontend</h3>
+                <div class="flex space-x-1">
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium status-maintenance">
+                        Maintenance
+                    </span>
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium grade-d">
+                        A-
+                    </span>
+                </div>
+            </div>
+            
+            <p class="text-sm text-muted-foreground mb-4 leading-relaxed">A modern cybersecurity log analysis and review dashboard. This application helps security professionals to track, analyze, and respond to security eve...</p>
+            
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">21</p>
+                    <p class="text-xs text-muted-foreground">Commits</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">MRs</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">2</p>
+                    <p class="text-xs text-muted-foreground">Contributors</p>
+                </div>
+            </div>
+            
+            <div class="border-t pt-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">Activity</span>
+                    <span class="sparkline">▁▁▁▁▁▁▁▁▁▁▁▁▁▁</span>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="project-card rounded-lg border bg-card text-card-foreground shadow-sm p-6" 
+             data-status="maintenance" data-name="landsmap-thailand">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="text-lg font-semibold leading-tight">landsmap-thailand</h3>
+                <div class="flex space-x-1">
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium status-maintenance">
+                        Maintenance
+                    </span>
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium grade-d">
+                        A-
+                    </span>
+                </div>
+            </div>
+            
+            <p class="text-sm text-muted-foreground mb-4 leading-relaxed">Geospatial mapping and analysis platform for Thailand land data, property information, and geographic intelligence services.</p>
+            
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">14</p>
+                    <p class="text-xs text-muted-foreground">Commits</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">2</p>
+                    <p class="text-xs text-muted-foreground">MRs</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">2</p>
+                    <p class="text-xs text-muted-foreground">Contributors</p>
+                </div>
+            </div>
+            
+            <div class="border-t pt-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">Activity</span>
+                    <span class="sparkline">▁▁▁▁▁▁▁▁▁▁▁▁▁▁</span>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="project-card rounded-lg border bg-card text-card-foreground shadow-sm p-6" 
+             data-status="maintenance" data-name="copilot-survey-bot">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="text-lg font-semibold leading-tight">copilot-survey-bot</h3>
+                <div class="flex space-x-1">
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium status-maintenance">
+                        Maintenance
+                    </span>
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium grade-b">
+                        B+
+                    </span>
+                </div>
+            </div>
+            
+            <p class="text-sm text-muted-foreground mb-4 leading-relaxed">Automated survey creation and analysis tool with natural language processing for sentiment analysis and insight extraction.</p>
+            
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">6</p>
+                    <p class="text-xs text-muted-foreground">Commits</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">MRs</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">3</p>
+                    <p class="text-xs text-muted-foreground">Contributors</p>
+                </div>
+            </div>
+            
+            <div class="border-t pt-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">Activity</span>
+                    <span class="sparkline">▁▁▁▁▁▁▁▁▁▁▁▁▁▁</span>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="project-card rounded-lg border bg-card text-card-foreground shadow-sm p-6" 
+             data-status="maintenance" data-name="cyber-security-research">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="text-lg font-semibold leading-tight">cyber-security-research</h3>
+                <div class="flex space-x-1">
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium status-maintenance">
+                        Maintenance
+                    </span>
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium grade-b">
+                        B-
+                    </span>
+                </div>
+            </div>
+            
+            <p class="text-sm text-muted-foreground mb-4 leading-relaxed">Security research platform for threat analysis, vulnerability assessment, penetration testing, and cybersecurity intelligence gathering.</p>
+            
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">12</p>
+                    <p class="text-xs text-muted-foreground">Commits</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">3</p>
+                    <p class="text-xs text-muted-foreground">MRs</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">3</p>
+                    <p class="text-xs text-muted-foreground">Contributors</p>
+                </div>
+            </div>
+            
+            <div class="border-t pt-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">Activity</span>
+                    <span class="sparkline">▁▁▁▁▁▁▁▁▁▁▁▁▁▁</span>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="project-card rounded-lg border bg-card text-card-foreground shadow-sm p-6" 
+             data-status="maintenance" data-name="iland-tscprinter">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="text-lg font-semibold leading-tight">iland-tscprinter</h3>
+                <div class="flex space-x-1">
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium status-maintenance">
+                        Maintenance
+                    </span>
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium grade-b">
+                        B-
+                    </span>
+                </div>
+            </div>
+            
+            <p class="text-sm text-muted-foreground mb-4 leading-relaxed">A private GitLab project focused on Iland Tscprinter development and implementation.</p>
+            
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">4</p>
+                    <p class="text-xs text-muted-foreground">Commits</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">1</p>
+                    <p class="text-xs text-muted-foreground">MRs</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">3</p>
+                    <p class="text-xs text-muted-foreground">Contributors</p>
+                </div>
+            </div>
+            
+            <div class="border-t pt-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">Activity</span>
+                    <span class="sparkline">▁▁▁▁▁▁▁▁▁▁▁▁▁▁</span>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="project-card rounded-lg border bg-card text-card-foreground shadow-sm p-6" 
+             data-status="inactive" data-name="llm-gpu-access-thaibev">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="text-lg font-semibold leading-tight">llm-gpu-access-thaibev</h3>
+                <div class="flex space-x-1">
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium status-inactive">
+                        Inactive
+                    </span>
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium grade-c">
+                        C-
+                    </span>
+                </div>
+            </div>
+            
+            <p class="text-sm text-muted-foreground mb-4 leading-relaxed">This project focuses on enabling and validating API access to an internally hosted open-source large language model (LLM) running on a GPU server. It ...</p>
+            
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">Commits</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">MRs</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">Contributors</p>
+                </div>
+            </div>
+            
+            <div class="border-t pt-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">Activity</span>
+                    <span class="sparkline">▁▁▁▁▁▁▁▁▁▁▁▁▁▁</span>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="project-card rounded-lg border bg-card text-card-foreground shadow-sm p-6" 
+             data-status="inactive" data-name="tspace tsr feeds">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="text-lg font-semibold leading-tight">TSPACE TSR Feeds</h3>
+                <div class="flex space-x-1">
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium status-inactive">
+                        Inactive
+                    </span>
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium grade-c">
+                        C-
+                    </span>
+                </div>
+            </div>
+            
+            <p class="text-sm text-muted-foreground mb-4 leading-relaxed">To make it easy for you to get started with GitLab, here's a list of recommended next steps.</p>
+            
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">Commits</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">MRs</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">Contributors</p>
+                </div>
+            </div>
+            
+            <div class="border-t pt-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">Activity</span>
+                    <span class="sparkline">▁▁▁▁▁▁▁▁▁▁▁▁▁▁</span>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="project-card rounded-lg border bg-card text-card-foreground shadow-sm p-6" 
+             data-status="inactive" data-name="tspace shelf-detection">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="text-lg font-semibold leading-tight">TSPACE shelf-detection</h3>
+                <div class="flex space-x-1">
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium status-inactive">
+                        Inactive
+                    </span>
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium grade-c">
+                        C-
+                    </span>
+                </div>
+            </div>
+            
+            <p class="text-sm text-muted-foreground mb-4 leading-relaxed">To make it easy for you to get started with GitLab, here's a list of recommended next steps.</p>
+            
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">Commits</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">MRs</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">Contributors</p>
+                </div>
+            </div>
+            
+            <div class="border-t pt-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">Activity</span>
+                    <span class="sparkline">▁▁▁▁▁▁▁▁▁▁▁▁▁▁</span>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="project-card rounded-lg border bg-card text-card-foreground shadow-sm p-6" 
+             data-status="inactive" data-name="one-customer-engine">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="text-lg font-semibold leading-tight">one-customer-engine</h3>
+                <div class="flex space-x-1">
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium status-inactive">
+                        Inactive
+                    </span>
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium grade-c">
+                        C-
+                    </span>
+                </div>
+            </div>
+            
+            <p class="text-sm text-muted-foreground mb-4 leading-relaxed">One-customer is a data processing engine that intelligently groups and unifies customer records based on address similarity, tax ID, and customer code...</p>
+            
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">Commits</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">MRs</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">Contributors</p>
+                </div>
+            </div>
+            
+            <div class="border-t pt-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">Activity</span>
+                    <span class="sparkline">▁▁▁▁▁▁▁▁▁▁▁▁▁▁</span>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="project-card rounded-lg border bg-card text-card-foreground shadow-sm p-6" 
+             data-status="inactive" data-name="azure-ai-foundry">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="text-lg font-semibold leading-tight">azure-ai-foundry</h3>
+                <div class="flex space-x-1">
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium status-inactive">
+                        Inactive
+                    </span>
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium grade-c">
+                        C-
+                    </span>
+                </div>
+            </div>
+            
+            <p class="text-sm text-muted-foreground mb-4 leading-relaxed">Integration framework for Azure AI services including cognitive services, machine learning, and AI-powered automation.</p>
+            
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">Commits</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">MRs</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">Contributors</p>
+                </div>
+            </div>
+            
+            <div class="border-t pt-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">Activity</span>
+                    <span class="sparkline">▁▁▁▁▁▁▁▁▁▁▁▁▁▁</span>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="project-card rounded-lg border bg-card text-card-foreground shadow-sm p-6" 
+             data-status="inactive" data-name="fine-tune-vision">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="text-lg font-semibold leading-tight">fine-tune-vision</h3>
+                <div class="flex space-x-1">
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium status-inactive">
+                        Inactive
+                    </span>
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium grade-c">
+                        C-
+                    </span>
+                </div>
+            </div>
+            
+            <p class="text-sm text-muted-foreground mb-4 leading-relaxed">Computer vision model fine-tuning framework supporting custom datasets, transfer learning, and deployment optimization.</p>
+            
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">Commits</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">MRs</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">Contributors</p>
+                </div>
+            </div>
+            
+            <div class="border-t pt-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">Activity</span>
+                    <span class="sparkline">▁▁▁▁▁▁▁▁▁▁▁▁▁▁</span>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="project-card rounded-lg border bg-card text-card-foreground shadow-sm p-6" 
+             data-status="inactive" data-name="rag_knowledge_management">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="text-lg font-semibold leading-tight">rag_knowledge_management</h3>
+                <div class="flex space-x-1">
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium status-inactive">
+                        Inactive
+                    </span>
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium grade-c">
+                        C-
+                    </span>
+                </div>
+            </div>
+            
+            <p class="text-sm text-muted-foreground mb-4 leading-relaxed">Enterprise knowledge base with RAG-powered search, automatic knowledge extraction, and intelligent Q&A capabilities.</p>
+            
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">Commits</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">MRs</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">Contributors</p>
+                </div>
+            </div>
+            
+            <div class="border-t pt-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">Activity</span>
+                    <span class="sparkline">▁▁▁▁▁▁▁▁▁▁▁▁▁▁</span>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="project-card rounded-lg border bg-card text-card-foreground shadow-sm p-6" 
+             data-status="inactive" data-name="test_connect_git_action">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="text-lg font-semibold leading-tight">Test_Connect_Git_Action</h3>
+                <div class="flex space-x-1">
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium status-inactive">
+                        Inactive
+                    </span>
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium grade-c">
+                        C-
+                    </span>
+                </div>
+            </div>
+            
+            <p class="text-sm text-muted-foreground mb-4 leading-relaxed">To make it easy for you to get started with GitLab, here's a list of recommended next steps.</p>
+            
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">Commits</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">MRs</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">Contributors</p>
+                </div>
+            </div>
+            
+            <div class="border-t pt-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">Activity</span>
+                    <span class="sparkline">▁▁▁▁▁▁▁▁▁▁▁▁▁▁</span>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="project-card rounded-lg border bg-card text-card-foreground shadow-sm p-6" 
+             data-status="inactive" data-name="test-cicd">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="text-lg font-semibold leading-tight">test-CICD</h3>
+                <div class="flex space-x-1">
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium status-inactive">
+                        Inactive
+                    </span>
+                    <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium grade-c">
+                        C-
+                    </span>
+                </div>
+            </div>
+            
+            <p class="text-sm text-muted-foreground mb-4 leading-relaxed">Continuous integration and deployment testing framework with automated testing pipelines, quality gates, and deployment automation.</p>
+            
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">Commits</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">MRs</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-primary">0</p>
+                    <p class="text-xs text-muted-foreground">Contributors</p>
+                </div>
+            </div>
+            
+            <div class="border-t pt-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">Activity</span>
+                    <span class="sparkline">▁▁▁▁▁▁▁▁▁▁▁▁▁▁</span>
+                </div>
+            </div>
+        </div>
+        
+                </div>
+            </section>
+
+            <!-- Team Performance -->
+            <section class="mb-8">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold tracking-tight">Team Performance</h2>
+                    <p class="text-muted-foreground">22 active contributors across all projects</p>
+                </div>
+                <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    
+        <div class="rounded-lg border bg-card text-card-foreground shadow-sm p-4">
+            <div class="flex items-center space-x-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
+                    YN
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">Your Name</p>
+                    <p class="text-xs text-muted-foreground">108 commits</p>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="rounded-lg border bg-card text-card-foreground shadow-sm p-4">
+            <div class="flex items-center space-x-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
+                    JS
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">Jedsada Srijunpoe</p>
+                    <p class="text-xs text-muted-foreground">93 commits</p>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="rounded-lg border bg-card text-card-foreground shadow-sm p-4">
+            <div class="flex items-center space-x-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
+                    TK
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">Totrakool Khongsap</p>
+                    <p class="text-xs text-muted-foreground">91 commits</p>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="rounded-lg border bg-card text-card-foreground shadow-sm p-4">
+            <div class="flex items-center space-x-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
+                    T
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">tkhongsap</p>
+                    <p class="text-xs text-muted-foreground">81 commits</p>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="rounded-lg border bg-card text-card-foreground shadow-sm p-4">
+            <div class="flex items-center space-x-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
+                    PJ
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">Phuvit Jaruratkit</p>
+                    <p class="text-xs text-muted-foreground">44 commits</p>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="rounded-lg border bg-card text-card-foreground shadow-sm p-4">
+            <div class="flex items-center space-x-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
+                    IP
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">Itthisak Pratukaew</p>
+                    <p class="text-xs text-muted-foreground">29 commits</p>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="rounded-lg border bg-card text-card-foreground shadow-sm p-4">
+            <div class="flex items-center space-x-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
+                    TT
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">Thanathon THONGDUANG</p>
+                    <p class="text-xs text-muted-foreground">27 commits</p>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="rounded-lg border bg-card text-card-foreground shadow-sm p-4">
+            <div class="flex items-center space-x-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
+                    OP
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">Oraphan Poolrak</p>
+                    <p class="text-xs text-muted-foreground">24 commits</p>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="rounded-lg border bg-card text-card-foreground shadow-sm p-4">
+            <div class="flex items-center space-x-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
+                    JB
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">Jirakit Boonmunewai</p>
+                    <p class="text-xs text-muted-foreground">19 commits</p>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="rounded-lg border bg-card text-card-foreground shadow-sm p-4">
+            <div class="flex items-center space-x-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
+                    I
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">itthisak.pra</p>
+                    <p class="text-xs text-muted-foreground">15 commits</p>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="rounded-lg border bg-card text-card-foreground shadow-sm p-4">
+            <div class="flex items-center space-x-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
+                    S
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">sirapopModel</p>
+                    <p class="text-xs text-muted-foreground">13 commits</p>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="rounded-lg border bg-card text-card-foreground shadow-sm p-4">
+            <div class="flex items-center space-x-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
+                    C
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">chaicharn</p>
+                    <p class="text-xs text-muted-foreground">11 commits</p>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="rounded-lg border bg-card text-card-foreground shadow-sm p-4">
+            <div class="flex items-center space-x-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
+                    TO
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">TCCtech Oraphan Poolrak</p>
+                    <p class="text-xs text-muted-foreground">10 commits</p>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="rounded-lg border bg-card text-card-foreground shadow-sm p-4">
+            <div class="flex items-center space-x-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
+                    C
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">copilot-swe-agent[bot]</p>
+                    <p class="text-xs text-muted-foreground">6 commits</p>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="rounded-lg border bg-card text-card-foreground shadow-sm p-4">
+            <div class="flex items-center space-x-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
+                    E
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">eatrabyo</p>
+                    <p class="text-xs text-muted-foreground">5 commits</p>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="rounded-lg border bg-card text-card-foreground shadow-sm p-4">
+            <div class="flex items-center space-x-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
+                    TT
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">THANATHON THONGDUANG</p>
+                    <p class="text-xs text-muted-foreground">4 commits</p>
+                </div>
+            </div>
+        </div>
+        
+                </div>
+            </section>
+
+            <!-- Technology Stack -->
+            <section class="mb-8">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold tracking-tight">Technology Distribution</h2>
+                    <p class="text-muted-foreground">Programming languages and frameworks across projects</p>
+                </div>
+                <div class="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+                    <div class="flex flex-wrap gap-2">
+                        
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="border-t py-6 md:py-0">
+            <div class="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
+                <p class="text-center text-sm leading-loose text-muted-foreground md:text-left">
+                    Generated by GitLab Analytics Dashboard • 2025-06-14 06:42:44
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        
+    // Enhanced filtering functionality
+    function filterProjects(searchTerm) {
+        const projects = document.querySelectorAll('[data-name]');
+        const term = searchTerm.toLowerCase();
+        
+        projects.forEach(project => {
+            const name = project.getAttribute('data-name');
+            const isVisible = name.includes(term);
+            project.style.display = isVisible ? '' : 'none';
+            
+            if (isVisible) {
+                project.style.animation = 'fadeIn 0.3s ease-in';
+            }
+        });
+    }
+    
+    function filterByStatus(status) {
+        const projects = document.querySelectorAll('[data-status]');
+        
+        projects.forEach(project => {
+            const projectStatus = project.getAttribute('data-status');
+            const isVisible = status === '' || projectStatus === status;
+            project.style.display = isVisible ? '' : 'none';
+            
+            if (isVisible) {
+                project.style.animation = 'fadeIn 0.3s ease-in';
+            }
+        });
+    }
+    
+    // Add fade in animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Initialize tooltips and interactions
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add hover effects to cards
+        const cards = document.querySelectorAll('.project-card, .kpi-card');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-4px)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    });
+    
+    </script>
+</body>
+</html>
