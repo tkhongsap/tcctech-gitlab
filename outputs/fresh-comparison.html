@@ -1,0 +1,143 @@
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>GitLab Analytics Report</title>
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 20px;
+                background-color: #f8f9fa;
+            }
+            .header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 30px;
+                border-radius: 10px;
+                margin-bottom: 30px;
+                text-align: center;
+            }
+            .header h1 {
+                margin: 0;
+                font-size: 2.5em;
+            }
+            .header .subtitle {
+                margin: 10px 0 0 0;
+                opacity: 0.9;
+            }
+            .card {
+                background: white;
+                border-radius: 10px;
+                padding: 25px;
+                margin-bottom: 25px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
+            .card h2 {
+                color: #2c3e50;
+                border-bottom: 3px solid #3498db;
+                padding-bottom: 10px;
+                margin-top: 0;
+            }
+            .metrics-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 20px;
+                margin: 20px 0;
+            }
+            .metric {
+                background: #f8f9fa;
+                padding: 20px;
+                border-radius: 8px;
+                text-align: center;
+                border-left: 4px solid #3498db;
+            }
+            .metric-value {
+                font-size: 2em;
+                font-weight: bold;
+                color: #2c3e50;
+                margin-bottom: 5px;
+            }
+            .metric-label {
+                color: #7f8c8d;
+                font-size: 0.9em;
+            }
+            .table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 20px 0;
+            }
+            .table th, .table td {
+                padding: 12px;
+                text-align: left;
+                border-bottom: 1px solid #ddd;
+            }
+            .table th {
+                background-color: #3498db;
+                color: white;
+                font-weight: bold;
+            }
+            .table tr:hover {
+                background-color: #f5f5f5;
+            }
+            .status-active { color: #27ae60; font-weight: bold; }
+            .status-inactive { color: #e74c3c; font-weight: bold; }
+            .progress-bar {
+                background-color: #ecf0f1;
+                border-radius: 10px;
+                overflow: hidden;
+                height: 20px;
+                margin: 5px 0;
+            }
+            .progress-fill {
+                height: 100%;
+                background: linear-gradient(90deg, #3498db, #2ecc71);
+                transition: width 0.3s ease;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>📊 GitLab Analytics Report</h1>
+            <div class="subtitle">Generated on 2025-06-13 19:49:52</div>
+        </div>
+        
+        
+        <div class="card">
+            <h2>📊 Project Comparison</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Project</th>
+                        <th>Health Score</th>
+                        <th>Commits</th>
+                        <th>Issues</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+        
+                <tr>
+                    <td><strong>llama-index-rag-pipeline</strong></td>
+                    <td>100/100</td>
+                    <td>116</td>
+                    <td>0</td>
+                    <td class="status-active">Healthy</td>
+                </tr>
+            
+                <tr>
+                    <td><strong>resume-extractor</strong></td>
+                    <td>91.1/100</td>
+                    <td>173</td>
+                    <td>0</td>
+                    <td class="status-active">Healthy</td>
+                </tr>
+            </tbody></table></div>
+    </body>
+    </html>
+    
