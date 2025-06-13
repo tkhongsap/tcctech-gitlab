@@ -88,6 +88,32 @@ python scripts/create_issues.py ProjectName \
 python scripts/create_issues.py ProjectName --import issues.csv --dry-run
 ```
 
+#### Weekly Productivity Reports (NEW!)
+```bash
+# Generate weekly report for specific groups and save as HTML
+python scripts/weekly_reports.py --groups 1,2,3 --output weekly_report.html
+
+# Send email report to team
+python scripts/weekly_reports.py --groups 1,2,3 --email team@company.com,manager@company.com
+
+# Generate report for specific team members
+python scripts/weekly_reports.py --groups 1,2,3 --team john.doe,jane.smith --output report.json
+
+# Generate 2-week report with email delivery
+python scripts/weekly_reports.py --groups 1,2,3 --weeks 2 --email team@company.com \
+  --team-name "AI Development Team"
+
+# Test email configuration
+python scripts/weekly_reports.py --test-email your.email@company.com
+
+# Generate report with attachments
+python scripts/weekly_reports.py --groups 1,2,3 --email team@company.com \
+  --email-attachments "analytics.xlsx,metrics.pdf"
+
+# Dry run mode (generate but don't send email)
+python scripts/weekly_reports.py --groups 1,2,3 --email team@company.com --dry-run
+```
+
 #### Legacy Issue Creation
 ```bash
 # Still available for backward compatibility
@@ -111,6 +137,9 @@ The codebase follows a modular architecture to promote reusability and maintaina
 - **src/services/**: Business logic layer
   - `issue_service.py`: Issue creation with templates, bulk import, validation
   - `branch_service.py`: Branch operations (to be implemented)
+  - `weekly_reports.py`: Weekly productivity reporting with team metrics
+  - `email_service.py`: Email delivery system for reports
+  - `analytics_advanced.py`: Advanced analytics with health scoring
 
 - **src/utils/**: Shared utilities
   - `config.py`: Configuration management that merges YAML config with env variables
@@ -121,11 +150,15 @@ The codebase follows a modular architecture to promote reusability and maintaina
 - **scripts/**: CLI entry points
   - `rename_branches.py`: Enhanced branch renaming with progress tracking
   - `create_issues.py`: Full-featured issue creation with templates
+  - `weekly_reports.py`: Generate and send weekly productivity reports
+  - `export_analytics.py`: Export analytics to Excel and other formats
 
-- **templates/issues/**: Issue templates
-  - `epic.yaml`: Epic template for large features
-  - `research.yaml`: Research task template
-  - `ml-experiment.yaml`: ML experiment tracking template
+- **templates/**: Template files
+  - **issues/**: Issue templates
+    - `epic.yaml`: Epic template for large features
+    - `research.yaml`: Research task template
+    - `ml-experiment.yaml`: ML experiment tracking template
+  - `weekly_report_email.py`: HTML email template generator for reports
 
 ### Key Design Patterns
 
@@ -134,6 +167,8 @@ The codebase follows a modular architecture to promote reusability and maintaina
 3. **Rate Limiting**: Built into API client to respect GitLab limits
 4. **Dry Run Mode**: All destructive operations support preview mode
 5. **Comprehensive Logging**: Structured logging with operation context
+6. **Email-First Reporting**: Weekly reports optimized for email delivery with embedded charts
+7. **Health Scoring**: Automated project health assessment with actionable recommendations
 
 ### API Client Features
 - Automatic pagination for all list operations
@@ -156,10 +191,57 @@ The codebase follows a modular architecture to promote reusability and maintaina
 4. **Log operations** using OperationLogger context manager
 5. **Validate configuration** before starting operations
 
+## Weekly Productivity Reports Features
+
+### Core Capabilities
+- **Team Activity Metrics**: Commits, merge requests, issues across all repositories
+- **Project Health Scoring**: Automated health assessment with A-F grades
+- **Individual Contributor Analytics**: Productivity and collaboration scoring
+- **Executive Summary**: Key metrics and highlights for leadership
+- **Actionable Insights**: Automated recommendations for team improvement
+
+### Email Delivery
+- **Professional HTML Templates**: Clean, mobile-responsive email reports
+- **Embedded Charts**: Visual analytics embedded directly in emails
+- **Multi-format Support**: HTML, JSON, and Markdown output options
+- **Attachment Support**: Include additional files with email reports
+- **Email Testing**: Built-in test functionality to verify configuration
+
+### Configuration Options
+- **Team Focus**: Filter metrics to specific team members
+- **Time Periods**: Generate reports for 1-4 weeks of data
+- **Group Selection**: Analyze specific GitLab groups or entire organization
+- **SMTP Configuration**: Support for various email providers (Gmail, Outlook, etc.)
+
+### Setup for Weekly Reports
+
+#### Email Configuration
+Add to your `.env` file:
+```bash
+# SMTP Configuration for email reports
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USE_TLS=true
+SMTP_USERNAME=your-email@company.com
+SMTP_PASSWORD=your-app-password
+SMTP_FROM_EMAIL=gitlab-analytics@company.com
+SMTP_FROM_NAME=GitLab Analytics
+```
+
+#### Example config.yaml Email Section
+```yaml
+email:
+  smtp_server: smtp.company.com
+  smtp_port: 587
+  use_tls: true
+  from_name: "Development Team Analytics"
+```
+
 ## Future Enhancements Planned
 - Concurrent processing with thread pools
 - Operation checkpointing for resume capability
 - Redis caching for frequently accessed data
 - Web UI dashboard for monitoring
 - Webhook integration for real-time updates
-- Comprehensive test suite with mocking
+- Slack/Teams integration for weekly reports
+- Custom report templates and branding
