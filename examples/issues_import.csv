@@ -1,6 +1,0 @@
-title,description,labels,due_date,weight
-"Implement user authentication","Add OAuth2 authentication for API endpoints","feature,security,backend",2024-02-15,5
-"Fix database connection pool issue","Connection pool exhaustion under high load","bug,backend,critical",2024-01-20,8
-"Create API documentation","Document all REST API endpoints with examples","documentation,api",2024-02-01,3
-"Add unit tests for payment service","Achieve 80% code coverage for payment module","task,testing,backend",2024-01-25,5
-"Research ML model deployment options","Evaluate Kubernetes vs serverless for model serving","research,ml-ops",2024-02-10,3
