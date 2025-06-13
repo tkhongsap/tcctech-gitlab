@@ -3,6 +3,7 @@
 
 import sys
 import argparse
+import logging
 from pathlib import Path
 from typing import List, Optional
 from datetime import datetime
@@ -279,7 +280,7 @@ def main():
                 return 1
         
         # Process each group
-        logger.info(f"Branch Rename Tool: '{args.old_branch}' → '{args.new_branch}'")
+        logger.info(f"Branch Rename Tool: '{args.old_branch}' -> '{args.new_branch}'")
         if renamer.dry_run:
             logger.info("Running in DRY RUN mode - no changes will be made")
         
