@@ -1,12 +1,45 @@
 # GitLab Tools
 
-A collection of Python scripts for automating GitLab operations.
+Enhanced GitLab management tools for bulk operations, analytics, and automation.
+
+## Features
+
+- 🚀 **Bulk Branch Renaming** - Rename branches across multiple projects with safety checks
+- 📊 **Repository Analytics** - Generate comprehensive metrics and reports for projects and groups
+- 📝 **Issue Management** - Create issues from templates, CSV files, or interactively
+- 🧪 **Comprehensive Testing** - Unit and integration tests with 80%+ coverage target
+- 📈 **Progress Tracking** - Real-time progress bars and operation logging
+- 🔒 **Safety Features** - Dry-run mode, protected branch detection, rollback support
+- 📄 **Report Generation** - Export operations and analytics in Markdown, JSON, or text formats
 
 ## Scripts
 
-1. **01_gitlab_info_extractor.py** - Extracts information about groups, subgroups, and projects from a GitLab instance.
-2. **02_gitlab_rename_trunk_to_main.py** - Renames 'trunk' branch to 'main' across multiple projects in a group.
-3. **03_create_gitlab_issues.py** - Creates issues in a GitLab project based on a structured text file.
+### Core Scripts (Enhanced)
+
+1. **scripts/rename_branches.py** - Enhanced branch renaming with safety features
+   - Dry-run mode for preview
+   - Protected branch detection
+   - Progress tracking
+   - Report generation
+   - Configurable via YAML
+
+2. **scripts/create_issues.py** - Advanced issue creation
+   - Template-based creation
+   - CSV bulk import
+   - Interactive mode
+   - Variable substitution
+
+3. **scripts/analyze_projects.py** - GitLab analytics and reporting
+   - Project and group metrics
+   - Commit, branch, issue, and MR statistics
+   - Contributor analytics
+   - Multiple output formats
+
+### Legacy Scripts
+
+1. **01_gitlab_info_extractor.py** - Extracts information about groups, subgroups, and projects
+2. **02_gitlab_rename_trunk_to_main.py** - Original branch rename script
+3. **03_create_gitlab_issues.py** - Original issue creation script
 
 ## Setup
 
@@ -30,63 +63,139 @@ A collection of Python scripts for automating GitLab operations.
 
 ## Usage
 
-### Extract GitLab Information
+### Branch Renaming (Enhanced)
 
 ```bash
+# Dry run mode (preview changes)
+python scripts/rename_branches.py --dry-run
+
+# Rename specific branches
+python scripts/rename_branches.py --old-branch develop --new-branch main
+
+# Process specific groups
+python scripts/rename_branches.py --groups "AI-ML-Services" "Research Repos"
+
+# Generate a report
+python scripts/rename_branches.py --dry-run --report reports/rename-summary.md
+```
+
+### Issue Creation (Enhanced)
+
+```bash
+# Interactive mode
+python scripts/create_issues.py ProjectName
+
+# Create from template
+python scripts/create_issues.py ProjectName --template epic \
+  --vars "epic_name=User Authentication" \
+  --vars "description=Implement OAuth2 login"
+
+# Import from CSV
+python scripts/create_issues.py ProjectName --import issues.csv
+
+# List available templates
+python scripts/create_issues.py --list-templates
+```
+
+### Analytics and Reporting
+
+```bash
+# Analyze a single project
+python scripts/analyze_projects.py --project my-project
+
+# Analyze an entire group
+python scripts/analyze_projects.py --group "AI-ML-Services"
+
+# Generate different formats
+python scripts/analyze_projects.py --project my-project --format json -o report.json
+python scripts/analyze_projects.py --group my-group --format markdown -o report.md
+```
+
+### Legacy Scripts
+
+The original scripts are still available:
+
+```bash
+# Extract GitLab information
 python 01_gitlab_info_extractor.py
-```
 
-This script extracts information about a specific GitLab group and its subgroups, including:
-- Group details
-- Subgroup details
-- Project/repository details
-- Branch information
-- Last commit details for each branch
-
-The script outputs information to:
-- Console (for interactive use)
-- JSON file (for programmatic use)
-- Markdown file (for documentation)
-- CSV file (for spreadsheet applications)
-
-### Rename Trunk to Main
-
-```bash
+# Rename trunk to main (original version)
 python 02_gitlab_rename_trunk_to_main.py
-```
 
-This script automates renaming the 'trunk' branch to 'main' across all projects in a specific GitLab group:
-- Checks if 'trunk' branch exists
-- Creates 'main' branch from 'trunk'
-- Updates default branch setting
-- Deletes 'trunk' branch
-
-### Create GitLab Issues
-
-```bash
+# Create issues from text file
 python 03_create_gitlab_issues.py [project_name] [issues_file]
 ```
 
-This script creates issues in a GitLab project based on a structured text file:
-- Arguments:
-  - `project_name`: Name of the GitLab project (default: "Flow-RAG")
-  - `issues_file`: Path to the file containing issue descriptions (default: "issues-flow-rag.txt")
+## Testing
 
-- The issues file should follow a specific format:
-  ```
-  • [Feature/Task] Title
-  o Description: 
-      - Item 1
-      - Item 2
-  o Acceptance Criteria: 
-      - Criterion 1
-      - Criterion 2
-  o Labels: label1, label2, label3
-  ```
+Run the test suite:
 
-## Example Issues File
+```bash
+# Run all tests with coverage
+pytest
 
-See `issues-flow-rag.txt` for an example of the structure expected by the issue creator script.
+# Run only unit tests
+pytest tests/unit -v
+
+# Run with specific coverage threshold
+pytest --cov-fail-under=80
+
+# Generate HTML coverage report
+pytest --cov-report=html
+open htmlcov/index.html
+```
+
+## Configuration
+
+The tools use a hierarchical configuration system:
+
+1. **config/config.yaml** - Default configuration
+2. **Environment variables** - Override config values
+3. **Command line arguments** - Override everything
+
+Example configuration:
+
+```yaml
+gitlab:
+  rate_limit: 3
+  timeout: 30
+  
+features:
+  dry_run: false
+  show_progress: true
+  
+branch_operations:
+  skip_protected: true
+  update_merge_requests: true
+  
+groups:
+  - name: "AI-ML-Services"
+    filters:
+      exclude_archived: true
+```
+
+## Project Structure
+
+```
+gitlab-tools/
+├── src/                    # Core library code
+│   ├── api/               # GitLab API client
+│   ├── models/            # Data models
+│   ├── services/          # Business logic
+│   └── utils/             # Utilities
+├── scripts/               # CLI scripts
+├── templates/             # Issue templates
+│   └── issues/
+│       ├── epic.yaml
+│       ├── feature.yaml
+│       └── bug.yaml
+├── tests/                 # Test suite
+│   ├── unit/
+│   └── integration/
+├── config/                # Configuration
+│   └── config.yaml
+└── docs/                  # Documentation
+```
 
 ## Requirements
 

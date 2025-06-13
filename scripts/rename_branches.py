@@ -38,6 +38,7 @@ class BranchRenamer:
             'skipped': 0,
             'failed': 0
         }
+        self.operations_log = []
     
     def rename_branch_in_project(
         self, 
@@ -64,12 +65,14 @@ class BranchRenamer:
                 if not self.client.branch_exists(project_id, old_branch):
                     logger.info(f"Branch '{old_branch}' not found - skipping")
                     self.stats['skipped'] += 1
+                    self.operations_log.append((project_name, old_branch, new_branch, 'skipped'))
                     return True
                 
                 # Check if new branch already exists
                 if self.client.branch_exists(project_id, new_branch):
                     logger.info(f"Branch '{new_branch}' already exists - skipping")
                     self.stats['skipped'] += 1
+                    self.operations_log.append((project_name, old_branch, new_branch, 'skipped'))
                     return True
                 
                 # Check if it's a protected branch
@@ -78,11 +81,13 @@ class BranchRenamer:
                     if branch_info.get('protected', False):
                         logger.warning(f"Branch '{old_branch}' is protected - skipping")
                         self.stats['skipped'] += 1
+                        self.operations_log.append((project_name, old_branch, new_branch, 'skipped'))
                         return True
                 
                 if self.dry_run:
                     logger.info(f"[DRY RUN] Would rename '{old_branch}' to '{new_branch}'")
                     self.stats['renamed'] += 1
+                    self.operations_log.append((project_name, old_branch, new_branch, 'renamed'))
                     return True
                 
                 # Perform the rename
@@ -96,15 +101,18 @@ class BranchRenamer:
                 if success:
                     logger.info(f"Successfully renamed '{old_branch}' to '{new_branch}'")
                     self.stats['renamed'] += 1
+                    self.operations_log.append((project_name, old_branch, new_branch, 'renamed'))
                     return True
                 else:
                     logger.error(f"Failed to rename branch")
                     self.stats['failed'] += 1
+                    self.operations_log.append((project_name, old_branch, new_branch, 'failed'))
                     return False
                     
             except Exception as e:
                 logger.error(f"Error processing project '{project_name}': {e}")
                 self.stats['failed'] += 1
+                self.operations_log.append((project_name, old_branch, new_branch, 'failed'))
                 return False
     
     def process_group(
@@ -195,6 +203,61 @@ class BranchRenamer:
         
         if self.stats['failed'] > 0:
             print(f"\n{Colors.RED}Warning: Some operations failed. Check the logs for details.{Colors.RESET}")
+    
+    def generate_report(self, format='markdown'):
+        """Generate operation report.
+        
+        Args:
+            format: Report format ('markdown', 'json', 'text')
+            
+        Returns:
+            Report string
+        """
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        if format == 'json':
+            import json
+            return json.dumps({
+                'timestamp': timestamp,
+                'dry_run': self.dry_run,
+                'statistics': self.stats,
+                'operations': [
+                    {
+                        'project': project,
+                        'old_branch': old,
+                        'new_branch': new,
+                        'result': result
+                    }
+                    for project, old, new, result in getattr(self, 'operations_log', [])
+                ]
+            }, indent=2)
+        
+        # Markdown format
+        lines = [
+            f"# Branch Rename Operation Report",
+            f"",
+            f"**Generated:** {timestamp}",
+            f"**Mode:** {'DRY RUN' if self.dry_run else 'LIVE'}",
+            f"",
+            f"## Summary",
+            f"",
+            f"| Metric | Count |",
+            f"|--------|-------|",
+            f"| Total Projects | {self.stats['total']} |",
+            f"| Successfully Renamed | {self.stats['renamed']} |",
+            f"| Skipped | {self.stats['skipped']} |",
+            f"| Failed | {self.stats['failed']} |",
+            f"",
+            f"## Details",
+            f""
+        ]
+        
+        if hasattr(self, 'operations_log'):
+            for project, old, new, result in self.operations_log:
+                emoji = "✅" if result == "renamed" else "⏭️" if result == "skipped" else "❌"
+                lines.append(f"- {emoji} **{project}**: {old} → {new} ({result})")
+        
+        return '\n'.join(lines)
 
 
 def main():
@@ -236,6 +299,10 @@ def main():
         '--no-color',
         action='store_true',
         help='Disable colored output'
+    )
+    parser.add_argument(
+        '--report',
+        help='Generate report file (supports .md, .json, .txt extensions)'
     )
     
     args = parser.parse_args()
@@ -291,6 +358,27 @@ def main():
         
         # Print summary
         renamer.print_summary()
+        
+        # Generate report if requested
+        if args.report:
+            report_path = Path(args.report)
+            report_format = 'markdown'
+            
+            if report_path.suffix == '.json':
+                report_format = 'json'
+            elif report_path.suffix == '.txt':
+                report_format = 'text'
+            
+            report_content = renamer.generate_report(format=report_format)
+            
+            # Create output directory if needed
+            report_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            with open(report_path, 'w') as f:
+                f.write(report_content)
+            
+            logger.info(f"Report saved to: {report_path}")
+            print(f"\n{Colors.GREEN}Report saved to: {report_path}{Colors.RESET}")
         
         # Exit code based on results
         if renamer.stats['failed'] > 0:
