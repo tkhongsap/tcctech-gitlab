@@ -3,15 +3,18 @@
 import os
 import sys
 import requests
-from dotenv import load_dotenv
 import time
+
+# Try to import dotenv, but continue if not available
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 OLD_BRANCH = "trunk"
 NEW_BRANCH = "main"
 REQUEST_DELAY = 0.3  # seconds between API calls to avoid rate limits
-
-# Load environment variables from .env file
-load_dotenv()
 
 # Get GitLab configuration from environment variables
 gitlab_url = os.getenv('GITLAB_URL')
@@ -164,15 +167,19 @@ def main():
     
     group_names = ["AI-ML-Services", "Research Repos"]
     
+    success_count = 0
     for group_name in group_names:
         if process_group(group_name):
             print(f"\nSuccessfully processed group: {group_name}")
+            success_count += 1
         else:
             print(f"\nFailed to process group: {group_name}")
-
     
-    if process_group(group_name):
-        print("\nOperation completed successfully!")
+    # Summary of all operations
+    if success_count == len(group_names):
+        print("\nAll operations completed successfully!")
+    elif success_count > 0:
+        print(f"\nOperation completed with partial success: {success_count}/{len(group_names)} groups processed.")
     else:
         print("\nOperation completed with errors.")
 

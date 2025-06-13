@@ -6,4 +6,29 @@ __pycache__/
 .coverage
 htmlcov/
 .venv/
-venv/ 
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# Generated files
+dist/
+build/
+*.egg-info/
+
+# Test coverage
+.coverage
+coverage.xml
+*.cover
+
+# Temporary files
+*.tmp
+*.bak
+.DS_Store 
