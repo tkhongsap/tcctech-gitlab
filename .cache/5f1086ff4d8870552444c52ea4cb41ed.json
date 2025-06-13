@@ -1,0 +1,194 @@
+{
+  "key": "project_metrics:1034",
+  "value": {
+    "project": {
+      "id": 1034,
+      "name": "e-recruitment-suite",
+      "path": "ds-and-ml-research-sandbox/ai-ml-services/extract/e-recruitment-suite",
+      "created_at": "2025-06-11T08:05:26.259Z",
+      "last_activity_at": "2025-06-13T11:23:08.766Z",
+      "default_branch": "main",
+      "visibility": "private",
+      "archived": false
+    },
+    "commits": {
+      "total": 174,
+      "last_30_days": 174,
+      "by_day": {
+        "2025-06-12": 1,
+        "2025-06-11": 5,
+        "2025-06-10": 2,
+        "2025-06-09": 1,
+        "2025-06-06": 5,
+        "2025-06-05": 1,
+        "2025-06-04": 1,
+        "2025-03-18": 1,
+        "2025-03-14": 1,
+        "2025-03-13": 1,
+        "2025-03-11": 1,
+        "2025-03-07": 1,
+        "2025-03-01": 1,
+        "2025-02-28": 7,
+        "2025-02-27": 2,
+        "2025-02-26": 8,
+        "2025-02-25": 1,
+        "2025-02-21": 1,
+        "2025-02-14": 1,
+        "2025-02-11": 4,
+        "2025-02-04": 1,
+        "2025-01-15": 1,
+        "2025-01-13": 6,
+        "2025-01-12": 7,
+        "2025-01-11": 1,
+        "2025-01-10": 4,
+        "2025-01-08": 1,
+        "2025-01-07": 5,
+        "2025-01-06": 3,
+        "2025-01-02": 1,
+        "2024-12-30": 1,
+        "2024-12-27": 7,
+        "2024-12-26": 14,
+        "2024-12-25": 27,
+        "2024-12-24": 1,
+        "2024-12-23": 1,
+        "2024-12-12": 1,
+        "2024-12-11": 3,
+        "2024-12-09": 4,
+        "2024-12-04": 2,
+        "2024-12-03": 3,
+        "2024-12-02": 3,
+        "2024-11-29": 4,
+        "2024-11-28": 2,
+        "2024-11-27": 1,
+        "2024-11-26": 1,
+        "2024-11-24": 3,
+        "2024-11-23": 3,
+        "2024-11-22": 1,
+        "2024-11-21": 7,
+        "2024-11-20": 5,
+        "2024-11-19": 3,
+        "2024-09-06": 1
+      },
+      "by_author": {
+        "Totrakool Khongsap": 2,
+        "Oraphan Poolrak": 11,
+        "Thanathon THONGDUANG": 3,
+        "sittipak": 29,
+        "Sittipak Srisawas": 1,
+        "TonJK": 37,
+        "zolo_capricorn": 74,
+        "Kamonchanok Sinraksa": 6,
+        "Pawarit Akepitaktam": 2,
+        "palam": 3,
+        "Jirapat Kaewsongsang": 1,
+        "Jirakit Boonmunewai": 1,
+        "kamonchanok.si": 3,
+        "Tharathip Kulchotirat": 1
+      },
+      "average_per_day": 5.8
+    },
+    "branches": {
+      "total": 2,
+      "active": 2,
+      "stale": 0,
+      "protected": 1,
+      "branch_names": [
+        "main",
+        "task/frontend-mockup"
+      ]
+    },
+    "issues": {
+      "total": 5,
+      "open": 5,
+      "closed": 0,
+      "by_label": {
+        "In progress": 3
+      },
+      "closure_rate": 0.0
+    },
+    "merge_requests": {
+      "total": 0,
+      "open": 0,
+      "merged": 0,
+      "closed": 0,
+      "merge_rate": 0
+    },
+    "contributors": {
+      "total": 10,
+      "top_contributors": [
+        {
+          "name": "zolo_capricorn",
+          "email": "suijuku@outlook.com",
+          "commits": 74,
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "name": "TonJK",
+          "email": "Jirapat.Ka@tcc-technology.com",
+          "commits": 35,
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "name": "sittipak",
+          "email": "sittipak.ssw@gmail.com",
+          "commits": 28,
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "name": "Oraphan Poolrak",
+          "email": "oraphan.p@tcc-technology.com",
+          "commits": 11,
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "name": "Kamonchanok Sinraksa",
+          "email": "kamonchanok.si@tcc-technology.com",
+          "commits": 5,
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "name": "Thanathon THONGDUANG",
+          "email": "thanathonn.td@gmail.com",
+          "commits": 3,
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "name": "kamonchanok.si",
+          "email": "kamonchanok.si@tcc-techonology.com",
+          "commits": 3,
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "name": "palam",
+          "email": "pawarit.a@tspacedigital.com",
+          "commits": 2,
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "name": "Totrakool Khongsap",
+          "email": "ta.khongsap@gmail.com",
+          "commits": 1,
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "name": "Tharathip Kulchotirat",
+          "email": "tharathip.k@tcc-technology.com",
+          "commits": 1,
+          "additions": 0,
+          "deletions": 0
+        }
+      ]
+    }
+  },
+  "expiry": "2025-06-13T19:44:32.683334",
+  "created": "2025-06-13T19:29:32.683334"
+}
