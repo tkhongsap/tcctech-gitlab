@@ -4,6 +4,7 @@ Enhanced GitLab management tools for bulk operations, analytics, and automation.
 
 ## Features
 
+### Core Features
 - 🚀 **Bulk Branch Renaming** - Rename branches across multiple projects with safety checks
 - 📊 **Repository Analytics** - Generate comprehensive metrics and reports for projects and groups
 - 📝 **Issue Management** - Create issues from templates, CSV files, or interactively
@@ -11,6 +12,16 @@ Enhanced GitLab management tools for bulk operations, analytics, and automation.
 - 📈 **Progress Tracking** - Real-time progress bars and operation logging
 - 🔒 **Safety Features** - Dry-run mode, protected branch detection, rollback support
 - 📄 **Report Generation** - Export operations and analytics in Markdown, JSON, or text formats
+
+### Advanced Analytics (New!)
+- 📈 **Trend Analysis** - Analyze repository activity trends over time
+- 🏥 **Health Scoring** - Automatic project health assessment with grades (A-F)
+- 🤖 **Smart Recommendations** - AI-powered suggestions for improving project health
+- 📊 **Project Comparison** - Compare multiple projects side-by-side
+- 🌐 **HTML Dashboards** - Interactive web-based analytics dashboards
+- 💾 **Smart Caching** - File-based caching for faster repeated queries
+- 📑 **Excel Export** - Export analytics to Excel with multiple worksheets
+- ⏱️ **Time-Series Analysis** - Track metrics evolution over custom time periods
 
 ## Scripts
 
@@ -99,6 +110,7 @@ python scripts/create_issues.py --list-templates
 
 ### Analytics and Reporting
 
+#### Basic Analytics
 ```bash
 # Analyze a single project
 python scripts/analyze_projects.py --project my-project
@@ -109,6 +121,40 @@ python scripts/analyze_projects.py --group "AI-ML-Services"
 # Generate different formats
 python scripts/analyze_projects.py --project my-project --format json -o report.json
 python scripts/analyze_projects.py --group my-group --format markdown -o report.md
+```
+
+#### Advanced Analytics
+```bash
+# Trend analysis with health scoring
+python scripts/analyze_projects.py --project my-project --trends --days 90
+
+# Compare multiple projects
+python scripts/analyze_projects.py --compare project1 project2 project3
+
+# Generate HTML dashboard
+python scripts/analyze_projects.py --project my-project --trends --html -o dashboard.html
+
+# Use caching for faster repeated queries
+python scripts/analyze_projects.py --project my-project  # First run caches data
+python scripts/analyze_projects.py --project my-project  # Uses cached data
+
+# Clear cache if needed
+python scripts/analyze_projects.py --project my-project --clear-cache
+```
+
+#### Export to Excel
+```bash
+# Export project analytics to Excel
+python scripts/export_analytics.py my-project -o project_report.xlsx
+
+# Export group analytics
+python scripts/export_analytics.py "AI-ML-Services" -o group_report.xlsx
+
+# Compare projects in Excel
+python scripts/export_analytics.py "compare:1,2,3" -o comparison.xlsx
+
+# Include trend analysis
+python scripts/export_analytics.py my-project --trends --days 60 -o trends.xlsx
 ```
 
 ### Legacy Scripts
@@ -197,13 +243,43 @@ gitlab-tools/
 └── docs/                  # Documentation
 ```
 
+## Documentation
+
+- [Analytics Guide](docs/ANALYTICS_GUIDE.md) - Comprehensive guide to analytics features
+- [API Reference](docs/API_REFERENCE.md) - API client documentation (coming soon)
+- [Development Guide](docs/DEVELOPMENT.md) - Contributing and development setup (coming soon)
+
 ## Requirements
 
-- Python 3.6 or higher
-- Required packages:
-  - requests
-  - python-dotenv
-  - typing
+- Python 3.8 or higher
+- Required packages: See `requirements.txt`
+
+### Core Dependencies
+- `requests` - HTTP library for GitLab API
+- `python-dotenv` - Environment variable management
+- `PyYAML` - Configuration file support
+- `click` - CLI framework
+- `rich` - Terminal formatting
+
+### Analytics Dependencies
+- `pandas` - Data analysis
+- `matplotlib` - Visualization
+- `openpyxl` - Excel export
+
+## Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/tkhongsap/tcctech-gitlab.git
+cd tcctech-gitlab
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Copy and configure environment
+cp .env.example .env
+# Edit .env with your GitLab credentials
+```
 
 ## License
 

@@ -12,8 +12,10 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.api import GitLabClient
 from src.services import GitLabAnalytics
+from src.services.analytics_advanced import AdvancedAnalytics
 from src.utils import Config, setup_logging, get_logger
 from src.utils.logger import Colors
+from src.utils.cache import FileCache, CachedAnalytics
 
 logger = get_logger(__name__)
 
@@ -34,6 +36,29 @@ def main():
         '--group', '-g',
         help='Group ID or name to analyze'
     )
+    target_group.add_argument(
+        '--compare', '-cmp',
+        nargs='+',
+        help='Compare multiple projects (provide project IDs)'
+    )
+    
+    # Analytics options
+    parser.add_argument(
+        '--trends',
+        action='store_true',
+        help='Include trend analysis'
+    )
+    parser.add_argument(
+        '--days',
+        type=int,
+        default=30,
+        help='Number of days for trend analysis (default: 30)'
+    )
+    parser.add_argument(
+        '--html',
+        action='store_true',
+        help='Generate HTML dashboard'
+    )
     
     # Output options
     parser.add_argument(
@@ -42,9 +67,21 @@ def main():
     )
     parser.add_argument(
         '--format', '-f',
-        choices=['markdown', 'json', 'text'],
+        choices=['markdown', 'json', 'text', 'html'],
         default='markdown',
         help='Output format (default: markdown)'
+    )
+    
+    # Cache options
+    parser.add_argument(
+        '--no-cache',
+        action='store_true',
+        help='Disable caching'
+    )
+    parser.add_argument(
+        '--clear-cache',
+        action='store_true',
+        help='Clear cache before running'
     )
     
     # Configuration
@@ -82,15 +119,55 @@ def main():
             config=gitlab_config
         )
         
-        # Create analytics service
+        # Create analytics services
         analytics = GitLabAnalytics(client)
+        advanced = AdvancedAnalytics(client)
+        
+        # Set up caching if enabled
+        cache = None
+        if not args.no_cache:
+            cache = FileCache()
+            if args.clear_cache:
+                cache.clear()
+                print(f"{Colors.YELLOW}Cache cleared{Colors.RESET}")
+            
+            # Wrap analytics with cache
+            analytics = CachedAnalytics(analytics, cache)
+            advanced = CachedAnalytics(advanced, cache)
         
         # Get metrics
         print(f"{Colors.BOLD}Generating analytics report...{Colors.RESET}")
         
-        if args.project:
+        if args.compare:
+            # Project comparison mode
+            logger.info(f"Comparing projects: {args.compare}")
+            metrics = advanced.compare_projects(args.compare)
+            
+            if args.html or args.format == 'html':
+                report = advanced.generate_html_dashboard(metrics)
+            else:
+                # Use basic report generation for comparison
+                report = json.dumps(metrics, indent=2, default=str) if args.format == 'json' else str(metrics)
+        
+        elif args.project:
             logger.info(f"Analyzing project: {args.project}")
-            metrics = analytics.get_project_metrics(args.project)
+            
+            if args.trends:
+                # Get trend analysis
+                metrics = advanced.get_project_trends(args.project, days=args.days)
+                
+                if args.html or args.format == 'html':
+                    report = advanced.generate_html_dashboard(metrics)
+                else:
+                    # Enhance with basic metrics
+                    basic_metrics = analytics.get_project_metrics(args.project)
+                    metrics['basic_metrics'] = basic_metrics
+                    report = analytics.generate_summary_report(metrics, format=args.format)
+            else:
+                # Basic metrics
+                metrics = analytics.get_project_metrics(args.project)
+                report = analytics.generate_summary_report(metrics, format=args.format)
+        
         else:
             logger.info(f"Analyzing group: {args.group}")
             
@@ -105,14 +182,17 @@ def main():
                 group_id = args.group
             
             metrics = analytics.get_group_metrics(group_id)
-        
-        # Generate report
-        report = analytics.generate_summary_report(metrics, format=args.format)
+            report = analytics.generate_summary_report(metrics, format=args.format)
         
         # Output report
         if args.output:
             output_path = Path(args.output)
             output_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            # Determine file extension if not provided
+            if not output_path.suffix:
+                ext_map = {'markdown': '.md', 'json': '.json', 'html': '.html', 'text': '.txt'}
+                output_path = output_path.with_suffix(ext_map.get(args.format, '.txt'))
             
             with open(output_path, 'w') as f:
                 f.write(report)
@@ -121,13 +201,20 @@ def main():
         else:
             print(f"\n{report}")
         
-        # Summary statistics
-        if args.project and args.format != 'json':
-            print(f"\n{Colors.BOLD}Quick Summary:{Colors.RESET}")
-            print(f"- Commits (30 days): {metrics['commits']['total']}")
-            print(f"- Active branches: {metrics['branches']['active']}")
-            print(f"- Open issues: {metrics['issues']['open']}")
-            print(f"- Contributors: {metrics['contributors']['total']}")
+        # Summary statistics for trends
+        if args.trends and 'health_score' in metrics and args.format != 'json':
+            print(f"\n{Colors.BOLD}Health Analysis:{Colors.RESET}")
+            health = metrics['health_score']
+            print(f"- Overall Score: {health['score']}/100 (Grade: {health['grade']})")
+            if health.get('recommendations'):
+                print(f"\n{Colors.BOLD}Recommendations:{Colors.RESET}")
+                for rec in health['recommendations']:
+                    print(f"  {rec}")
+        
+        # Cache statistics
+        if cache and not args.no_cache:
+            stats = cache.get_stats()
+            logger.debug(f"Cache stats: {stats['total_entries']} entries, {stats['total_size_bytes']} bytes")
         
         return 0
         
