@@ -24,6 +24,12 @@ pytest --cov=src --cov-report=html
 
 # Run specific test file
 pytest tests/unit/test_api_client.py
+
+# Use the test runner script
+python run_tests.py
+
+# Run specific test suite
+python run_tests.py tests/unit/scripts/
 ```
 
 ### Linting and type checking
@@ -53,6 +59,9 @@ python scripts/sync_issues.py PROJECT_ID --use-api
 
 # Generate shell script
 python scripts/sync_issues.py PROJECT_ID --generate-script
+
+# Simplified script for specific project
+python sync_issues_simple.py --dry-run
 
 # Example: Create issue file
 cat > issues/new-feature.md << EOF
@@ -145,10 +154,31 @@ python scripts/weekly_reports.py --groups 1,2,3 --email team@company.com \
 python scripts/weekly_reports.py --groups 1,2,3 --email team@company.com --dry-run
 ```
 
-#### Legacy Issue Creation
+#### Executive Dashboard Generation
 ```bash
-# Still available for backward compatibility
-python 03_create_gitlab_issues.py "ProjectName" "issues/legacy-format.txt"
+# Generate dashboard for specific groups
+python scripts/generate_executive_dashboard.py --groups 1721,1267,1269 --output dashboard.html
+
+# Include specific time period
+python scripts/generate_executive_dashboard.py --groups 1721 --days 30 --output monthly_dashboard.html
+
+# Export as JSON for API consumption
+python scripts/generate_executive_dashboard.py --groups 1721 --format json --output dashboard.json
+```
+
+#### Project Analytics
+```bash
+# Analyze single project
+python scripts/analyze_projects.py project 123 --output analysis.json
+
+# Analyze entire group
+python scripts/analyze_projects.py group 456 --format markdown --output group_analysis.md
+
+# Compare multiple projects
+python scripts/analyze_projects.py compare 123,456,789 --output comparison.html
+
+# Export to Excel
+python scripts/export_analytics.py projects 123,456 --output analytics.xlsx
 ```
 
 ## High-Level Architecture
@@ -181,8 +211,12 @@ The codebase follows a modular architecture to promote reusability and maintaina
 - **scripts/**: CLI entry points
   - `rename_branches.py`: Enhanced branch renaming with progress tracking
   - `create_issues.py`: Full-featured issue creation with templates
+  - `sync_issues.py`: Sync markdown files from issues folder to GitLab
   - `weekly_reports.py`: Generate and send weekly productivity reports
+  - `generate_executive_dashboard.py`: Create executive dashboards with analytics
+  - `analyze_projects.py`: Deep project and group analytics
   - `export_analytics.py`: Export analytics to Excel and other formats
+  - `send_report_email.py`: Send HTML reports via email
 
 - **templates/**: Template files
   - **issues/**: Issue templates
@@ -268,11 +302,32 @@ email:
   from_name: "Development Team Analytics"
 ```
 
-## Future Enhancements Planned
-- Concurrent processing with thread pools
-- Operation checkpointing for resume capability
-- Redis caching for frequently accessed data
-- Web UI dashboard for monitoring
-- Webhook integration for real-time updates
-- Slack/Teams integration for weekly reports
-- Custom report templates and branding
+## File-Based Issue Creation
+
+### Overview
+The file-based issue creation system allows creating GitLab issues from markdown or text files in the `issues/` folder. This approach is particularly useful for:
+- Bulk issue creation
+- Version-controlled issue templates
+- Automated issue generation from other tools
+
+### Supported Formats
+1. **Markdown with YAML frontmatter** (recommended)
+2. **Simple markdown** with hashtag labels
+3. **Plain text** files
+
+### curl vs API Methods
+- **curl method** (default): Direct HTTP calls, no Python dependencies
+- **API method** (`--use-api`): Uses GitLab Python client, better error handling
+
+## Testing Strategy
+
+### Test Organization
+Tests are organized by module type:
+- `tests/unit/api/` - API client tests
+- `tests/unit/models/` - Data model tests
+- `tests/unit/services/` - Service layer tests
+- `tests/unit/scripts/` - CLI script tests
+- `tests/unit/utils/` - Utility function tests
+
+### Running Tests
+The `run_tests.py` script provides a convenient way to run all tests with coverage reporting. Individual test suites can be run for faster feedback during development.
