@@ -4,7 +4,22 @@ import os
 import yaml
 from pathlib import Path
 from typing import Dict, Any, Optional, Union
-from dotenv import load_dotenv
+
+try:
+    from dotenv import load_dotenv
+    HAS_DOTENV = True
+except ImportError:
+    HAS_DOTENV = False
+    # Simple fallback for loading .env file
+    def load_dotenv():
+        env_file = Path('.env')
+        if env_file.exists():
+            with open(env_file, 'r') as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith('#') and '=' in line:
+                        key, value = line.split('=', 1)
+                        os.environ[key.strip()] = value.strip()
 
 
 class Config:

@@ -19,6 +19,19 @@ try:
 except ImportError:
     print("💡 Tip: Install python-dotenv to load .env files automatically")
     print("   pip install python-dotenv")
+    # Simple fallback for loading .env file
+    env_file = Path(__file__).parent.parent / '.env'
+    if env_file.exists():
+        with open(env_file, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, value = line.split('=', 1)
+                    os.environ[key.strip()] = value.strip()
+
+# Handle GITLAB_API_TOKEN vs GITLAB_TOKEN
+if 'GITLAB_API_TOKEN' in os.environ and 'GITLAB_TOKEN' not in os.environ:
+    os.environ['GITLAB_TOKEN'] = os.environ['GITLAB_API_TOKEN']
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -536,7 +549,9 @@ def generate_shadcn_dashboard(report_data: Dict[str, Any], team_name: str = "Dev
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Executive Dashboard - {team_name}</title>
+    <style>
     {generate_shadcn_styles()}
+    </style>
 </head>
 <body>
     <div class="dashboard-container">
