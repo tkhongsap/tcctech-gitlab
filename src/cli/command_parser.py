@@ -5,11 +5,11 @@ Parses natural language commands into structured command objects.
 """
 
 import re
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 from dataclasses import dataclass
 from difflib import SequenceMatcher
 
-from .command_registry import CommandRegistry, CommandPattern
+from .command_registry import CommandRegistry, CommandPattern, DirectScriptPattern
 
 
 @dataclass
@@ -25,6 +25,21 @@ class ParsedCommand:
         return f"Command: {self.command.description}, Params: {self.parameters}, Confidence: {self.confidence:.2f}"
 
 
+@dataclass
+class DirectScriptCommand:
+    """Represents a parsed direct script command with its parameters."""
+    
+    script: DirectScriptPattern
+    parameters: Dict[str, str]
+    positional_args: List[str]
+    flags: Dict[str, str]
+    boolean_flags: List[str]
+    original_input: str
+    
+    def __str__(self):
+        return f"Script: {self.script.script_name}, Params: {self.parameters}, Args: {self.positional_args}"
+
+
 class CommandParser:
     """Parser for natural language commands."""
     
@@ -32,25 +47,197 @@ class CommandParser:
         self.registry = CommandRegistry()
         self.command_history: List[ParsedCommand] = []
     
-    def parse(self, user_input: str) -> Optional[ParsedCommand]:
+    def is_direct_script_command(self, user_input: str) -> bool:
+        """Check if the user input is a direct script command."""
+        return self.registry.is_direct_script_command(user_input)
+    
+    def parse_direct_script_command(self, user_input: str) -> Optional[DirectScriptCommand]:
         """
-        Parse a natural language command into a structured command.
+        Parse a direct script command and extract its parameters.
+        
+        Args:
+            user_input: The user's direct script command string
+            
+        Returns:
+            DirectScriptCommand object or None if parsing fails
+        """
+        if not self.is_direct_script_command(user_input):
+            return None
+        
+        parts = user_input.strip().split()
+        if not parts:
+            return None
+        
+        script_name = parts[0]
+        script_pattern = self.registry.find_direct_script(script_name)
+        if not script_pattern:
+            return None
+        
+        # Parse arguments
+        args = parts[1:]
+        positional_args = []
+        flags = {}
+        boolean_flags = []
+        parameters = {}
+        
+        i = 0
+        while i < len(args):
+            arg = args[i]
+            
+            if arg.startswith('--'):
+                flag_name = arg[2:]  # Remove '--'
+                
+                # Check if it's a boolean flag
+                if flag_name in script_pattern.boolean_flags:
+                    boolean_flags.append(flag_name)
+                    parameters[flag_name] = 'true'
+                    i += 1
+                else:
+                    # Expect a value after the flag
+                    if i + 1 < len(args) and not args[i + 1].startswith('--'):
+                        flag_value = args[i + 1]
+                        flags[flag_name] = flag_value
+                        parameters[flag_name] = flag_value
+                        i += 2
+                    else:
+                        # Flag without value, treat as boolean
+                        boolean_flags.append(flag_name)
+                        parameters[flag_name] = 'true'
+                        i += 1
+            else:
+                # Positional argument
+                positional_args.append(arg)
+                i += 1
+        
+        # Map positional arguments to parameter names
+        for idx, pos_param in enumerate(script_pattern.positional_params):
+            if idx < len(positional_args):
+                parameters[pos_param] = positional_args[idx]
+        
+        return DirectScriptCommand(
+            script=script_pattern,
+            parameters=parameters,
+            positional_args=positional_args,
+            flags=flags,
+            boolean_flags=boolean_flags,
+            original_input=user_input
+        )
+    
+    def validate_direct_script_parameters(self, direct_command: DirectScriptCommand) -> Tuple[bool, List[str]]:
+        """
+        Validate parameters for a direct script command.
+        
+        Args:
+            direct_command: The parsed direct script command
+            
+        Returns:
+            Tuple of (is_valid, list_of_errors)
+        """
+        errors = []
+        script = direct_command.script
+        parameters = direct_command.parameters
+        
+        # Check required parameters
+        for required_param in script.required_params:
+            if required_param not in parameters or not parameters[required_param].strip():
+                errors.append(f"Missing required parameter: --{required_param}")
+        
+        # Check for unknown parameters
+        all_valid_params = set(script.required_params + script.optional_params + 
+                              script.positional_params + script.boolean_flags)
+        
+        for param in parameters:
+            if param not in all_valid_params:
+                errors.append(f"Unknown parameter: --{param}")
+        
+        # Validate specific parameter formats
+        errors.extend(self._validate_parameter_formats(parameters))
+        
+        return len(errors) == 0, errors
+    
+    def _validate_parameter_formats(self, parameters: Dict[str, str]) -> List[str]:
+        """Validate specific parameter formats."""
+        errors = []
+        
+        # Validate email format
+        if 'email' in parameters:
+            email_pattern = r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$'
+            if not re.match(email_pattern, parameters['email']):
+                errors.append(f"Invalid email format: {parameters['email']}")
+        
+        # Validate numeric IDs
+        for param_name in ['project', 'project_id']:
+            if param_name in parameters:
+                if not parameters[param_name].isdigit():
+                    errors.append(f"Parameter {param_name} must be numeric")
+        
+        # Validate group IDs (comma-separated numbers)
+        if 'groups' in parameters:
+            groups = parameters['groups']
+            # Check if it's comma-separated numbers
+            if ',' in groups:
+                group_ids = groups.split(',')
+                for group_id in group_ids:
+                    if not group_id.strip().isdigit():
+                        errors.append(f"Group IDs must be numeric: {groups}")
+                        break
+        
+        # Validate file extensions for output files
+        if 'output' in parameters:
+            output_file = parameters['output']
+            valid_extensions = ['.html', '.pdf', '.json', '.txt', '.md', '.xlsx', '.csv']
+            if not any(output_file.endswith(ext) for ext in valid_extensions):
+                errors.append(f"Output file should have a valid extension: {output_file}")
+        
+        return errors
+    
+    def parse(self, user_input: str) -> Optional[Union[ParsedCommand, DirectScriptCommand]]:
+        """
+        Parse a command (direct script or natural language) into a structured command.
         
         Args:
             user_input: The user's command string
             
         Returns:
-            ParsedCommand object or None if no match found
+            ParsedCommand or DirectScriptCommand object or None if no match found
         """
         if not user_input or not user_input.strip():
             return None
         
         user_input = user_input.strip()
         
-        # Try registry-based matching first (exact patterns)
+        # Check direct script commands first (highest priority)
+        if self.is_direct_script_command(user_input):
+            # Handle --help flag for direct scripts
+            if '--help' in user_input:
+                script_name = user_input.strip().split()[0]
+                script_pattern = self.registry.find_direct_script(script_name)
+                if script_pattern:
+                    # Return a special help command
+                    return DirectScriptCommand(
+                        script=script_pattern,
+                        parameters={'help': 'true'},
+                        positional_args=[],
+                        flags={'help': 'true'},
+                        boolean_flags=['help'],
+                        original_input=user_input
+                    )
+            
+            direct_command = self.parse_direct_script_command(user_input)
+            if direct_command:
+                return direct_command
+        
+        # Try registry-based matching for natural language commands
         result = self.registry.find_command(user_input)
         if result:
             command, params = result
+            # Skip if this was marked as a direct script from registry
+            if params.get('is_direct_script') == 'true':
+                # Re-parse as direct script
+                direct_command = self.parse_direct_script_command(user_input)
+                if direct_command:
+                    return direct_command
+            
             parsed_command = ParsedCommand(
                 command=command,
                 parameters=params,

@@ -10,6 +10,32 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
+@dataclass 
+class DirectScriptPattern:
+    """Represents a direct script command with its metadata."""
+    
+    script_name: str
+    script_path: str
+    description: str
+    required_params: List[str] = None
+    optional_params: List[str] = None
+    positional_params: List[str] = None
+    boolean_flags: List[str] = None
+    examples: List[str] = None
+    
+    def __post_init__(self):
+        if self.required_params is None:
+            self.required_params = []
+        if self.optional_params is None:
+            self.optional_params = []
+        if self.positional_params is None:
+            self.positional_params = []
+        if self.boolean_flags is None:
+            self.boolean_flags = []
+        if self.examples is None:
+            self.examples = []
+
+
 @dataclass
 class CommandPattern:
     """Represents a command pattern with its metadata."""
@@ -37,7 +63,9 @@ class CommandRegistry:
     def __init__(self):
         self.commands: Dict[str, CommandPattern] = {}
         self.compiled_patterns: Dict[str, Pattern] = {}
+        self.direct_scripts: Dict[str, DirectScriptPattern] = {}
         self._initialize_commands()
+        self._discover_scripts()
     
     def _initialize_commands(self):
         """Initialize all command patterns."""
@@ -180,7 +208,25 @@ class CommandRegistry:
         """
         user_input = user_input.strip()
         
-        # Try exact pattern matching first
+        # Check direct script commands first (highest priority)
+        if self.is_direct_script_command(user_input):
+            first_word = user_input.split()[0]
+            direct_script = self.find_direct_script(first_word)
+            if direct_script:
+                # Create a temporary CommandPattern for compatibility
+                command_pattern = CommandPattern(
+                    pattern=f"^{first_word}",
+                    script_path=direct_script.script_path,
+                    description=direct_script.description,
+                    examples=direct_script.examples,
+                    aliases=[],
+                    required_params=direct_script.required_params,
+                    optional_params=direct_script.optional_params
+                )
+                # For direct scripts, we'll parse parameters later in the parser
+                return command_pattern, {'is_direct_script': 'true'}
+        
+        # Try exact pattern matching for natural language commands
         for key, pattern in self.compiled_patterns.items():
             match = pattern.match(user_input)
             if match:
@@ -291,4 +337,107 @@ class CommandRegistry:
                 if alias.lower().startswith(partial_lower):
                     suggestions.extend(command.examples[:1])  # Add first example
         
-        return list(set(suggestions))[:10]  # Return unique suggestions, max 10 
+        return list(set(suggestions))[:10]  # Return unique suggestions, max 10
+    
+    def _discover_scripts(self):
+        """Discover and register all scripts in the scripts/ directory."""
+        scripts_dir = Path('scripts')
+        if not scripts_dir.exists():
+            return
+            
+        script_definitions = {
+            'rename_branches.py': DirectScriptPattern(
+                script_name='rename_branches',
+                script_path='scripts/rename_branches.py',
+                description='Rename branches in GitLab groups or projects',
+                required_params=[],
+                optional_params=['groups', 'old-branch', 'new-branch', 'dry-run', 'config', 'report', 'log-level', 'no-color'],
+                boolean_flags=['dry-run', 'no-color'],
+                examples=[
+                    'rename_branches --groups "AI-ML-Services" --dry-run',
+                    'rename_branches --groups "AI-ML-Services" --old-branch trunk --new-branch main'
+                ]
+            ),
+            'generate_executive_dashboard.py': DirectScriptPattern(
+                script_name='generate_executive_dashboard',
+                script_path='scripts/generate_executive_dashboard.py',
+                description='Generate executive dashboard for groups',
+                required_params=['groups'],
+                optional_params=['output', 'days', 'team-name'],
+                examples=[
+                    'generate_executive_dashboard --groups 1721,1267,1269',
+                    'generate_executive_dashboard --groups 1721 --days 60 --output monthly-report.html'
+                ]
+            ),
+            'sync_issues.py': DirectScriptPattern(
+                script_name='sync_issues',
+                script_path='scripts/sync_issues.py',
+                description='Sync issues between local files and GitLab',
+                required_params=[],
+                positional_params=['project_id'],
+                optional_params=['issues-dir', 'use-api', 'dry-run', 'generate-script', 'config'],
+                boolean_flags=['use-api', 'dry-run', 'generate-script'],
+                examples=[
+                    'sync_issues my-project --dry-run',
+                    'sync_issues 123 --issues-dir sprint-planning --use-api'
+                ]
+            ),
+            'send_report_email.py': DirectScriptPattern(
+                script_name='send_report_email',
+                script_path='scripts/send_report_email.py',
+                description='Send report files via email',
+                required_params=[],
+                positional_params=['html_file', 'recipient', 'subject'],
+                examples=[
+                    'send_report_email dashboard.html manager@company.com "Weekly Report"',
+                    'send_report_email report.html "team@company.com" "Monthly Analytics"'
+                ]
+            ),
+            'analyze_projects.py': DirectScriptPattern(
+                script_name='analyze_projects',
+                script_path='scripts/analyze_projects.py',
+                description='Analyze GitLab projects and generate insights',
+                required_params=[],
+                optional_params=['project', 'group', 'format', 'output', 'trends', 'days', 'clear-cache'],
+                boolean_flags=['trends', 'clear-cache'],
+                examples=[
+                    'analyze_projects --project my-project',
+                    'analyze_projects --group "AI-ML-Services" --format json'
+                ]
+            ),
+            'export_analytics.py': DirectScriptPattern(
+                script_name='export_analytics',
+                script_path='scripts/export_analytics.py',
+                description='Export analytics data for projects',
+                required_params=[],
+                positional_params=['project'],
+                optional_params=['output', 'trends', 'days'],
+                boolean_flags=['trends'],
+                examples=[
+                    'export_analytics my-project --output project_report.xlsx',
+                    'export_analytics my-project --trends --days 60'
+                ]
+            )
+        }
+        
+        # Register discovered scripts
+        for script_file, script_pattern in script_definitions.items():
+            if (scripts_dir / script_file).exists():
+                self.register_direct_script(script_pattern)
+    
+    def register_direct_script(self, script_pattern: DirectScriptPattern):
+        """Register a new direct script command."""
+        self.direct_scripts[script_pattern.script_name] = script_pattern
+    
+    def find_direct_script(self, script_name: str) -> Optional[DirectScriptPattern]:
+        """Find a direct script by exact name match."""
+        return self.direct_scripts.get(script_name)
+    
+    def is_direct_script_command(self, user_input: str) -> bool:
+        """Check if the user input starts with a direct script command name."""
+        first_word = user_input.strip().split()[0] if user_input.strip() else ""
+        return first_word in self.direct_scripts
+    
+    def get_direct_script_commands(self) -> List[DirectScriptPattern]:
+        """Get all available direct script commands."""
+        return list(self.direct_scripts.values()) 

@@ -14,7 +14,7 @@ from typing import Dict, List, Optional, Callable, Any
 from dataclasses import dataclass
 from enum import Enum
 
-from .command_parser import ParsedCommand
+from .command_parser import ParsedCommand, DirectScriptCommand
 from .logging_config import CLILogger
 
 
@@ -120,6 +120,82 @@ class CommandExecutor:
             self.execution_history.append(result)
             return result
     
+    def execute_direct_script(self, direct_command: DirectScriptCommand,
+                            progress_callback: Optional[Callable[[str], None]] = None) -> ExecutionResult:
+        """
+        Execute a direct script command.
+        
+        Args:
+            direct_command: The parsed direct script command to execute
+            progress_callback: Optional callback for progress updates
+            
+        Returns:
+            ExecutionResult with execution details
+        """
+        start_time = time.time()
+        
+        try:
+            if self.dry_run:
+                return self._dry_run_execute_direct(direct_command, start_time)
+            
+            # Build the command for direct script
+            script_path, args = self._build_direct_command(direct_command)
+            
+            if not script_path.exists():
+                self.logger.error(f"Script not found: {script_path}")
+                return ExecutionResult(
+                    status=ExecutionStatus.FAILED,
+                    return_code=-1,
+                    output="",
+                    error=f"Script not found: {script_path}",
+                    execution_time=time.time() - start_time,
+                    command=None  # We don't have a ParsedCommand here
+                )
+            
+            self.logger.command(f"Executing: python {script_path} {' '.join(args)}")
+            
+            # Execute the command
+            result = self._execute_subprocess(script_path, args, progress_callback)
+            result.execution_time = time.time() - start_time
+            result.command = None  # Direct scripts don't use ParsedCommand
+            
+            # Log the result
+            if result.status == ExecutionStatus.SUCCESS:
+                self.logger.success(f"Direct script completed successfully in {result.execution_time:.2f}s")
+            else:
+                self.logger.error(f"Direct script failed with code {result.return_code}")
+            
+            self.execution_history.append(result)
+            return result
+            
+        except Exception as e:
+            self.logger.error(f"Unexpected error during direct script execution: {e}")
+            result = ExecutionResult(
+                status=ExecutionStatus.FAILED,
+                return_code=-1,
+                output="",
+                error=str(e),
+                execution_time=time.time() - start_time,
+                command=None
+            )
+            self.execution_history.append(result)
+            return result
+    
+    def _dry_run_execute_direct(self, direct_command: DirectScriptCommand, start_time: float) -> ExecutionResult:
+        """Execute direct script in dry-run mode."""
+        script_path, args = self._build_direct_command(direct_command)
+        
+        self.logger.info(f"[DRY RUN] Would execute: python {script_path} {' '.join(args)}")
+        
+        return ExecutionResult(
+            status=ExecutionStatus.SUCCESS,
+            return_code=0,
+            output="[DRY RUN] Direct script would be executed",
+            error="",
+            execution_time=time.time() - start_time,
+            command=None
+        )
+    
     def _dry_run_execute(self, parsed_command: ParsedCommand, start_time: float) -> ExecutionResult:
         """Execute in dry-run mode (don't actually run the command)."""
         script_path, args = self._build_command(parsed_command)
@@ -157,6 +233,110 @@ class CommandExecutor:
                 args.extend(self._map_parameter_to_args(param_name, param_value, script_name))
         
         return script_path, args
+    
+    def _build_direct_command(self, direct_command: DirectScriptCommand) -> tuple[Path, List[str]]:
+        """
+        Build the command arguments from direct script command.
+        
+        Args:
+            direct_command: The parsed direct script command
+            
+        Returns:
+            Tuple of (script_path, arguments_list)
+        """
+        script_path = self.project_root / direct_command.script.script_path
+        args = []
+        
+        # Add parameters as script arguments using direct parameter mapping
+        for param_name, param_value in direct_command.parameters.items():
+            if param_value and param_value != 'true':  # Skip boolean flags with 'true' value
+                mapped_args = self._map_direct_parameter_to_args(
+                    param_name, param_value, direct_command.script.script_name)
+                args.extend(mapped_args)
+        
+        # Add boolean flags
+        for flag_name in direct_command.boolean_flags:
+            args.append(f'--{flag_name}')
+        
+        # Add positional arguments (they go at the end typically)
+        args.extend(direct_command.positional_args)
+        
+        return script_path, args
+    
+    def _map_direct_parameter_to_args(self, param_name: str, param_value: str, script_name: str) -> List[str]:
+        """
+        Map direct command parameters to script arguments with script-specific formatting.
+        
+        Args:
+            param_name: Parameter name from the direct command
+            param_value: Parameter value
+            script_name: Name of the script being executed
+            
+        Returns:
+            List of arguments for the script
+        """
+        # Apply script-specific parameter formatting
+        formatted_value = self._format_parameter_value(param_name, param_value, script_name)
+        
+        # Handle special parameter name mappings for specific scripts
+        if script_name == 'rename_branches':
+            if param_name == 'groups':
+                # rename_branches expects space-separated group names
+                if ',' in formatted_value:
+                    # Convert comma-separated to space-separated
+                    groups = [g.strip() for g in formatted_value.split(',')]
+                    formatted_value = ' '.join(groups)
+                return [f'--{param_name}', formatted_value]
+        
+        elif script_name == 'generate_executive_dashboard':
+            if param_name == 'groups':
+                # executive dashboard expects comma-separated group IDs
+                return [f'--{param_name}', formatted_value]
+        
+        elif script_name == 'sync_issues':
+            if param_name == 'project_id':
+                # Positional argument, handle separately
+                return []  # Will be added as positional arg
+        
+        # Default mapping: preserve the parameter name and format value
+        return [f'--{param_name}', formatted_value]
+    
+    def _format_parameter_value(self, param_name: str, param_value: str, script_name: str) -> str:
+        """
+        Format parameter values based on script requirements.
+        
+        Args:
+            param_name: Parameter name
+            param_value: Raw parameter value
+            script_name: Script name
+            
+        Returns:
+            Formatted parameter value
+        """
+        # Handle group formatting
+        if param_name == 'groups':
+            if script_name == 'rename_branches':
+                # Rename branches expects space-separated group names
+                if ',' in param_value:
+                    groups = [g.strip().strip('"\'') for g in param_value.split(',')]
+                    return ' '.join(f'"{g}"' if ' ' in g else g for g in groups)
+                return param_value
+            
+            elif script_name == 'generate_executive_dashboard':
+                # Executive dashboard expects comma-separated group IDs
+                if ' ' in param_value:
+                    # Convert space-separated to comma-separated
+                    groups = param_value.split()
+                    return ','.join(groups)
+                return param_value
+        
+        # Remove quotes from quoted values
+        if param_value.startswith('"') and param_value.endswith('"'):
+            return param_value[1:-1]
+        if param_value.startswith("'") and param_value.endswith("'"):
+            return param_value[1:-1]
+        
+        return param_value
     
     def _map_parameter_to_args(self, param_name: str, param_value: str, script_name: str) -> List[str]:
         """

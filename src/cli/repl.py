@@ -23,7 +23,7 @@ except ImportError:
     print("❌ prompt_toolkit not installed. Install with: pip install prompt_toolkit")
     sys.exit(1)
 
-from .command_parser import CommandParser, ParsedCommand
+from .command_parser import CommandParser, ParsedCommand, DirectScriptCommand
 from .command_executor import CommandExecutor, ExecutionResult, ExecutionStatus
 from .logging_config import create_cli_logger, CLILogger
 from .help_system import HelpSystem
@@ -39,8 +39,26 @@ class GitLabCompleter(Completer):
     def get_completions(self, document, complete_event):
         """Get completions for the current document."""
         text = document.text_before_cursor
+        words = text.split()
         
-        # Get suggestions from command parser
+        if not words:
+            # Show all available commands when no input
+            self._yield_all_commands()
+            return
+        
+        current_word = words[-1] if text.endswith(' ') else (words[-1] if words else '')
+        
+        # If we're at the start of a command, suggest command names
+        if len(words) == 1 and not text.endswith(' '):
+            self._yield_command_completions(current_word)
+        
+        # If we're in a direct script command, suggest parameters
+        elif len(words) >= 1:
+            first_word = words[0]
+            if self.command_parser.registry.is_direct_script_command(first_word):
+                self._yield_parameter_completions(first_word, current_word, words)
+        
+        # Get natural language suggestions from command parser
         suggestions = self.command_parser.get_suggestions(text)
         
         for suggestion in suggestions:
@@ -51,6 +69,118 @@ class GitLabCompleter(Completer):
                     start_position=-len(text),
                     display=suggestion
                 )
+    
+    def _yield_all_commands(self):
+        """Yield all available commands."""
+        # Direct script commands
+        direct_scripts = self.command_parser.registry.get_direct_script_commands()
+        for script in direct_scripts:
+            yield Completion(
+                script.script_name,
+                start_position=0,
+                display=f"{script.script_name} - {script.description}"
+            )
+        
+        # Natural language command examples
+        commands = self.command_parser.get_all_commands()
+        for command in commands:
+            if command.examples:
+                yield Completion(
+                    command.examples[0],
+                    start_position=0,
+                    display=f"{command.examples[0]} - {command.description}"
+                )
+    
+    def _yield_command_completions(self, current_word: str):
+        """Yield command name completions."""
+        # Direct script commands
+        direct_scripts = self.command_parser.registry.get_direct_script_commands()
+        for script in direct_scripts:
+            if script.script_name.startswith(current_word):
+                yield Completion(
+                    script.script_name,
+                    start_position=-len(current_word),
+                    display=f"{script.script_name} - {script.description}"
+                )
+        
+        # Natural language command keywords
+        commands = self.command_parser.get_all_commands()
+        keywords = set()
+        for command in commands:
+            for example in command.examples:
+                first_word = example.split()[0]
+                keywords.add(first_word)
+        
+        for keyword in keywords:
+            if keyword.startswith(current_word):
+                yield Completion(
+                    keyword,
+                    start_position=-len(current_word),
+                    display=keyword
+                )
+    
+    def _yield_parameter_completions(self, script_name: str, current_word: str, words: List[str]):
+        """Yield parameter completions for direct script commands."""
+        script_pattern = self.command_parser.registry.find_direct_script(script_name)
+        if not script_pattern:
+            return
+        
+        # If current word starts with --, suggest parameters
+        if current_word.startswith('--'):
+            param_name = current_word[2:]
+            all_params = (script_pattern.required_params + 
+                         script_pattern.optional_params + 
+                         script_pattern.boolean_flags)
+            
+            for param in all_params:
+                if param.startswith(param_name):
+                    yield Completion(
+                        f"--{param}",
+                        start_position=-len(current_word),
+                        display=f"--{param}"
+                    )
+        
+        # If current word is empty and previous word was a parameter, suggest values
+        elif len(words) >= 2 and words[-2].startswith('--'):
+            param_name = words[-2][2:]
+            self._yield_parameter_value_completions(param_name, current_word)
+        
+        # If no current word and we're not after a parameter, suggest available parameters
+        elif not current_word or not current_word.startswith('--'):
+            used_params = set()
+            for word in words[1:]:  # Skip script name
+                if word.startswith('--'):
+                    used_params.add(word[2:])
+            
+            all_params = (script_pattern.required_params + 
+                         script_pattern.optional_params + 
+                         script_pattern.boolean_flags)
+            
+            for param in all_params:
+                if param not in used_params:
+                    yield Completion(
+                        f"--{param}",
+                        start_position=0,
+                        display=f"--{param}"
+                    )
+    
+    def _yield_parameter_value_completions(self, param_name: str, current_value: str):
+        """Yield parameter value completions."""
+        # Common parameter value suggestions
+        value_suggestions = {
+            'format': ['json', 'html', 'csv', 'xlsx'],
+            'log-level': ['DEBUG', 'INFO', 'WARNING', 'ERROR'],
+            'output': ['report.html', 'dashboard.html', 'analytics.json', 'data.xlsx']
+        }
+        
+        if param_name in value_suggestions:
+            for value in value_suggestions[param_name]:
+                if value.startswith(current_value):
+                    yield Completion(
+                        value,
+                        start_position=-len(current_value),
+                        display=value
+                    )
 
 
 class GitLabREPL:
@@ -136,14 +266,19 @@ class GitLabREPL:
 🚀 GitLab Tools CLI v{__version__}
 Type 'help' for available commands or 'exit' to quit.
 
+Command Types:
+  💬 Natural Language: "create issues for project 123"
+  🔧 Direct Scripts: "rename_branches --groups AI-ML-Services --dry-run"
+
 Examples:
   > create issues for project 123
-  > generate dashboard for groups 1,2,3
+  > generate_executive_dashboard --groups 1721,1267,1269
   > weekly report for group 5
-  > rename branches in AI-ML-Services from trunk to main
-  > help create
+  > rename_branches --groups "AI-ML-Services" --old-branch trunk --new-branch main
+  > sync_issues --help
 
 💡 Use Tab for auto-completion and ↑/↓ for command history.
+💡 Add '--help' to any direct script command for usage info.
 """
         print(welcome_text)
     
@@ -263,7 +398,35 @@ Examples:
             self.show_status()
             return True
         
+        # List commands
+        if command in ['list-commands', 'list', 'commands']:
+            self.show_all_commands()
+            return True
+        
         return False
+    
+    def show_all_commands(self):
+        """Show all available commands (both natural language and direct scripts)."""
+        print("\n📋 All Available Commands\n")
+        
+        # Direct script commands
+        print("🔧 Direct Script Commands:")
+        direct_scripts = self.command_parser.registry.get_direct_script_commands()
+        for script in direct_scripts:
+            print(f"  {script.script_name:<25} - {script.description}")
+        
+        print("\n💬 Natural Language Commands:")
+        commands = self.command_parser.get_all_commands()
+        seen_scripts = set()
+        
+        for command in commands:
+            if command.script_path not in seen_scripts:
+                seen_scripts.add(command.script_path)
+                script_name = command.script_path.split('/')[-1].replace('.py', '')
+                print(f"  {script_name:<25} - {command.description}")
+        
+        print("\n💡 Type 'help <command>' for detailed help on any command")
+        print("💡 Add '--help' to any direct script command for usage info")
     
     def execute_command(self, user_input: str):
         """
@@ -291,6 +454,59 @@ Examples:
         if self.debug:
             self.logger.debug(f"Parsed: {parsed_command}")
         
+        # Handle direct script commands
+        if isinstance(parsed_command, DirectScriptCommand):
+            self._execute_direct_script_command(parsed_command)
+            return
+        
+        # Handle natural language commands (ParsedCommand)
+        self._execute_natural_language_command(parsed_command)
+    
+    def _execute_direct_script_command(self, direct_command: DirectScriptCommand):
+        """Execute a direct script command."""
+        # Handle help requests
+        if 'help' in direct_command.parameters:
+            self.help_system.show_script_usage(direct_command.script.script_name)
+            return
+        
+        # Validate parameters
+        is_valid, errors = self.command_parser.validate_direct_script_parameters(direct_command)
+        if not is_valid:
+            self.logger.error("❌ Invalid parameters:")
+            for error in errors:
+                self.logger.error(f"  • {error}")
+            return
+        
+        # Execute the direct script command
+        self.logger.progress(f"Executing: {direct_command.original_input}")
+        
+        def progress_callback(line: str):
+            """Callback for progress updates."""
+            # Progress updates are handled by the executor's stream reading
+            pass
+        
+        try:
+            result = self.command_executor.execute_direct_script(direct_command, progress_callback)
+            
+            # Format and display result
+            if result.status == ExecutionStatus.SUCCESS:
+                self.logger.success("✅ Direct script completed successfully!")
+                if result.output and not self.dry_run:
+                    self.logger.result("Output summary available in execution history")
+            elif result.status == ExecutionStatus.CANCELLED:
+                self.logger.warning("⏹️ Script cancelled")
+            else:
+                self.logger.error(f"❌ Script failed (exit code: {result.return_code})")
+                if result.error:
+                    self.logger.error(f"Error: {result.error}")
+        
+        except Exception as e:
+            self.logger.error(f"Execution error: {e}")
+            if self.debug:
+                raise
+    
+    def _execute_natural_language_command(self, parsed_command: ParsedCommand):
+        """Execute a natural language command."""
         # Validate parameters
         is_valid, errors = self.command_parser.validate_parameters(parsed_command)
         if not is_valid:

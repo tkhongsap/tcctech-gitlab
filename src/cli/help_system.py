@@ -4,9 +4,125 @@ Help System for GitLab Tools CLI.
 Provides contextual help and command documentation.
 """
 
-from typing import List, Optional
+import subprocess
+import re
+from pathlib import Path
+from typing import List, Optional, Dict
 from .command_parser import CommandParser
-from .command_registry import CommandPattern
+from .command_registry import CommandPattern, DirectScriptPattern
+
+
+class ScriptHelpExtractor:
+    """Extracts help information from existing scripts."""
+    
+    def __init__(self):
+        """Initialize the script help extractor."""
+        self.project_root = Path(__file__).parent.parent.parent
+        self._help_cache: Dict[str, str] = {}
+    
+    def get_script_help(self, script_path: str) -> Optional[str]:
+        """
+        Get help output from a script.
+        
+        Args:
+            script_path: Path to the script relative to project root
+            
+        Returns:
+            Help text from the script or None if not available
+        """
+        if script_path in self._help_cache:
+            return self._help_cache[script_path]
+        
+        full_path = self.project_root / script_path
+        if not full_path.exists():
+            return None
+        
+        try:
+            # Try to get help from the script
+            result = subprocess.run(
+                ['python', str(full_path), '--help'],
+                capture_output=True,
+                text=True,
+                timeout=10,
+                cwd=self.project_root
+            )
+            
+            if result.returncode == 0 and result.stdout.strip():
+                help_text = result.stdout.strip()
+                self._help_cache[script_path] = help_text
+                return help_text
+            
+            # If --help doesn't work, try -h
+            result = subprocess.run(
+                ['python', str(full_path), '-h'],
+                capture_output=True,
+                text=True,
+                timeout=10,
+                cwd=self.project_root
+            )
+            
+            if result.returncode == 0 and result.stdout.strip():
+                help_text = result.stdout.strip()
+                self._help_cache[script_path] = help_text
+                return help_text
+                
+        except (subprocess.TimeoutExpired, subprocess.SubprocessError, FileNotFoundError):
+            pass
+        
+        return None
+    
+    def extract_usage_from_help(self, help_text: str) -> Optional[str]:
+        """Extract usage line from help text."""
+        if not help_text:
+            return None
+        
+        lines = help_text.split('\n')
+        for line in lines:
+            if line.strip().lower().startswith('usage:'):
+                return line.strip()
+        
+        return None
+    
+    def extract_parameters_from_help(self, help_text: str) -> Dict[str, str]:
+        """
+        Extract parameter descriptions from help text.
+        
+        Args:
+            help_text: Raw help text from script
+            
+        Returns:
+            Dictionary mapping parameter names to descriptions
+        """
+        if not help_text:
+            return {}
+        
+        parameters = {}
+        lines = help_text.split('\n')
+        in_options_section = False
+        
+        for line in lines:
+            line = line.strip()
+            
+            # Detect options section
+            if re.match(r'^(options|arguments|parameters):', line, re.IGNORECASE):
+                in_options_section = True
+                continue
+            
+            # Stop at next section
+            if in_options_section and line and not line.startswith(' ') and not line.startswith('-'):
+                if ':' in line and not line.startswith('-'):
+                    break
+            
+            # Extract parameter info
+            if in_options_section and line.startswith('-'):
+                # Match patterns like "-h, --help", "--project PROJECT", etc.
+                match = re.match(r'^(-\w,?\s*)?--(\w[\w-]*)\s*(\w+)?\s*(.*)', line)
+                if match:
+                    param_name = match.group(2)
+                    description = match.group(4).strip()
+                    parameters[param_name] = description
+        
+        return parameters
 
 
 class HelpSystem:
@@ -15,14 +131,16 @@ class HelpSystem:
     def __init__(self, command_parser: CommandParser):
         """Initialize the help system."""
         self.command_parser = command_parser
+        self.script_help_extractor = ScriptHelpExtractor()
     
     def show_general_help(self):
         """Show general help information."""
         help_text = """
 📚 GitLab Tools CLI Help
 
-Available Commands:
+Natural Language Commands:
 """
+        print(help_text)
         
         # Get all unique commands
         commands = self.command_parser.get_all_commands()
@@ -38,6 +156,16 @@ Available Commands:
                     print(f"     Example: {command.examples[0]}")
                 print()
         
+        # Add direct script commands section
+        print("Direct Script Commands:")
+        direct_scripts = self.command_parser.registry.get_direct_script_commands()
+        
+        for script in direct_scripts:
+            print(f"  🔧 {script.script_name} - {script.description}")
+            if script.examples:
+                print(f"     Example: {script.examples[0]}")
+            print()
+        
         print("""
 Special Commands:
   🔹 help [command]     - Show help for a specific command
@@ -47,18 +175,24 @@ Special Commands:
   🔹 clear            - Clear screen
   🔹 exit             - Exit the CLI
 
+Command Types:
+  💬 Natural Language: "create issues for project 123"
+  🔧 Direct Scripts: "rename_branches --groups AI-ML-Services --dry-run"
+
 Tips:
   💡 Use Tab for auto-completion
   💡 Use ↑/↓ arrows for command history
   💡 Use Ctrl+C to cancel running commands
   💡 Type 'help <command>' for detailed help on specific commands
+  💡 Add '--help' to any direct script command for usage info
 
 Examples:
   > create issues for project 123
-  > generate dashboard for groups 1,2,3
+  > generate_executive_dashboard --groups 1721,1267,1269
   > weekly report for group 5 email to team@company.com
-  > rename branches in AI-ML-Services from trunk to main
+  > rename_branches --groups "AI-ML-Services" --old-branch trunk --new-branch main
   > help create
+  > sync_issues --help
 """)
     
     def show_command_help(self, command_name: str):
@@ -123,6 +257,130 @@ Examples:
         self._show_usage_tips(command)
         
         print()
+    
+    def generate_direct_command_help(self, script_pattern: DirectScriptPattern) -> str:
+        """
+        Generate standardized help for a direct script command.
+        
+        Args:
+            script_pattern: The direct script pattern
+            
+        Returns:
+            Formatted help text
+        """
+        help_lines = []
+        
+        # Header
+        help_lines.append(f"📖 {script_pattern.script_name}")
+        help_lines.append("=" * 60)
+        help_lines.append(f"Description: {script_pattern.description}")
+        help_lines.append("")
+        
+        # Usage
+        usage_parts = [script_pattern.script_name]
+        
+        # Add required parameters
+        for param in script_pattern.required_params:
+            usage_parts.append(f"--{param} <value>")
+        
+        # Add positional parameters
+        for param in script_pattern.positional_params:
+            usage_parts.append(f"<{param}>")
+        
+        # Add optional indicators
+        optional_parts = []
+        for param in script_pattern.optional_params:
+            optional_parts.append(f"[--{param} <value>]")
+        
+        for param in script_pattern.boolean_flags:
+            optional_parts.append(f"[--{param}]")
+        
+        help_lines.append(f"Usage: {' '.join(usage_parts)} {' '.join(optional_parts)}")
+        help_lines.append("")
+        
+        # Parameters
+        if script_pattern.required_params:
+            help_lines.append("Required Parameters:")
+            for param in script_pattern.required_params:
+                help_lines.append(f"  --{param}     {self._get_parameter_description(param, script_pattern.script_name)}")
+            help_lines.append("")
+        
+        if script_pattern.positional_params:
+            help_lines.append("Positional Arguments:")
+            for param in script_pattern.positional_params:
+                help_lines.append(f"  {param}       {self._get_parameter_description(param, script_pattern.script_name)}")
+            help_lines.append("")
+        
+        if script_pattern.optional_params:
+            help_lines.append("Optional Parameters:")
+            for param in script_pattern.optional_params:
+                help_lines.append(f"  --{param}     {self._get_parameter_description(param, script_pattern.script_name)}")
+            help_lines.append("")
+        
+        if script_pattern.boolean_flags:
+            help_lines.append("Flags:")
+            for param in script_pattern.boolean_flags:
+                help_lines.append(f"  --{param}     {self._get_parameter_description(param, script_pattern.script_name)}")
+            help_lines.append("")
+        
+        # Examples
+        if script_pattern.examples:
+            help_lines.append("Examples:")
+            for i, example in enumerate(script_pattern.examples, 1):
+                help_lines.append(f"  {i}. {example}")
+            help_lines.append("")
+        
+        # Try to get additional help from the script itself
+        script_help = self.script_help_extractor.get_script_help(script_pattern.script_path)
+        if script_help:
+            help_lines.append("Additional Information:")
+            help_lines.append(script_help)
+        
+        return "\n".join(help_lines)
+    
+    def _get_parameter_description(self, param_name: str, script_name: str) -> str:
+        """Get a description for a parameter."""
+        descriptions = {
+            'groups': 'Group names or IDs (comma or space separated)',
+            'project': 'Project name or ID',
+            'project_id': 'Project ID number',
+            'old-branch': 'Name of the branch to rename from',
+            'new-branch': 'Name of the branch to rename to',
+            'output': 'Output file path',
+            'days': 'Number of days for analysis period',
+            'team-name': 'Team name for the report',
+            'issues-dir': 'Directory containing issue files',
+            'use-api': 'Use GitLab API instead of git commands',
+            'dry-run': 'Preview changes without executing',
+            'generate-script': 'Generate a script file instead of executing',
+            'config': 'Configuration file path',
+            'report': 'Report output file path',
+            'log-level': 'Logging level (DEBUG, INFO, WARNING, ERROR)',
+            'no-color': 'Disable colored output',
+            'format': 'Output format (json, html, etc.)',
+            'trends': 'Include trend analysis',
+            'clear-cache': 'Clear cached data'
+        }
+        
+        return descriptions.get(param_name, 'Parameter value')
+    
+    def show_script_usage(self, script_name: str):
+        """Show usage information for a direct script command."""
+        # Get script pattern from registry
+        direct_scripts = self.command_parser.registry.get_direct_script_commands()
+        script_pattern = None
+        
+        for script in direct_scripts:
+            if script.script_name == script_name:
+                script_pattern = script
+                break
+        
+        if not script_pattern:
+            print(f"❌ Script '{script_name}' not found")
+            return
+        
+        help_text = self.generate_direct_command_help(script_pattern)
+        print(help_text)
     
     def _show_usage_tips(self, command: CommandPattern):
         """Show usage tips for a command."""
