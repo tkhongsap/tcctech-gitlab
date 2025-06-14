@@ -5,8 +5,9 @@ import sys
 import os
 import argparse
 import json
+import html
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Any, Optional, Tuple
 from collections import defaultdict, Counter
 import math
@@ -62,6 +63,14 @@ PROJECT_DESCRIPTIONS = {
     'fine-tune-vision': 'Computer vision model fine-tuning framework supporting custom datasets, transfer learning, and deployment optimization.',
     'logging-handler': 'Centralized logging service with intelligent log parsing, anomaly detection, and automated alert generation.',
     'map-intelligent': 'Geospatial analytics platform with AI-powered location intelligence, route optimization, and demographic analysis.',
+}
+
+# Group name mapping
+GROUP_NAMES = {
+    1721: "AI-ML-Services",
+    1267: "Research Repos",
+    1269: "Internal Services",
+    119: "iland"
 }
 
 def get_env_or_exit(key: str, description: str) -> str:
@@ -186,6 +195,340 @@ def get_activity_sparkline(daily_commits: List[int]) -> str:
     sparks = "▁▂▃▄▅▆▇█"
     
     return ''.join(sparks[n] for n in normalized)
+
+def get_initials(name: str) -> str:
+    """Get initials from a name."""
+    if not name:
+        return "?"
+    words = name.split()
+    if len(words) >= 2:
+        return (words[0][0] + words[-1][0]).upper()
+    return name[:2].upper()
+
+def _determine_priority(labels: List[str]) -> str:
+    """Determine issue priority from labels."""
+    labels_lower = [label.lower() for label in labels]
+    if any('critical' in label or 'urgent' in label for label in labels_lower):
+        return 'critical'
+    elif any('high' in label for label in labels_lower):
+        return 'high'
+    elif any('medium' in label for label in labels_lower):
+        return 'medium'
+    elif any('low' in label for label in labels_lower):
+        return 'low'
+    return 'medium'  # Default priority
+
+def _determine_type(labels: List[str]) -> str:
+    """Determine issue type from labels."""
+    labels_lower = [label.lower() for label in labels]
+    if any('bug' in label for label in labels_lower):
+        return 'bug'
+    elif any('feature' in label for label in labels_lower):
+        return 'feature'
+    elif any('enhancement' in label for label in labels_lower):
+        return 'enhancement'
+    return 'other'
+
+def _calculate_age(created_at: str) -> int:
+    """Calculate age of issue in days."""
+    from datetime import timezone
+    created_date = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+    age = (datetime.now(timezone.utc) - created_date).days
+    return age
+
+def _is_overdue(due_date: Optional[str]) -> bool:
+    """Check if issue is overdue."""
+    if not due_date:
+        return False
+    from datetime import timezone
+    try:
+        # Handle both ISO format with timezone and date-only format
+        if 'T' in due_date:
+            due = datetime.fromisoformat(due_date.replace('Z', '+00:00'))
+        else:
+            # Date only format (YYYY-MM-DD) - assume end of day UTC
+            due = datetime.fromisoformat(due_date + 'T23:59:59+00:00')
+        return due < datetime.now(timezone.utc)
+    except (ValueError, TypeError):
+        return False
+
+def collect_issue_analytics(projects: List[Dict], gitlab_url: str, gitlab_token: str) -> Dict[str, Any]:
+    """Collect comprehensive issue analytics across all projects."""
+    analytics = {
+        'total_open': 0,
+        'by_priority': {'critical': 0, 'high': 0, 'medium': 0, 'low': 0},
+        'by_type': {'bug': 0, 'feature': 0, 'enhancement': 0, 'other': 0},
+        'by_state': {'opened': 0, 'in_progress': 0, 'blocked': 0},
+        'overdue': 0,
+        'unassigned': 0,
+        'stale_issues': 0,
+        'project_issues': {},
+        'assignee_workload': {},
+        'all_issues': []
+    }
+    
+    for project in projects:
+        project_id = project.get('id')
+        project_name = project.get('name', 'Unknown')
+        
+        issues = simple_gitlab_request(
+            gitlab_url, gitlab_token,
+            f"projects/{project_id}/issues",
+            {"state": "opened"}
+        )
+        
+        project_issue_count = 0
+        
+        # Process each issue
+        for issue in issues:
+            analytics['total_open'] += 1
+            project_issue_count += 1
+            
+            # Categorize by labels
+            labels = issue.get('labels', [])
+            priority = _determine_priority(labels)
+            issue_type = _determine_type(labels)
+            
+            analytics['by_priority'][priority] += 1
+            analytics['by_type'][issue_type] += 1
+            
+            # Check if overdue
+            if _is_overdue(issue.get('due_date')):
+                analytics['overdue'] += 1
+            
+            # Check if stale (not updated in 30 days)
+            if _calculate_age(issue.get('updated_at', issue['created_at'])) > 30:
+                analytics['stale_issues'] += 1
+            
+            # Track assignee workload
+            assignee = issue.get('assignee')
+            if assignee:
+                assignee_name = assignee.get('name', 'Unknown')
+                analytics['assignee_workload'][assignee_name] = \
+                    analytics['assignee_workload'].get(assignee_name, 0) + 1
+            else:
+                analytics['unassigned'] += 1
+            
+            # Collect enriched issue data
+            enriched_issue = {
+                'id': issue['id'],
+                'iid': issue['iid'],
+                'title': issue['title'],
+                'project_id': project_id,
+                'project_name': project_name,
+                'priority': priority,
+                'type': issue_type,
+                'labels': labels,
+                'assignee': assignee,
+                'state': issue['state'],
+                'created_at': issue['created_at'],
+                'updated_at': issue['updated_at'],
+                'due_date': issue.get('due_date'),
+                'web_url': issue['web_url'],
+                'age_days': _calculate_age(issue['created_at']),
+                'is_overdue': _is_overdue(issue.get('due_date'))
+            }
+            analytics['all_issues'].append(enriched_issue)
+        
+        if project_issue_count > 0:
+            analytics['project_issues'][project_name] = project_issue_count
+    
+    return analytics
+
+def get_initials(name: str) -> str:
+    """Get initials from a name."""
+    if not name:
+        return "?"
+    parts = name.split()
+    if len(parts) >= 2:
+        return f"{parts[0][0]}{parts[-1][0]}".upper()
+    return name[:2].upper()
+
+def generate_ai_recommendations(issue_analytics: Dict, project_metrics: List[Dict]) -> List[Dict]:
+    """Generate strategic recommendations based on issue patterns."""
+    recommendations = []
+    
+    # High priority issue alert
+    if issue_analytics['by_priority']['critical'] > 3:
+        critical_projects = []
+        for issue in issue_analytics['all_issues']:
+            if issue['priority'] == 'critical' and issue['project_name'] not in critical_projects:
+                critical_projects.append(issue['project_name'])
+        
+        recommendations.append({
+            'type': 'critical',
+            'title': 'Critical Issues Require Immediate Attention',
+            'message': f"{issue_analytics['by_priority']['critical']} critical issues are open",
+            'action': 'Allocate senior developers to resolve critical issues immediately',
+            'projects': critical_projects[:5]  # Show top 5 projects
+        })
+    
+    # Workload imbalance
+    workload = issue_analytics['assignee_workload']
+    if workload and len(workload) > 1:
+        max_load = max(workload.values())
+        avg_load = sum(workload.values()) / len(workload)
+        if max_load > avg_load * 2:
+            overloaded = [k for k, v in workload.items() if v == max_load][0]
+            recommendations.append({
+                'type': 'high',
+                'title': 'Workload Imbalance Detected',
+                'message': f"{overloaded} has {max_load} issues (2x average of {avg_load:.1f})",
+                'action': 'Redistribute issues to balance team workload',
+                'team_member': overloaded
+            })
+    
+    # Bug ratio analysis
+    if issue_analytics['total_open'] > 0:
+        bug_ratio = issue_analytics['by_type']['bug'] / issue_analytics['total_open']
+        if bug_ratio > 0.6:
+            recommendations.append({
+                'type': 'medium',
+                'title': 'High Bug-to-Feature Ratio',
+                'message': f"{bug_ratio:.0%} of open issues are bugs",
+                'action': 'Schedule dedicated bug-fixing sprint and improve QA processes'
+            })
+    
+    # Stale issues
+    if issue_analytics.get('stale_issues', 0) > 10:
+        recommendations.append({
+            'type': 'medium',
+            'title': 'Stale Issues Need Review',
+            'message': f"{issue_analytics['stale_issues']} issues haven't been updated in 30+ days",
+            'action': 'Review and close or reprioritize stale issues'
+        })
+    
+    # Unassigned issues
+    if issue_analytics['unassigned'] > 5:
+        recommendations.append({
+            'type': 'medium',
+            'title': 'Many Unassigned Issues',
+            'message': f"{issue_analytics['unassigned']} issues lack assignees",
+            'action': 'Assign team members to unowned issues for accountability'
+        })
+    
+    # Positive feedback
+    if issue_analytics['total_open'] < 20 and issue_analytics['by_priority']['critical'] == 0:
+        recommendations.append({
+            'type': 'success',
+            'title': 'Excellent Issue Management',
+            'message': 'Low issue count with no critical issues',
+            'action': 'Maintain current practices and document successful processes'
+        })
+    
+    # Project-specific recommendations
+    if issue_analytics['project_issues']:
+        sorted_projects = sorted(issue_analytics['project_issues'].items(), 
+                               key=lambda x: x[1], reverse=True)
+        if sorted_projects[0][1] > 20:
+            recommendations.append({
+                'type': 'high',
+                'title': f'High Issue Concentration in {sorted_projects[0][0]}',
+                'message': f'{sorted_projects[0][1]} open issues in one project',
+                'action': 'Consider splitting into smaller work items or allocating more resources',
+                'project': sorted_projects[0][0]
+            })
+    
+    return recommendations
+
+def analyze_team_performance(projects: List[Dict], gitlab_url: str, gitlab_token: str, days: int = 30) -> Dict[str, Any]:
+    """Analyze detailed team member contributions and workload."""
+    from datetime import timezone
+    team_analytics = {}
+    
+    # Calculate start date
+    start_date = datetime.now(timezone.utc) - timedelta(days=days)
+    
+    for project in projects:
+        project_id = project.get('id')
+        project_name = project.get('name', 'Unknown')
+        
+        # Get commits by author
+        commits = simple_gitlab_request(
+            gitlab_url, gitlab_token,
+            f"projects/{project_id}/repository/commits",
+            {"since": start_date.isoformat()}
+        )
+        
+        for commit in commits:
+            author = commit.get('author_name', 'Unknown')
+            if author not in team_analytics:
+                team_analytics[author] = {
+                    'commits': 0,
+                    'projects': set(),
+                    'issues_assigned': 0,
+                    'issues_resolved': 0,
+                    'merge_requests': 0,
+                    'recent_activity': []
+                }
+            
+            team_analytics[author]['commits'] += 1
+            team_analytics[author]['projects'].add(project_name)
+            team_analytics[author]['recent_activity'].append({
+                'type': 'commit',
+                'project': project_name,
+                'date': commit['created_at'],
+                'message': commit['title']
+            })
+        
+        # Get merge requests
+        mrs = simple_gitlab_request(
+            gitlab_url, gitlab_token,
+            f"projects/{project_id}/merge_requests",
+            {"created_after": start_date.isoformat()}
+        )
+        
+        for mr in mrs:
+            author = mr.get('author', {}).get('name', 'Unknown')
+            if author not in team_analytics:
+                team_analytics[author] = {
+                    'commits': 0,
+                    'projects': set(),
+                    'issues_assigned': 0,
+                    'issues_resolved': 0,
+                    'merge_requests': 0,
+                    'recent_activity': []
+                }
+            team_analytics[author]['merge_requests'] += 1
+            team_analytics[author]['projects'].add(project_name)
+        
+        # Get issues assigned to team members
+        issues = simple_gitlab_request(
+            gitlab_url, gitlab_token,
+            f"projects/{project_id}/issues",
+            {"scope": "all"}
+        )
+        
+        for issue in issues:
+            assignee = issue.get('assignee')
+            if assignee:
+                assignee_name = assignee.get('name', 'Unknown')
+                if assignee_name not in team_analytics:
+                    team_analytics[assignee_name] = {
+                        'commits': 0,
+                        'projects': set(),
+                        'issues_assigned': 0,
+                        'issues_resolved': 0,
+                        'merge_requests': 0,
+                        'recent_activity': []
+                    }
+                
+                if issue['state'] == 'opened':
+                    team_analytics[assignee_name]['issues_assigned'] += 1
+                else:
+                    team_analytics[assignee_name]['issues_resolved'] += 1
+                
+                team_analytics[assignee_name]['projects'].add(project_name)
+    
+    # Convert sets to lists for JSON serialization
+    for member in team_analytics:
+        team_analytics[member]['projects'] = sorted(list(team_analytics[member]['projects']))
+        # Keep only recent 10 activities
+        team_analytics[member]['recent_activity'] = \
+            sorted(team_analytics[member]['recent_activity'], 
+                   key=lambda x: x['date'], reverse=True)[:10]
+    
+    return team_analytics
 
 def analyze_project(project: Dict, gitlab_url: str, gitlab_token: str, days: int = 30) -> Dict[str, Any]:
     """Analyze a single project with 30-day metrics including branch and issue analysis."""
@@ -409,13 +752,16 @@ def analyze_groups(group_ids: List[int], gitlab_url: str, gitlab_token: str, day
     iland_repo_url = "https://git.lab.tcctech.app/iland/llama-index-rag-pipeline"
     
     for group_id in group_ids:
-        print(f"  📁 Analyzing group {group_id}...")
+        # Use GROUP_NAMES mapping first if available
+        group_display_name = GROUP_NAMES.get(group_id, None)
+        
+        print(f"  📁 Analyzing group {group_id}{f' ({group_display_name})' if group_display_name else ''}...")
         
         # Get enhanced group info
         if group_service:
             try:
                 enhanced_group = group_service.get_enhanced_group_info(group_id)
-                group_name = enhanced_group['business_name']
+                group_name = group_display_name or enhanced_group['business_name']
                 group_description = enhanced_group['business_description']
                 group_metadata = enhanced_group
             except Exception as e:
@@ -425,7 +771,7 @@ def analyze_groups(group_ids: List[int], gitlab_url: str, gitlab_token: str, day
                     f"groups/{group_id}",
                     {}
                 )
-                group_name = group_info['name'] if isinstance(group_info, dict) else f"Group {group_id}"
+                group_name = group_display_name or (group_info['name'] if isinstance(group_info, dict) else f"Group {group_id}")
                 group_description = group_info.get('description', '') if isinstance(group_info, dict) else ''
                 group_metadata = group_info if isinstance(group_info, dict) else {}
         else:
@@ -435,7 +781,7 @@ def analyze_groups(group_ids: List[int], gitlab_url: str, gitlab_token: str, day
                 f"groups/{group_id}",
                 {}
             )
-            group_name = group_info['name'] if isinstance(group_info, dict) else f"Group {group_id}"
+            group_name = group_display_name or (group_info['name'] if isinstance(group_info, dict) else f"Group {group_id}")
             group_description = group_info.get('description', '') if isinstance(group_info, dict) else ''
             group_metadata = group_info if isinstance(group_info, dict) else {}
         
@@ -518,7 +864,299 @@ def analyze_groups(group_ids: List[int], gitlab_url: str, gitlab_token: str, day
     # Sort projects by health score
     report_data['projects'].sort(key=lambda x: x['health_score'], reverse=True)
     
+    # Collect comprehensive issue analytics
+    print("\n📊 Collecting issue analytics across all projects...")
+    report_data['issue_analytics'] = collect_issue_analytics(report_data['projects'], gitlab_url, gitlab_token)
+    
+    # Generate AI recommendations
+    print("🤖 Generating AI recommendations...")
+    report_data['ai_recommendations'] = generate_ai_recommendations(
+        report_data['issue_analytics'], 
+        report_data['projects']
+    )
+    
+    # Analyze team performance
+    print("👥 Analyzing team performance...")
+    report_data['team_analytics'] = analyze_team_performance(report_data['projects'], gitlab_url, gitlab_token, days)
+    
+    # Collect all issues for Issues Management section
+    print("📋 Collecting all open issues...")
+    report_data['all_issues'] = collect_all_issues(report_data['projects'], gitlab_url, gitlab_token)
+    
     return report_data
+
+def collect_all_issues(projects: List[Dict], gitlab_url: str, gitlab_token: str) -> List[Dict]:
+    """Collect all issues across projects with full details."""
+    all_issues = []
+    
+    for project in projects:
+        issues = simple_gitlab_request(
+            gitlab_url, gitlab_token,
+            f"projects/{project['id']}/issues",
+            {"scope": "all", "state": "opened"}
+        )
+        
+        for issue in issues:
+            # Determine priority from labels
+            labels = issue.get('labels', [])
+            priority = 'medium'  # default
+            if 'critical' in labels or 'priority::critical' in labels:
+                priority = 'critical'
+            elif 'high' in labels or 'priority::high' in labels:
+                priority = 'high'
+            elif 'low' in labels or 'priority::low' in labels:
+                priority = 'low'
+            
+            # Determine type from labels
+            issue_type = 'other'
+            if 'bug' in labels:
+                issue_type = 'bug'
+            elif 'feature' in labels:
+                issue_type = 'feature'
+            elif 'enhancement' in labels:
+                issue_type = 'enhancement'
+            
+            # Calculate age
+            created_at = datetime.fromisoformat(issue['created_at'].replace('Z', '+00:00'))
+            age_days = (datetime.now(timezone.utc) - created_at).days
+            
+            # Check if overdue
+            is_overdue = False
+            if issue.get('due_date'):
+                due_date = datetime.fromisoformat(issue['due_date'] + 'T00:00:00+00:00')
+                is_overdue = datetime.now(timezone.utc) > due_date
+            
+            # Enrich issue data
+            enriched_issue = {
+                'id': issue['id'],
+                'iid': issue['iid'],
+                'title': issue['title'],
+                'description': issue.get('description', ''),
+                'project_id': project['id'],
+                'project_name': project['name'],
+                'state': issue['state'],
+                'created_at': issue['created_at'],
+                'updated_at': issue['updated_at'],
+                'due_date': issue.get('due_date'),
+                'labels': labels,
+                'assignee': issue.get('assignee', {}),
+                'author': issue.get('author', {}),
+                'weight': issue.get('weight', 0),
+                'web_url': issue['web_url'],
+                'priority': priority,
+                'type': issue_type,
+                'age_days': age_days,
+                'is_overdue': is_overdue
+            }
+            
+            all_issues.append(enriched_issue)
+    
+    # Sort by priority, overdue status, and age
+    priority_order = {'critical': 0, 'high': 1, 'medium': 2, 'low': 3}
+    return sorted(all_issues, key=lambda x: (
+        priority_order.get(x['priority'], 2),
+        not x['is_overdue'],  # Overdue first
+        x['age_days']  # Older first
+    ))
+
+def generate_issue_row(issue: Dict) -> str:
+    """Generate HTML row for an issue."""
+    priority_class = f"priority-{issue['priority']}"
+    overdue_class = "overdue" if issue['is_overdue'] else ""
+    assignee_name = issue['assignee'].get('name', 'Unassigned') if issue['assignee'] else 'Unassigned'
+    
+    # Generate labels HTML
+    labels_html = ''.join([
+        f'<span class="issue-label label-{issue["type"] if label.lower() in ["bug", "feature", "enhancement"] else "default"}">{label}</span>'
+        for label in issue['labels'][:3]  # Show max 3 labels
+    ])
+    
+    # Format due date
+    due_date_html = ''
+    if issue['due_date']:
+        due_date = datetime.fromisoformat(issue['due_date'] + 'T00:00:00+00:00')
+        due_date_str = due_date.strftime('%b %d, %Y')
+        if issue['is_overdue']:
+            due_date_html = f'<span style="color: #ef4444; font-weight: 600;">{due_date_str}</span>'
+        else:
+            due_date_html = due_date_str
+    else:
+        due_date_html = '-'
+    
+    return f"""
+    <tr class="issue-row {overdue_class}" 
+        data-priority="{issue['priority']}" 
+        data-assignee="{assignee_name}"
+        data-project="{issue['project_name']}">
+        <td class="priority-cell">
+            <span class="priority-badge {priority_class}">
+                {issue['priority'].upper()}
+            </span>
+        </td>
+        <td class="title-cell">
+            <a href="{issue['web_url']}" target="_blank" class="issue-link">
+                #{issue['iid']} - {html.escape(issue['title'][:60])}{'...' if len(issue['title']) > 60 else ''}
+            </a>
+        </td>
+        <td class="project-cell">{issue['project_name']}</td>
+        <td class="assignee-cell">
+            <div class="assignee-info">
+                <span class="assignee-avatar">{get_initials(assignee_name)}</span>
+                <span class="assignee-name">{assignee_name}</span>
+            </div>
+        </td>
+        <td class="due-date-cell">{due_date_html}</td>
+        <td class="age-cell">{issue['age_days']}d</td>
+        <td class="labels-cell">{labels_html}</td>
+        <td class="actions-cell">
+            <a href="{issue['web_url']}" target="_blank" class="action-link">
+                View →
+            </a>
+        </td>
+    </tr>
+    """
+
+def generate_issues_management_section(all_issues: List[Dict], issue_analytics: Dict) -> str:
+    """Generate the Issues Management section HTML."""
+    # Count issues by type
+    critical_count = sum(1 for i in all_issues if i['priority'] == 'critical')
+    overdue_count = sum(1 for i in all_issues if i['is_overdue'])
+    unassigned_count = sum(1 for i in all_issues if not i['assignee'])
+    
+    # Get unique assignees and projects
+    assignees = sorted(set(i['assignee']['name'] if i['assignee'] else 'Unassigned' for i in all_issues))
+    projects = sorted(set(i['project_name'] for i in all_issues))
+    
+    # Generate issue rows
+    issue_rows = ''.join(generate_issue_row(issue) for issue in all_issues[:50])  # Show first 50
+    
+    # Generate JavaScript for filtering
+    js_script = f"""
+    <script>
+    let allIssues = {json.dumps([{
+        'priority': i['priority'],
+        'assignee': i['assignee']['name'] if i['assignee'] else 'Unassigned',
+        'project': i['project_name'],
+        'title': i['title'],
+        'iid': i['iid']
+    } for i in all_issues])};
+    
+    function filterIssues(searchTerm) {{
+        const term = searchTerm.toLowerCase();
+        const rows = document.querySelectorAll('.issue-row');
+        
+        rows.forEach(row => {{
+            const title = row.querySelector('.title-cell').textContent.toLowerCase();
+            const project = row.getAttribute('data-project').toLowerCase();
+            const assignee = row.getAttribute('data-assignee').toLowerCase();
+            
+            const matches = title.includes(term) || 
+                           project.includes(term) || 
+                           assignee.includes(term);
+            
+            row.style.display = matches ? '' : 'none';
+        }});
+    }}
+    
+    function filterByPriority(priority) {{
+        const rows = document.querySelectorAll('.issue-row');
+        rows.forEach(row => {{
+            const rowPriority = row.getAttribute('data-priority');
+            row.style.display = (priority === '' || rowPriority === priority) ? '' : 'none';
+        }});
+    }}
+    
+    function filterByAssignee(assignee) {{
+        const rows = document.querySelectorAll('.issue-row');
+        rows.forEach(row => {{
+            const rowAssignee = row.getAttribute('data-assignee');
+            row.style.display = (assignee === '' || rowAssignee === assignee) ? '' : 'none';
+        }});
+    }}
+    
+    function filterByProject(project) {{
+        const rows = document.querySelectorAll('.issue-row');
+        rows.forEach(row => {{
+            const rowProject = row.getAttribute('data-project');
+            row.style.display = (project === '' || rowProject === project) ? '' : 'none';
+        }});
+    }}
+    </script>
+    """
+    
+    return f"""
+    <section class="section">
+        <h2 class="section-title">Issues Management</h2>
+        
+        <!-- Issue Filters -->
+        <div class="issue-filters">
+            <input type="text" 
+                   class="search-input" 
+                   placeholder="Search issues..." 
+                   onkeyup="filterIssues(this.value)">
+            
+            <select class="filter-select" onchange="filterByPriority(this.value)">
+                <option value="">All Priorities</option>
+                <option value="critical">Critical</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+            </select>
+            
+            <select class="filter-select" onchange="filterByAssignee(this.value)">
+                <option value="">All Assignees</option>
+                {' '.join(f'<option value="{a}">{a}</option>' for a in assignees)}
+            </select>
+            
+            <select class="filter-select" onchange="filterByProject(this.value)">
+                <option value="">All Projects</option>
+                {' '.join(f'<option value="{p}">{p}</option>' for p in projects)}
+            </select>
+        </div>
+        
+        <!-- Issue Statistics -->
+        <div class="issue-stats-bar">
+            <div class="stat-item">
+                <span class="stat-label">Total Open:</span>
+                <span class="stat-value">{len(all_issues)}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Critical:</span>
+                <span class="stat-value critical">{critical_count}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Overdue:</span>
+                <span class="stat-value overdue">{overdue_count}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Unassigned:</span>
+                <span class="stat-value">{unassigned_count}</span>
+            </div>
+        </div>
+        
+        <!-- Issues Table -->
+        <div class="issues-table-container">
+            <table class="issues-table">
+                <thead>
+                    <tr>
+                        <th>Priority</th>
+                        <th>Issue</th>
+                        <th>Project</th>
+                        <th>Assignee</th>
+                        <th>Due Date</th>
+                        <th>Age</th>
+                        <th>Labels</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {issue_rows}
+                </tbody>
+            </table>
+        </div>
+        {js_script}
+    </section>
+    """
 
 def generate_shadcn_dashboard(report_data: Dict[str, Any], team_name: str = "Development Team") -> str:
     """Generate enhanced executive dashboard with new features."""
@@ -527,6 +1165,9 @@ def generate_shadcn_dashboard(report_data: Dict[str, Any], team_name: str = "Dev
     groups = report_data['groups']
     projects = report_data['projects']
     contributors = report_data['contributors']
+    issue_analytics = report_data.get('issue_analytics', {})
+    ai_recommendations = report_data.get('ai_recommendations', [])
+    team_analytics = report_data.get('team_analytics', {})
     
     # Prepare data for charts
     chart_dates = []
@@ -535,9 +1176,6 @@ def generate_shadcn_dashboard(report_data: Dict[str, Any], team_name: str = "Dev
         date = (datetime.now() - timedelta(days=29-i)).strftime('%Y-%m-%d')
         chart_dates.append(date)
         chart_values.append(report_data['daily_activity'].get(date, 0))
-    
-    # Calculate aggregate issue analysis
-    aggregate_issues = calculate_aggregate_issues(projects)
     
     # Generate health score methodology
     health_methodology = generate_health_score_methodology()
@@ -598,7 +1236,7 @@ def generate_shadcn_dashboard(report_data: Dict[str, Any], team_name: str = "Dev
         <section class="section">
             <h2 class="section-title">Issues Analysis & AI Recommendations</h2>
             <div class="issues-analysis-container">
-                {generate_issues_analysis_section(aggregate_issues)}
+                {generate_issues_analysis_section(issue_analytics, ai_recommendations)}
             </div>
         </section>
 
@@ -630,8 +1268,8 @@ def generate_shadcn_dashboard(report_data: Dict[str, Any], team_name: str = "Dev
         <!-- Team Performance -->
         <section class="section">
             <h2 class="section-title">Team Performance</h2>
-            <div class="contributor-grid">
-                {generate_contributor_cards(contributors.most_common(10))}
+            <div class="enhanced-contributor-grid">
+                {generate_enhanced_team_cards(team_analytics) if team_analytics else generate_contributor_cards(contributors.most_common(10))}
             </div>
             <div class="tech-stack-section">
                 <h3 class="subsection-title">Technology Stack</h3>
@@ -640,6 +1278,9 @@ def generate_shadcn_dashboard(report_data: Dict[str, Any], team_name: str = "Dev
                 </div>
             </div>
         </section>
+        
+        <!-- Issues Management -->
+        {generate_issues_management_section(report_data.get('all_issues', []), issue_analytics)}
     </div>
 
     {generate_dashboard_scripts()}
@@ -693,51 +1334,70 @@ def calculate_aggregate_issues(projects: List[Dict]) -> Dict[str, Any]:
         'issue_priorities': dict(issue_priorities)
     }
 
-def generate_issues_analysis_section(issues_data: Dict[str, Any]) -> str:
+def generate_issues_analysis_section(issue_analytics: Dict[str, Any], ai_recommendations: List[Dict]) -> str:
     """Generate the Issues Analysis & AI Recommendations section."""
     recommendations_html = ""
     
-    for rec in issues_data['recommendations']:
-        priority_class = f"recommendation-{rec.get('priority', 'info')}"
+    for rec in ai_recommendations:
+        type_class = f"recommendation-{rec.get('type', 'info')}"
         type_icon = {
-            'alert': '⚠️',
-            'warning': '⚠️', 
             'critical': '🚨',
-            'optimization': '🔧',
-            'process': '📋',
-            'maintenance': '🧹',
-            'success': '✅'
+            'high': '⚠️',
+            'medium': '💡',
+            'low': '📋',
+            'success': '✅',
+            'info': 'ℹ️'
         }.get(rec.get('type', 'info'), '💡')
         
+        # Handle projects list if available
+        projects_info = ""
+        if 'projects' in rec and rec['projects']:
+            projects_info = f"<br><small>Projects: {', '.join(rec['projects'][:3])}</small>"
+        elif 'project' in rec:
+            projects_info = f"<br><small>Project: {rec['project']}</small>"
+        elif 'team_member' in rec:
+            projects_info = f"<br><small>Team member: {rec['team_member']}</small>"
+        
         recommendations_html += f"""
-        <div class="recommendation-card {priority_class}">
+        <div class="recommendation-card {type_class}">
             <div class="recommendation-header">
                 <span class="recommendation-icon">{type_icon}</span>
                 <h4 class="recommendation-title">{rec.get('title', 'Recommendation')}</h4>
-                <span class="recommendation-priority">{rec.get('priority', 'info').upper()}</span>
+                <span class="recommendation-priority">{rec.get('type', 'info').upper()}</span>
             </div>
             <p class="recommendation-message">{rec.get('message', '')}</p>
             <p class="recommendation-action"><strong>Action:</strong> {rec.get('action', '')}</p>
-            <p class="recommendation-project"><strong>Project:</strong> {rec.get('project', 'System-wide')}</p>
+            {projects_info}
         </div>
         """
+    
+    # Calculate additional stats
+    critical_count = issue_analytics['by_priority']['critical']
+    high_count = issue_analytics['by_priority']['high']
+    overdue_count = issue_analytics['overdue']
     
     return f"""
     <div class="issues-overview-grid">
         <div class="issue-card total-open">
             <h3>Total Open Issues</h3>
-            <span class="count">{issues_data['total_open_issues']}</span>
-            <p class="card-subtitle">Across {issues_data['projects_with_analysis']} projects</p>
+            <span class="count">{issue_analytics['total_open']}</span>
+            <p class="card-subtitle">Across {len(issue_analytics['project_issues'])} projects</p>
+        </div>
+        <div class="issue-card critical-issues">
+            <h3>Critical/High Priority</h3>
+            <span class="count {('critical' if critical_count > 0 else '')}">{critical_count + high_count}</span>
+            <p class="card-subtitle">{critical_count} critical, {high_count} high</p>
+        </div>
+        <div class="issue-card overdue-issues">
+            <h3>Overdue Issues</h3>
+            <span class="count {('overdue' if overdue_count > 0 else '')}">{overdue_count}</span>
+            <p class="card-subtitle">Need immediate attention</p>
         </div>
         <div class="issue-card recommendations">
             <h3>AI Recommendations</h3>
-            <span class="count">{len(issues_data['recommendations'])}</span>
+            <span class="count">{len(ai_recommendations)}</span>
             <p class="card-subtitle">Strategic insights generated</p>
         </div>
-        <div class="issue-card projects-analyzed">
-            <h3>Projects Analyzed</h3>
-            <span class="count">{issues_data['projects_with_analysis']}</span>
-            <p class="card-subtitle">Of {issues_data['total_projects']} total projects</p>
         </div>
     </div>
     
@@ -1931,6 +2591,284 @@ def generate_shadcn_styles() -> str:
             font-weight: 500;
             margin: 0.5rem 0;
         }
+
+        /* Enhanced Contributor Cards */
+        .enhanced-contributor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .enhanced-contributor-card {
+            background: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .enhanced-contributor-card:hover {
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transform: translateY(-1px);
+        }
+
+        .contributor-header {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .contributor-basic-info {
+            flex: 1;
+        }
+
+        .contributor-summary {
+            display: flex;
+            gap: 0.5rem;
+            color: hsl(var(--muted-foreground));
+            font-size: 0.875rem;
+        }
+
+        .contributor-summary .metric {
+            font-weight: 500;
+        }
+
+        .contributor-summary .separator {
+            color: hsl(var(--border));
+        }
+
+        .contributor-details {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid hsl(var(--border));
+        }
+
+        .projects-section,
+        .workload-section {
+            margin-bottom: 1rem;
+        }
+
+        .projects-section h5,
+        .workload-section h5 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: hsl(var(--muted-foreground));
+            margin-bottom: 0.5rem;
+        }
+
+        .project-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+        }
+
+        .project-tag {
+            background: hsl(var(--secondary));
+            color: hsl(var(--secondary-foreground));
+            padding: 0.25rem 0.5rem;
+            border-radius: calc(var(--radius) - 4px);
+            font-size: 0.75rem;
+        }
+
+        .project-tag.more {
+            background: hsl(var(--muted));
+            color: hsl(var(--muted-foreground));
+            font-style: italic;
+        }
+
+        .workload-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: hsl(var(--foreground));
+        }
+
+        .stat-label {
+            display: block;
+            font-size: 0.75rem;
+            color: hsl(var(--muted-foreground));
+            margin-top: 0.25rem;
+        }
+
+        /* Issues Table Styles */
+        .issue-filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .search-input,
+        .filter-select {
+            padding: 0.5rem 1rem;
+            border: 1px solid hsl(var(--border));
+            border-radius: calc(var(--radius) - 2px);
+            background: hsl(var(--background));
+            color: hsl(var(--foreground));
+            font-size: 0.875rem;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-select {
+            min-width: 150px;
+        }
+
+        .issue-stats-bar {
+            display: flex;
+            gap: 2rem;
+            padding: 1rem;
+            background: hsl(var(--muted) / 0.5);
+            border-radius: var(--radius);
+            margin-bottom: 1.5rem;
+        }
+
+        .issues-table-container {
+            overflow-x: auto;
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+        }
+
+        .issues-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .issues-table th {
+            background: hsl(var(--muted));
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .issues-table th:hover {
+            background: hsl(var(--muted) / 0.8);
+        }
+
+        .issues-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid hsl(var(--border));
+        }
+
+        .issues-table tbody tr:hover {
+            background: hsl(var(--muted) / 0.3);
+        }
+
+        .priority-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: calc(var(--radius) - 4px);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .priority-critical {
+            background: hsl(0 85% 60%);
+            color: white;
+        }
+
+        .priority-high {
+            background: hsl(25 95% 53%);
+            color: white;
+        }
+
+        .priority-medium {
+            background: hsl(45 95% 53%);
+            color: black;
+        }
+
+        .priority-low {
+            background: hsl(200 85% 60%);
+            color: white;
+        }
+
+        .issue-row.overdue {
+            background: hsl(0 85% 95%);
+        }
+
+        .issue-link {
+            color: hsl(var(--primary));
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .issue-link:hover {
+            text-decoration: underline;
+        }
+
+        .assignee-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .assignee-avatar {
+            width: 1.75rem;
+            height: 1.75rem;
+            border-radius: 50%;
+            background: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .assignee-name {
+            font-size: 0.875rem;
+        }
+
+        .issue-label {
+            display: inline-block;
+            padding: 0.125rem 0.375rem;
+            border-radius: calc(var(--radius) - 4px);
+            font-size: 0.75rem;
+            margin-right: 0.25rem;
+            background: hsl(var(--secondary));
+            color: hsl(var(--secondary-foreground));
+        }
+
+        .issue-label.label-bug {
+            background: hsl(0 85% 60%);
+            color: white;
+        }
+
+        .issue-label.label-feature {
+            background: hsl(120 85% 40%);
+            color: white;
+        }
+
+        .issue-label.label-enhancement {
+            background: hsl(200 85% 60%);
+            color: white;
+        }
+
+        .action-link {
+            color: hsl(var(--primary));
+            text-decoration: none;
+            font-size: 0.875rem;
+        }
+
+        .action-link:hover {
+            text-decoration: underline;
+        }
     """
 
 def generate_kpi_card(label: str, value: int, change: float, type: str, show_change: bool = True) -> str:
@@ -2033,7 +2971,7 @@ def generate_contributor_cards(contributors: List[Tuple[str, int]]) -> str:
     cards = []
     
     for name, commits in contributors:
-        initials = ''.join(word[0].upper() for word in name.split()[:2])
+        initials = get_initials(name)
         
         cards.append(f"""
         <div class="card contributor-card">
@@ -2046,6 +2984,72 @@ def generate_contributor_cards(contributors: List[Tuple[str, int]]) -> str:
         """)
     
     return '\n'.join(cards)
+
+def generate_enhanced_team_cards(team_analytics: Dict[str, Any]) -> str:
+    """Generate enhanced team member cards with project and issue info."""
+    cards_html = []
+    
+    # Sort by commits and get top 20
+    sorted_members = sorted(team_analytics.items(), 
+                          key=lambda x: x[1]['commits'], 
+                          reverse=True)[:20]
+    
+    for member, data in sorted_members:
+        initials = get_initials(member)
+        projects_list = data['projects'][:5]  # Top 5 projects
+        projects_more = len(data['projects']) - 5 if len(data['projects']) > 5 else 0
+        
+        # Generate project tags
+        project_tags = ''.join([f'<span class="project-tag">{p}</span>' for p in projects_list])
+        if projects_more > 0:
+            project_tags += f'<span class="project-tag more">+{projects_more} more</span>'
+        
+        cards_html.append(f"""
+        <div class="enhanced-contributor-card">
+            <div class="contributor-header">
+                <div class="contributor-avatar">{initials}</div>
+                <div class="contributor-basic-info">
+                    <h4 class="contributor-name">{member}</h4>
+                    <div class="contributor-summary">
+                        <span class="metric">{data['commits']} commits</span>
+                        <span class="separator">•</span>
+                        <span class="metric">{data['issues_assigned']} issues</span>
+                        <span class="separator">•</span>
+                        <span class="metric">{len(data['projects'])} projects</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="contributor-details">
+                <div class="projects-section">
+                    <h5>Active Projects:</h5>
+                    <div class="project-tags">
+                        {project_tags}
+                    </div>
+                </div>
+                
+                <div class="workload-section">
+                    <h5>Current Workload:</h5>
+                    <div class="workload-stats">
+                        <div class="stat-item">
+                            <span class="stat-value">{data['issues_assigned']}</span>
+                            <span class="stat-label">Open Issues</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">{data['issues_resolved']}</span>
+                            <span class="stat-label">Resolved</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">{data['merge_requests']}</span>
+                            <span class="stat-label">MRs</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        """)
+    
+    return '\n'.join(cards_html)
 
 def generate_tech_stack_badges(tech_stack: List[Tuple[str, int]]) -> str:
     """Generate technology stack badges."""
