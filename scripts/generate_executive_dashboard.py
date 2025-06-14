@@ -15,6 +15,10 @@ import re
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+# Import our services
+from src.api.client import GitLabClient
+from src.services.group_enhancement import GroupEnhancementService
+
 # Project descriptions (can be expanded with more projects)
 PROJECT_DESCRIPTIONS = {
     'llama-index-rag-pipeline': 'Advanced RAG implementation using LlamaIndex for intelligent document retrieval and question answering. Integrates with multiple data sources and supports custom embeddings.',
@@ -298,8 +302,17 @@ def analyze_project(project: Dict, gitlab_url: str, gitlab_token: str, days: int
     return metrics
 
 def analyze_groups(group_ids: List[int], gitlab_url: str, gitlab_token: str, days: int = 30) -> Dict[str, Any]:
-    """Analyze multiple GitLab groups."""
+    """Analyze multiple GitLab groups with enhanced group information."""
     print(f"📊 Analyzing {len(group_ids)} groups over {days} days...")
+    
+    # Initialize GitLab client and group enhancement service
+    try:
+        client = GitLabClient(gitlab_url, gitlab_token)
+        group_service = GroupEnhancementService(client)
+    except Exception as e:
+        print(f"⚠️ Could not initialize enhanced services, falling back to simple requests: {e}")
+        client = None
+        group_service = None
     
     report_data = {
         'metadata': {
@@ -331,14 +344,33 @@ def analyze_groups(group_ids: List[int], gitlab_url: str, gitlab_token: str, day
     for group_id in group_ids:
         print(f"  📁 Analyzing group {group_id}...")
         
-        # Get group info
-        group_info = simple_gitlab_request(
-            gitlab_url, gitlab_token,
-            f"groups/{group_id}",
-            {}
-        )
-        
-        group_name = group_info['name'] if isinstance(group_info, dict) else f"Group {group_id}"
+        # Get enhanced group info
+        if group_service:
+            try:
+                enhanced_group = group_service.get_enhanced_group_info(group_id)
+                group_name = enhanced_group['business_name']
+                group_description = enhanced_group['business_description']
+                group_metadata = enhanced_group
+            except Exception as e:
+                print(f"⚠️ Could not get enhanced group info for {group_id}, using fallback: {e}")
+                group_info = simple_gitlab_request(
+                    gitlab_url, gitlab_token,
+                    f"groups/{group_id}",
+                    {}
+                )
+                group_name = group_info['name'] if isinstance(group_info, dict) else f"Group {group_id}"
+                group_description = group_info.get('description', '') if isinstance(group_info, dict) else ''
+                group_metadata = group_info if isinstance(group_info, dict) else {}
+        else:
+            # Fallback to simple request
+            group_info = simple_gitlab_request(
+                gitlab_url, gitlab_token,
+                f"groups/{group_id}",
+                {}
+            )
+            group_name = group_info['name'] if isinstance(group_info, dict) else f"Group {group_id}"
+            group_description = group_info.get('description', '') if isinstance(group_info, dict) else ''
+            group_metadata = group_info if isinstance(group_info, dict) else {}
         
         # Get projects in group
         projects = simple_gitlab_request(
@@ -350,12 +382,18 @@ def analyze_groups(group_ids: List[int], gitlab_url: str, gitlab_token: str, day
         group_data = {
             'name': group_name,
             'id': group_id,
+            'description': group_description,
+            'metadata': group_metadata,
             'projects': [],
             'total_commits': 0,
             'total_mrs': 0,
             'total_issues': 0,
             'health_grade': 'B',
-            'active_projects': 0
+            'active_projects': 0,
+            'enhancement_info': {
+                'has_business_name': group_metadata.get('enhancement_metadata', {}).get('has_business_name', False),
+                'has_business_description': group_metadata.get('enhancement_metadata', {}).get('has_business_description', False)
+            }
         }
         
         for project in projects:
