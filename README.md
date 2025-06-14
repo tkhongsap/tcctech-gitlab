@@ -8,6 +8,7 @@ Enhanced GitLab management tools for bulk operations, analytics, and automation.
 - 🚀 **Bulk Branch Renaming** - Rename branches across multiple projects with safety checks
 - 📊 **Repository Analytics** - Generate comprehensive metrics and reports for projects and groups
 - 📝 **Issue Management** - Create issues from templates, CSV files, or interactively
+- 🤖 **Natural Language Issue Creation** - Describe tasks in plain English and auto-generate GitLab issues
 - 🧪 **Comprehensive Testing** - Unit and integration tests with 80%+ coverage target
 - 📈 **Progress Tracking** - Real-time progress bars and operation logging
 - 🔒 **Safety Features** - Dry-run mode, protected branch detection, rollback support
@@ -45,6 +46,12 @@ Enhanced GitLab management tools for bulk operations, analytics, and automation.
    - Commit, branch, issue, and MR statistics
    - Contributor analytics
    - Multiple output formats
+
+4. **scripts/sync_issues.py** - File-based issue creation (NEW!)
+   - Read markdown/text files from issues folder
+   - Support YAML frontmatter for metadata
+   - Create issues using curl or API
+   - Generate shell scripts for manual execution
 
 ### Legacy Scripts
 
@@ -106,6 +113,75 @@ python scripts/create_issues.py ProjectName --import issues.csv
 
 # List available templates
 python scripts/create_issues.py --list-templates
+```
+
+### File-Based Issue Creation (SIMPLIFIED!)
+
+Create GitLab issues by simply adding markdown or text files to the `issues` folder:
+
+```bash
+# Sync all files from issues folder to GitLab
+python scripts/sync_issues.py PROJECT_ID
+
+# Preview without creating (dry run)
+python scripts/sync_issues.py PROJECT_ID --dry-run
+
+# Use GitLab API instead of curl
+python scripts/sync_issues.py PROJECT_ID --use-api
+
+# Generate a shell script with curl commands
+python scripts/sync_issues.py PROJECT_ID --generate-script
+```
+
+#### Example Issue Files
+
+**With YAML frontmatter** (`issues/user-authentication.md`):
+```markdown
+---
+title: Implement User Authentication
+labels: [feature, security, high-priority]
+assignee: john.doe
+milestone: v1.0
+due_date: 2024-02-01
+weight: 8
+---
+
+## Description
+Implement secure user authentication with OAuth support.
+
+## Requirements
+- User registration with email verification
+- Login/logout functionality
+- Password reset via email
+- OAuth integration (Google, Facebook)
+
+#backend #api #authentication
+```
+
+**Simple markdown** (`issues/fix-bug.md`):
+```markdown
+# Fix Login Bug
+
+Users cannot login after recent deployment. The session cookie is not being set properly.
+
+#bug #critical #authentication
+```
+
+**Plain text** (`issues/new-feature.txt`):
+```
+Add Dark Mode Support
+
+Implement a toggle for dark mode in user preferences. Should persist across sessions.
+
+Labels: feature, ui, enhancement
+```
+
+The script will:
+- Read all .md, .txt, and .markdown files from the issues folder
+- Extract metadata from YAML frontmatter or content
+- Create GitLab issues using curl or the API
+- Support dry-run mode for previewing
+- Generate shell scripts for manual execution
 ```
 
 ### Analytics and Reporting
