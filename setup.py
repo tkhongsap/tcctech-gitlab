@@ -42,6 +42,7 @@ setup(
             'gitlab-rename-branches=scripts.rename_branches:main',
             'gitlab-create-issues=scripts.create_issues:main',
             'gitlab-analyze=scripts.analyze_projects:main',
+            'glt=glt:main',
         ],
     },
     classifiers=[

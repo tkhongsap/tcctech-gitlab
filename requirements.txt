@@ -6,6 +6,10 @@ tqdm>=4.62.0
 click>=8.0.0
 rich>=10.0.0
 
+# CLI-specific dependencies
+prompt-toolkit>=3.0.0
+colorama>=0.4.0
+
 # Testing dependencies
 pytest>=7.0.0
 pytest-cov>=4.0.0
