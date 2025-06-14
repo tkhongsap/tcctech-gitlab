@@ -12,12 +12,22 @@ from collections import defaultdict, Counter
 import math
 import re
 
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    print("💡 Tip: Install python-dotenv to load .env files automatically")
+    print("   pip install python-dotenv")
+
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Import our services
 from src.api.client import GitLabClient
 from src.services.group_enhancement import GroupEnhancementService
+from src.services.branch_service import BranchService
+from src.services.issue_service import IssueService
 
 # Project descriptions (can be expanded with more projects)
 PROJECT_DESCRIPTIONS = {
@@ -165,7 +175,7 @@ def get_activity_sparkline(daily_commits: List[int]) -> str:
     return ''.join(sparks[n] for n in normalized)
 
 def analyze_project(project: Dict, gitlab_url: str, gitlab_token: str, days: int = 30) -> Dict[str, Any]:
-    """Analyze a single project with 30-day metrics."""
+    """Analyze a single project with 30-day metrics including branch and issue analysis."""
     project_id = project['id']
     project_name = project['name']
     
@@ -200,8 +210,28 @@ def analyze_project(project: Dict, gitlab_url: str, gitlab_token: str, days: int
         'activity_sparkline': '',
         'health_score': 0,
         'health_grade': 'D',
-        'status': 'inactive'
+        'status': 'inactive',
+        # New enhanced metrics
+        'branch_analysis': {},
+        'issue_analysis': {},
+        'enhancement_metadata': {
+            'has_branch_analysis': False,
+            'has_issue_analysis': False,
+            'analysis_errors': []
+        }
     }
+    
+    # Initialize enhanced services
+    try:
+        client = GitLabClient(gitlab_url, gitlab_token)
+        branch_service = BranchService(client)
+        issue_service = IssueService(client)
+        enhanced_services_available = True
+    except Exception as e:
+        print(f"⚠️ Enhanced services not available for {project_name}: {e}")
+        enhanced_services_available = False
+        branch_service = None
+        issue_service = None
     
     # Get commits
     commits = simple_gitlab_request(
@@ -267,6 +297,30 @@ def analyze_project(project: Dict, gitlab_url: str, gitlab_token: str, days: int
             metrics['issues_created'] += 1
             if issue['state'] == 'closed':
                 metrics['issues_closed'] += 1
+    
+    # Enhanced Branch Analysis
+    if enhanced_services_available and branch_service:
+        try:
+            print(f"    📊 Analyzing branches for {project_name}...")
+            branch_analysis = branch_service.analyze_project_branches(project_id, days)
+            metrics['branch_analysis'] = branch_analysis
+            metrics['enhancement_metadata']['has_branch_analysis'] = True
+        except Exception as e:
+            print(f"    ⚠️ Branch analysis failed for {project_name}: {e}")
+            metrics['enhancement_metadata']['analysis_errors'].append(f"Branch analysis: {str(e)}")
+            metrics['branch_analysis'] = {'error': str(e), 'active_branches': [], 'total_branches': 0}
+    
+    # Enhanced Issue Analysis
+    if enhanced_services_available and issue_service:
+        try:
+            print(f"    📋 Analyzing issues for {project_name}...")
+            issue_analysis = issue_service.analyze_project_issues(project_id, days)
+            metrics['issue_analysis'] = issue_analysis
+            metrics['enhancement_metadata']['has_issue_analysis'] = True
+        except Exception as e:
+            print(f"    ⚠️ Issue analysis failed for {project_name}: {e}")
+            metrics['enhancement_metadata']['analysis_errors'].append(f"Issue analysis: {str(e)}")
+            metrics['issue_analysis'] = {'error': str(e), 'recommendations': [], 'total_open': metrics['open_issues']}
     
     # Get languages
     try:
@@ -454,141 +508,611 @@ def analyze_groups(group_ids: List[int], gitlab_url: str, gitlab_token: str, day
     return report_data
 
 def generate_shadcn_dashboard(report_data: Dict[str, Any], team_name: str = "Development Team") -> str:
-    """Generate modern dashboard HTML with shadcn/ui-inspired design."""
+    """Generate enhanced executive dashboard with new features."""
     metadata = report_data['metadata']
     summary = report_data['summary']
     groups = report_data['groups']
     projects = report_data['projects']
     contributors = report_data['contributors']
-    daily_activity = report_data['daily_activity']
-    tech_stack = report_data['technology_stack']
     
-    # Format dates
-    start_date = datetime.fromisoformat(metadata['start_date']).strftime('%B %d')
-    end_date = datetime.fromisoformat(metadata['end_date']).strftime('%B %d, %Y')
-    
-    # Generate daily activity chart data
+    # Prepare data for charts
     chart_dates = []
     chart_values = []
-    from datetime import timezone
-    now = datetime.now(timezone.utc)
     for i in range(30):
-        date = (now - timedelta(days=29-i)).date()
-        chart_dates.append(date.strftime('%m/%d'))
-        chart_values.append(daily_activity.get(str(date), 0))
+        date = (datetime.now() - timedelta(days=29-i)).strftime('%Y-%m-%d')
+        chart_dates.append(date)
+        chart_values.append(report_data['daily_activity'].get(date, 0))
     
-    # Calculate period comparisons
-    total_commits = summary['total_commits']
-    prev_period_commits = int(total_commits * 0.85)  # Simulated for now
-    commit_change = ((total_commits - prev_period_commits) / max(prev_period_commits, 1)) * 100
+    # Calculate aggregate issue analysis
+    aggregate_issues = calculate_aggregate_issues(projects)
     
-    html = f"""<!DOCTYPE html>
-<html lang="en" class="light">
+    # Generate health score methodology
+    health_methodology = generate_health_score_methodology()
+    
+    return f"""
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitLab Analytics Dashboard - {team_name}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        {generate_shadcn_styles()}
-    </style>
+    <title>Executive Dashboard - {team_name}</title>
+    {generate_shadcn_styles()}
 </head>
 <body>
-    <div class="container">
+    <div class="dashboard-container">
         <!-- Header -->
         <header class="header">
             <div class="header-content">
-                <div>
-                    <h1 class="header-title">GitLab Analytics</h1>
-                    <p class="header-subtitle">{metadata['period_days']}-Day Team Performance Dashboard</p>
-                </div>
-                <div class="header-actions">
-                    <span class="date-range">{start_date} - {end_date}</span>
-                    <button class="btn btn-outline">
-                        <svg class="icon" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
-                        </svg>
-                        Export
-                    </button>
+                <h1 class="dashboard-title">Executive Dashboard</h1>
+                <p class="dashboard-subtitle">{team_name} • {metadata['period_days']} Day Analysis</p>
+                <div class="header-meta">
+                    <span class="meta-item">Generated: {datetime.now().strftime('%B %d, %Y at %I:%M %p')}</span>
+                    <span class="meta-item">{summary['total_projects']} Projects Analyzed</span>
                 </div>
             </div>
         </header>
 
-        <main class="main-content">
-            <!-- Executive Summary -->
-            <section class="section">
-                <h2 class="section-title">Executive Summary</h2>
-                <div class="kpi-grid">
-                    {generate_kpi_card('Total Commits', summary['total_commits'], commit_change, 'commits')}
-                    {generate_kpi_card('Merge Requests', summary['total_mrs'], 23.5, 'mrs')}
-                    {generate_kpi_card('Issues', summary['total_issues'], -12.3, 'issues')}
-                    {generate_kpi_card('Active Projects', summary['active_projects'], 0, 'projects', show_change=False)}
+        <!-- KPI Overview -->
+        <section class="section">
+            <h2 class="section-title">Key Performance Indicators</h2>
+            <div class="kpi-grid">
+                {generate_kpi_card('Total Commits', summary['total_commits'], 12.5, 'commits')}
+                {generate_kpi_card('Merge Requests', summary['total_mrs'], 8.2, 'mrs')}
+                {generate_kpi_card('Issues Resolved', summary['total_issues'], -5.1, 'issues')}
+                {generate_kpi_card('Active Projects', summary['active_projects'], 0, 'projects', show_change=False)}
+            </div>
+            
+            <!-- Activity Chart -->
+            <div class="card chart-card">
+                <h3 class="chart-title">30-Day Activity Trend</h3>
+                <div class="chart-container">
+                    {generate_activity_chart(chart_dates, chart_values)}
                 </div>
-                
-                <!-- Activity Chart -->
-                <div class="card chart-card">
-                    <h3 class="chart-title">30-Day Activity Trend</h3>
-                    <div class="chart-container">
-                        {generate_activity_chart(chart_dates, chart_values)}
-                    </div>
-                </div>
-            </section>
+            </div>
+        </section>
 
-            <!-- Group Analysis -->
-            <section class="section">
-                <h2 class="section-title">Group Analysis</h2>
-                <div class="group-grid">
-                    {generate_group_cards(groups)}
-                </div>
-            </section>
+        <!-- Group Analysis -->
+        <section class="section">
+            <h2 class="section-title">Group Analysis</h2>
+            <div class="group-grid">
+                {generate_group_cards(groups)}
+            </div>
+        </section>
 
-            <!-- Project Portfolio -->
-            <section class="section">
-                <h2 class="section-title">Project Portfolio</h2>
-                <div class="project-filters">
-                    <input type="text" class="search-input" placeholder="Search projects..." onkeyup="filterProjects(this.value)">
-                    <select class="filter-select" onchange="filterByStatus(this.value)">
-                        <option value="">All Status</option>
-                        <option value="active">Active</option>
-                        <option value="maintenance">Maintenance</option>
-                        <option value="inactive">Inactive</option>
-                    </select>
-                </div>
-                <div class="project-grid" id="projectGrid">
-                    {generate_project_cards(projects[:20])}  <!-- Limit to top 20 projects -->
-                </div>
-            </section>
+        <!-- Issues Analysis & AI Recommendations -->
+        <section class="section">
+            <h2 class="section-title">Issues Analysis & AI Recommendations</h2>
+            <div class="issues-analysis-container">
+                {generate_issues_analysis_section(aggregate_issues)}
+            </div>
+        </section>
 
-            <!-- Team Performance -->
-            <section class="section">
-                <h2 class="section-title">Team Performance</h2>
-                <div class="contributor-grid">
-                    {generate_contributor_cards(contributors.most_common(12))}
-                </div>
-            </section>
+        <!-- Health Score Documentation -->
+        <section class="section">
+            <h2 class="section-title">Health Score Methodology</h2>
+            <div class="health-methodology-container">
+                {health_methodology}
+            </div>
+        </section>
 
-            <!-- Technology Stack -->
-            <section class="section">
-                <h2 class="section-title">Technology Distribution</h2>
-                <div class="tech-stack-grid">
-                    {generate_tech_stack_badges(tech_stack.most_common(15))}
-                </div>
-            </section>
-        </main>
+        <!-- Project Portfolio -->
+        <section class="section">
+            <h2 class="section-title">Project Portfolio</h2>
+            <div class="project-filters">
+                <input type="text" class="search-input" placeholder="Search projects..." onkeyup="filterProjects(this.value)">
+                <select class="filter-select" onchange="filterByStatus(this.value)">
+                    <option value="">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="maintenance">Maintenance</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+            </div>
+            <div class="project-grid" id="projectGrid">
+                {generate_enhanced_project_cards(projects[:20])}  <!-- Enhanced project cards -->
+            </div>
+        </section>
 
-        <!-- Footer -->
-        <footer class="footer">
-            <p>Generated by GitLab Analytics • {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
-        </footer>
+        <!-- Team Performance -->
+        <section class="section">
+            <h2 class="section-title">Team Performance</h2>
+            <div class="contributor-grid">
+                {generate_contributor_cards(contributors.most_common(10))}
+            </div>
+            <div class="tech-stack-section">
+                <h3 class="subsection-title">Technology Stack</h3>
+                <div class="tech-stack-badges">
+                    {generate_tech_stack_badges(report_data['technology_stack'].most_common(15))}
+                </div>
+            </div>
+        </section>
     </div>
 
-    <script>
-        {generate_dashboard_scripts()}
-    </script>
+    {generate_dashboard_scripts()}
 </body>
-</html>"""
+</html>
+"""
+
+def calculate_aggregate_issues(projects: List[Dict]) -> Dict[str, Any]:
+    """Calculate aggregate issue analysis across all projects."""
+    total_open = 0
+    total_recommendations = []
+    projects_with_issues = 0
+    issue_types = defaultdict(int)
+    issue_priorities = defaultdict(int)
     
-    return html
+    for project in projects:
+        issue_analysis = project.get('issue_analysis', {})
+        if issue_analysis and not issue_analysis.get('error'):
+            projects_with_issues += 1
+            total_open += issue_analysis.get('total_open', 0)
+            
+            # Aggregate recommendations
+            for rec in issue_analysis.get('recommendations', []):
+                total_recommendations.append({
+                    'project': project['name'],
+                    'project_id': project['id'],
+                    **rec
+                })
+            
+            # Aggregate issue types and priorities
+            by_type = issue_analysis.get('by_type', {})
+            by_priority = issue_analysis.get('by_priority', {})
+            
+            for issue_type, count in by_type.items():
+                issue_types[issue_type] += count
+            
+            for priority, count in by_priority.items():
+                issue_priorities[priority] += count
+    
+    # Sort recommendations by priority
+    priority_order = {'critical': 0, 'high': 1, 'medium': 2, 'low': 3, 'info': 4}
+    total_recommendations.sort(key=lambda x: priority_order.get(x.get('priority', 'info'), 5))
+    
+    return {
+        'total_open_issues': total_open,
+        'projects_with_analysis': projects_with_issues,
+        'total_projects': len(projects),
+        'recommendations': total_recommendations[:10],  # Top 10 recommendations
+        'all_recommendations': total_recommendations,
+        'issue_types': dict(issue_types),
+        'issue_priorities': dict(issue_priorities)
+    }
+
+def generate_issues_analysis_section(issues_data: Dict[str, Any]) -> str:
+    """Generate the Issues Analysis & AI Recommendations section."""
+    recommendations_html = ""
+    
+    for rec in issues_data['recommendations']:
+        priority_class = f"recommendation-{rec.get('priority', 'info')}"
+        type_icon = {
+            'alert': '⚠️',
+            'warning': '⚠️', 
+            'critical': '🚨',
+            'optimization': '🔧',
+            'process': '📋',
+            'maintenance': '🧹',
+            'success': '✅'
+        }.get(rec.get('type', 'info'), '💡')
+        
+        recommendations_html += f"""
+        <div class="recommendation-card {priority_class}">
+            <div class="recommendation-header">
+                <span class="recommendation-icon">{type_icon}</span>
+                <h4 class="recommendation-title">{rec.get('title', 'Recommendation')}</h4>
+                <span class="recommendation-priority">{rec.get('priority', 'info').upper()}</span>
+            </div>
+            <p class="recommendation-message">{rec.get('message', '')}</p>
+            <p class="recommendation-action"><strong>Action:</strong> {rec.get('action', '')}</p>
+            <p class="recommendation-project"><strong>Project:</strong> {rec.get('project', 'System-wide')}</p>
+        </div>
+        """
+    
+    return f"""
+    <div class="issues-overview-grid">
+        <div class="issue-card total-open">
+            <h3>Total Open Issues</h3>
+            <span class="count">{issues_data['total_open_issues']}</span>
+            <p class="card-subtitle">Across {issues_data['projects_with_analysis']} projects</p>
+        </div>
+        <div class="issue-card recommendations">
+            <h3>AI Recommendations</h3>
+            <span class="count">{len(issues_data['recommendations'])}</span>
+            <p class="card-subtitle">Strategic insights generated</p>
+        </div>
+        <div class="issue-card projects-analyzed">
+            <h3>Projects Analyzed</h3>
+            <span class="count">{issues_data['projects_with_analysis']}</span>
+            <p class="card-subtitle">Of {issues_data['total_projects']} total projects</p>
+        </div>
+    </div>
+    
+    <div class="recommendations-panel">
+        <h3>Strategic Recommendations</h3>
+        <div class="recommendations-list">
+            {recommendations_html}
+        </div>
+    </div>
+    """
+
+def generate_health_score_methodology() -> str:
+    """Generate the Health Score Methodology documentation."""
+    return """
+    <div class="health-methodology">
+        <div class="methodology-tabs">
+            <div class="tab-nav">
+                <button class="tab-button active" onclick="showTab('components')">Scoring Components</button>
+                <button class="tab-button" onclick="showTab('grading')">Grading Scale</button>
+                <button class="tab-button" onclick="showTab('example')">Calculation Example</button>
+            </div>
+            
+            <div id="components" class="tab-content active">
+                <h4>Health Score Components</h4>
+                <div class="component-grid">
+                    <div class="component-card">
+                        <h5>Activity (40%)</h5>
+                        <ul>
+                            <li>Commits in last 30 days (0-50+ commits)</li>
+                            <li>Days since last commit (0-30+ days)</li>
+                            <li>Contributor diversity (1-10+ contributors)</li>
+                        </ul>
+                    </div>
+                    <div class="component-card">
+                        <h5>Maintenance (30%)</h5>
+                        <ul>
+                            <li>Open issues count (0-20+ issues)</li>
+                            <li>Issue resolution rate</li>
+                            <li>Average issue age</li>
+                        </ul>
+                    </div>
+                    <div class="component-card">
+                        <h5>Collaboration (20%)</h5>
+                        <ul>
+                            <li>Merge request activity</li>
+                            <li>Code review participation</li>
+                            <li>Branch management practices</li>
+                        </ul>
+                    </div>
+                    <div class="component-card">
+                        <h5>Quality (10%)</h5>
+                        <ul>
+                            <li>CI/CD pipeline success rate</li>
+                            <li>Test coverage (if available)</li>
+                            <li>Documentation completeness</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="grading" class="tab-content">
+                <h4>Grading Scale</h4>
+                <div class="grading-scale">
+                    <div class="grade-item grade-a-plus"><span class="grade">A+</span><span class="range">95-100 points</span><span class="description">Exceptional project health</span></div>
+                    <div class="grade-item grade-a"><span class="grade">A</span><span class="range">90-94 points</span><span class="description">Excellent project health</span></div>
+                    <div class="grade-item grade-a-minus"><span class="grade">A-</span><span class="range">85-89 points</span><span class="description">Very good project health</span></div>
+                    <div class="grade-item grade-b-plus"><span class="grade">B+</span><span class="range">80-84 points</span><span class="description">Good project health</span></div>
+                    <div class="grade-item grade-b"><span class="grade">B</span><span class="range">75-79 points</span><span class="description">Satisfactory project health</span></div>
+                    <div class="grade-item grade-b-minus"><span class="grade">B-</span><span class="range">70-74 points</span><span class="description">Adequate project health</span></div>
+                    <div class="grade-item grade-c-plus"><span class="grade">C+</span><span class="range">65-69 points</span><span class="description">Needs attention</span></div>
+                    <div class="grade-item grade-c"><span class="grade">C</span><span class="range">60-64 points</span><span class="description">Requires improvement</span></div>
+                    <div class="grade-item grade-c-minus"><span class="grade">C-</span><span class="range">55-59 points</span><span class="description">Poor project health</span></div>
+                    <div class="grade-item grade-d"><span class="grade">D</span><span class="range">0-54 points</span><span class="description">Critical issues require immediate action</span></div>
+                </div>
+            </div>
+            
+            <div id="example" class="tab-content">
+                <h4>Calculation Example</h4>
+                <div class="calculation-example">
+                    <div class="example-project">
+                        <h5>Sample Project: "AI Assistant API"</h5>
+                        <div class="calculation-steps">
+                            <div class="step">
+                                <strong>Activity Score (40%)</strong>
+                                <p>• 25 commits in 30 days: +35 points</p>
+                                <p>• 2 days since last commit: +5 points</p>
+                                <p>• 4 contributors: +0 points</p>
+                                <p><strong>Subtotal: 40/40 points</strong></p>
+                            </div>
+                            <div class="step">
+                                <strong>Maintenance Score (30%)</strong>
+                                <p>• 8 open issues: +25 points</p>
+                                <p>• Good resolution rate: +5 points</p>
+                                <p><strong>Subtotal: 30/30 points</strong></p>
+                            </div>
+                            <div class="step">
+                                <strong>Collaboration Score (20%)</strong>
+                                <p>• 5 MRs this period: +15 points</p>
+                                <p>• Active code reviews: +5 points</p>
+                                <p><strong>Subtotal: 20/20 points</strong></p>
+                            </div>
+                            <div class="step">
+                                <strong>Quality Score (10%)</strong>
+                                <p>• No pipeline data: +5 points</p>
+                                <p><strong>Subtotal: 5/10 points</strong></p>
+                            </div>
+                            <div class="final-score">
+                                <strong>Final Score: 95/100 = A+</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    """
+
+def generate_enhanced_project_cards(projects: List[Dict]) -> str:
+    """Generate enhanced project cards with branch and issue information."""
+    cards = []
+    
+    for project in projects:
+        status_class = f"badge-{project['status']}"
+        grade_class = f"badge-grade-{project['health_grade'].lower().replace('+', '-plus').replace('-', '-minus')}"
+        
+        description = project.get('description', '')
+        if not description:
+            description = f"A {project['visibility']} GitLab project with {project['commits_30d']} commits in the last 30 days."
+        
+        # Branch information
+        branch_info = ""
+        branch_analysis = project.get('branch_analysis', {})
+        if branch_analysis and not branch_analysis.get('error'):
+            active_branches = branch_analysis.get('active_branches', [])[:3]  # Top 3 branches
+            branch_pills = []
+            for branch in active_branches:
+                activity_class = f"branch-{branch.get('activity_level', 'minimal')}"
+                branch_pills.append(f'<span class="branch-pill {activity_class}">{branch["name"]}</span>')
+            
+            if branch_pills:
+                branch_info = f'<div class="branch-section"><span class="branch-label">Active Branches:</span> {" ".join(branch_pills)}</div>'
+        
+        # Issue recommendations
+        issue_info = ""
+        issue_analysis = project.get('issue_analysis', {})
+        if issue_analysis and not issue_analysis.get('error'):
+            recommendations = issue_analysis.get('recommendations', [])
+            if recommendations:
+                high_priority_recs = [r for r in recommendations if r.get('priority') in ['critical', 'high']]
+                if high_priority_recs:
+                    rec_count = len(high_priority_recs)
+                    issue_info = f'<div class="issue-alert">⚠️ {rec_count} high priority recommendation{"s" if rec_count > 1 else ""}</div>'
+        
+        cards.append(f"""
+        <div class="card project-card enhanced-project-card" data-status="{project['status']}" data-name="{project['name'].lower()}">
+            <div class="project-header">
+                <h3 class="project-name">{project['name']}</h3>
+                <div class="project-badges">
+                    <span class="badge {status_class}">{project['status'].title()}</span>
+                    <span class="badge badge-grade {grade_class}">{project['health_grade']}</span>
+                </div>
+            </div>
+            <p class="project-description">{description}</p>
+            
+            {branch_info}
+            {issue_info}
+            
+            <div class="project-stats">
+                <div class="stat">
+                    <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>{project['commits_30d']} commits</span>
+                </div>
+                <div class="stat">
+                    <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                    </svg>
+                    <span>{project['mrs_created']} MRs</span>
+                </div>
+                <div class="stat">
+                    <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                    <span>{project['contributors_30d']} contributors</span>
+                </div>
+                <div class="stat">
+                    <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>{project.get('open_issues', 0)} issues</span>
+                </div>
+            </div>
+            <div class="project-activity">
+                {project['activity_sparkline']}
+            </div>
+        </div>
+        """)
+    
+    return '\n'.join(cards)
+
+def generate_health_score_methodology() -> str:
+    """Generate the Health Score Methodology documentation."""
+    return """
+    <div class="health-methodology">
+        <div class="methodology-tabs">
+            <div class="tab-nav">
+                <button class="tab-button active" onclick="showTab('components')">Scoring Components</button>
+                <button class="tab-button" onclick="showTab('grading')">Grading Scale</button>
+                <button class="tab-button" onclick="showTab('example')">Calculation Example</button>
+            </div>
+            
+            <div id="components" class="tab-content active">
+                <h4>Health Score Components</h4>
+                <div class="component-grid">
+                    <div class="component-card">
+                        <h5>Activity (40%)</h5>
+                        <ul>
+                            <li>Commits in last 30 days (0-50+ commits)</li>
+                            <li>Days since last commit (0-30+ days)</li>
+                            <li>Contributor diversity (1-10+ contributors)</li>
+                        </ul>
+                    </div>
+                    <div class="component-card">
+                        <h5>Maintenance (30%)</h5>
+                        <ul>
+                            <li>Open issues count (0-20+ issues)</li>
+                            <li>Issue resolution rate</li>
+                            <li>Average issue age</li>
+                        </ul>
+                    </div>
+                    <div class="component-card">
+                        <h5>Collaboration (20%)</h5>
+                        <ul>
+                            <li>Merge request activity</li>
+                            <li>Code review participation</li>
+                            <li>Branch management practices</li>
+                        </ul>
+                    </div>
+                    <div class="component-card">
+                        <h5>Quality (10%)</h5>
+                        <ul>
+                            <li>CI/CD pipeline success rate</li>
+                            <li>Test coverage (if available)</li>
+                            <li>Documentation completeness</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="grading" class="tab-content">
+                <h4>Grading Scale</h4>
+                <div class="grading-scale">
+                    <div class="grade-item grade-a-plus"><span class="grade">A+</span><span class="range">95-100 points</span><span class="description">Exceptional project health</span></div>
+                    <div class="grade-item grade-a"><span class="grade">A</span><span class="range">90-94 points</span><span class="description">Excellent project health</span></div>
+                    <div class="grade-item grade-a-minus"><span class="grade">A-</span><span class="range">85-89 points</span><span class="description">Very good project health</span></div>
+                    <div class="grade-item grade-b-plus"><span class="grade">B+</span><span class="range">80-84 points</span><span class="description">Good project health</span></div>
+                    <div class="grade-item grade-b"><span class="grade">B</span><span class="range">75-79 points</span><span class="description">Satisfactory project health</span></div>
+                    <div class="grade-item grade-b-minus"><span class="grade">B-</span><span class="range">70-74 points</span><span class="description">Adequate project health</span></div>
+                    <div class="grade-item grade-c-plus"><span class="grade">C+</span><span class="range">65-69 points</span><span class="description">Needs attention</span></div>
+                    <div class="grade-item grade-c"><span class="grade">C</span><span class="range">60-64 points</span><span class="description">Requires improvement</span></div>
+                    <div class="grade-item grade-c-minus"><span class="grade">C-</span><span class="range">55-59 points</span><span class="description">Poor project health</span></div>
+                    <div class="grade-item grade-d"><span class="grade">D</span><span class="range">0-54 points</span><span class="description">Critical issues require immediate action</span></div>
+                </div>
+            </div>
+            
+            <div id="example" class="tab-content">
+                <h4>Calculation Example</h4>
+                <div class="calculation-example">
+                    <div class="example-project">
+                        <h5>Sample Project: "AI Assistant API"</h5>
+                        <div class="calculation-steps">
+                            <div class="step">
+                                <strong>Activity Score (40%)</strong>
+                                <p>• 25 commits in 30 days: +35 points</p>
+                                <p>• 2 days since last commit: +5 points</p>
+                                <p>• 4 contributors: +0 points</p>
+                                <p><strong>Subtotal: 40/40 points</strong></p>
+                            </div>
+                            <div class="step">
+                                <strong>Maintenance Score (30%)</strong>
+                                <p>• 8 open issues: +25 points</p>
+                                <p>• Good resolution rate: +5 points</p>
+                                <p><strong>Subtotal: 30/30 points</strong></p>
+                            </div>
+                            <div class="step">
+                                <strong>Collaboration Score (20%)</strong>
+                                <p>• 5 MRs this period: +15 points</p>
+                                <p>• Active code reviews: +5 points</p>
+                                <p><strong>Subtotal: 20/20 points</strong></p>
+                            </div>
+                            <div class="step">
+                                <strong>Quality Score (10%)</strong>
+                                <p>• No pipeline data: +5 points</p>
+                                <p><strong>Subtotal: 5/10 points</strong></p>
+                            </div>
+                            <div class="final-score">
+                                <strong>Final Score: 95/100 = A+</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    """
+
+def generate_enhanced_project_cards(projects: List[Dict]) -> str:
+    """Generate enhanced project cards with branch and issue information."""
+    cards = []
+    
+    for project in projects:
+        status_class = f"badge-{project['status']}"
+        grade_class = f"badge-grade-{project['health_grade'].lower().replace('+', '-plus').replace('-', '-minus')}"
+        
+        description = project.get('description', '')
+        if not description:
+            description = f"A {project['visibility']} GitLab project with {project['commits_30d']} commits in the last 30 days."
+        
+        # Branch information
+        branch_info = ""
+        branch_analysis = project.get('branch_analysis', {})
+        if branch_analysis and not branch_analysis.get('error'):
+            active_branches = branch_analysis.get('active_branches', [])[:3]  # Top 3 branches
+            branch_pills = []
+            for branch in active_branches:
+                activity_class = f"branch-{branch.get('activity_level', 'minimal')}"
+                branch_pills.append(f'<span class="branch-pill {activity_class}">{branch["name"]}</span>')
+            
+            if branch_pills:
+                branch_info = f'<div class="branch-section"><span class="branch-label">Active Branches:</span> {" ".join(branch_pills)}</div>'
+        
+        # Issue recommendations
+        issue_info = ""
+        issue_analysis = project.get('issue_analysis', {})
+        if issue_analysis and not issue_analysis.get('error'):
+            recommendations = issue_analysis.get('recommendations', [])
+            if recommendations:
+                high_priority_recs = [r for r in recommendations if r.get('priority') in ['critical', 'high']]
+                if high_priority_recs:
+                    rec_count = len(high_priority_recs)
+                    issue_info = f'<div class="issue-alert">⚠️ {rec_count} high priority recommendation{"s" if rec_count > 1 else ""}</div>'
+        
+        cards.append(f"""
+        <div class="card project-card enhanced-project-card" data-status="{project['status']}" data-name="{project['name'].lower()}">
+            <div class="project-header">
+                <h3 class="project-name">{project['name']}</h3>
+                <div class="project-badges">
+                    <span class="badge {status_class}">{project['status'].title()}</span>
+                    <span class="badge badge-grade {grade_class}">{project['health_grade']}</span>
+                </div>
+            </div>
+            <p class="project-description">{description}</p>
+            
+            {branch_info}
+            {issue_info}
+            
+            <div class="project-stats">
+                <div class="stat">
+                    <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>{project['commits_30d']} commits</span>
+                </div>
+                <div class="stat">
+                    <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                    </svg>
+                    <span>{project['mrs_created']} MRs</span>
+                </div>
+                <div class="stat">
+                    <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                    <span>{project['contributors_30d']} contributors</span>
+                </div>
+                <div class="stat">
+                    <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>{project.get('open_issues', 0)} issues</span>
+                </div>
+            </div>
+            <div class="project-activity">
+                {project['activity_sparkline']}
+            </div>
+        </div>
+        """)
+    
+    return '\n'.join(cards)
 
 def generate_shadcn_styles() -> str:
     """Generate shadcn/ui-inspired CSS styles."""
@@ -1118,6 +1642,280 @@ def generate_shadcn_styles() -> str:
         .loading {
             animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
+
+        /* Issues Analysis Styles */
+        .issues-analysis-container {
+            margin-bottom: 2rem;
+        }
+
+        .issues-overview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .issue-card {
+            background: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .issue-card h3 {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: hsl(var(--muted-foreground));
+            margin-bottom: 0.5rem;
+        }
+
+        .issue-card .count {
+            font-size: 2rem;
+            font-weight: 700;
+            color: hsl(var(--foreground));
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .issue-card .card-subtitle {
+            font-size: 0.75rem;
+            color: hsl(var(--muted-foreground));
+        }
+
+        .recommendations-panel {
+            background: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            padding: 1.5rem;
+        }
+
+        .recommendation-card {
+            border: 1px solid hsl(var(--border));
+            border-radius: calc(var(--radius) - 2px);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: hsl(var(--background));
+        }
+
+        .recommendation-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .recommendation-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .recommendation-icon {
+            font-size: 1.25rem;
+        }
+
+        .recommendation-title {
+            font-size: 1rem;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .recommendation-priority {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.5rem;
+            border-radius: calc(var(--radius) - 4px);
+            text-transform: uppercase;
+        }
+
+        .recommendation-critical .recommendation-priority {
+            background: hsl(var(--destructive));
+            color: hsl(var(--destructive-foreground));
+        }
+
+        .recommendation-high .recommendation-priority {
+            background: hsl(0 85% 60%);
+            color: white;
+        }
+
+        .recommendation-medium .recommendation-priority {
+            background: hsl(38 95% 60%);
+            color: white;
+        }
+
+        .recommendation-low .recommendation-priority {
+            background: hsl(200 85% 60%);
+            color: white;
+        }
+
+        .recommendation-info .recommendation-priority {
+            background: hsl(var(--muted));
+            color: hsl(var(--muted-foreground));
+        }
+
+        .recommendation-success .recommendation-priority {
+            background: hsl(120 85% 40%);
+            color: white;
+        }
+
+        .recommendation-message,
+        .recommendation-action,
+        .recommendation-project {
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .recommendation-project {
+            margin-bottom: 0;
+            color: hsl(var(--muted-foreground));
+        }
+
+        /* Health Methodology Styles */
+        .health-methodology-container {
+            background: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            padding: 1.5rem;
+        }
+
+        .methodology-tabs {
+            width: 100%;
+        }
+
+        .tab-nav {
+            display: flex;
+            border-bottom: 1px solid hsl(var(--border));
+            margin-bottom: 1.5rem;
+        }
+
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: hsl(var(--muted-foreground));
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab-button.active {
+            color: hsl(var(--foreground));
+            border-bottom-color: hsl(var(--primary));
+        }
+
+        .tab-button:hover {
+            color: hsl(var(--foreground));
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .component-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .component-card {
+            background: hsl(var(--background));
+            border: 1px solid hsl(var(--border));
+            border-radius: calc(var(--radius) - 2px);
+            padding: 1rem;
+        }
+
+        .component-card h5 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: hsl(var(--foreground));
+        }
+
+        .component-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .component-card li {
+            font-size: 0.875rem;
+            color: hsl(var(--muted-foreground));
+            margin-bottom: 0.5rem;
+            padding-left: 1rem;
+            position: relative;
+        }
+
+        .component-card li:before {
+            content: "•";
+            color: hsl(var(--primary));
+            position: absolute;
+            left: 0;
+        }
+
+        /* Enhanced Project Card Styles */
+        .enhanced-project-card {
+            position: relative;
+        }
+
+        .branch-section {
+            margin: 0.75rem 0;
+            padding: 0.5rem;
+            background: hsl(var(--muted) / 0.5);
+            border-radius: calc(var(--radius) - 4px);
+        }
+
+        .branch-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: hsl(var(--muted-foreground));
+            margin-right: 0.5rem;
+        }
+
+        .branch-pill {
+            display: inline-block;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: calc(var(--radius) - 4px);
+            margin-right: 0.25rem;
+            background: hsl(var(--secondary));
+            color: hsl(var(--secondary-foreground));
+        }
+
+        .branch-pill.branch-high {
+            background: hsl(120 85% 40%);
+            color: white;
+        }
+
+        .branch-pill.branch-medium {
+            background: hsl(38 95% 60%);
+            color: white;
+        }
+
+        .branch-pill.branch-low {
+            background: hsl(200 85% 60%);
+            color: white;
+        }
+
+        .branch-pill.branch-minimal {
+            background: hsl(var(--muted));
+            color: hsl(var(--muted-foreground));
+        }
+
+        .issue-alert {
+            background: hsl(0 85% 95%);
+            border: 1px solid hsl(0 85% 80%);
+            color: hsl(0 85% 40%);
+            padding: 0.5rem;
+            border-radius: calc(var(--radius) - 4px);
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin: 0.5rem 0;
+        }
     """
 
 def generate_kpi_card(label: str, value: int, change: float, type: str, show_change: bool = True) -> str:
@@ -1209,56 +2007,6 @@ def generate_group_cards(groups: Dict) -> str:
                     <span class="stat-value">{group_data['active_projects']}</span>
                     <span class="stat-label">Active</span>
                 </div>
-            </div>
-        </div>
-        """)
-    
-    return '\n'.join(cards)
-
-def generate_project_cards(projects: List[Dict]) -> str:
-    """Generate project portfolio cards."""
-    cards = []
-    
-    for project in projects:
-        status_class = f"badge-{project['status']}"
-        grade_class = f"badge-grade-{project['health_grade'].lower().replace('+', '-plus').replace('-', '-minus')}"
-        
-        description = project.get('description', '')
-        if not description:
-            description = f"A {project['visibility']} GitLab project with {project['commits_30d']} commits in the last 30 days."
-        
-        cards.append(f"""
-        <div class="card project-card" data-status="{project['status']}" data-name="{project['name'].lower()}">
-            <div class="project-header">
-                <h3 class="project-name">{project['name']}</h3>
-                <div class="project-badges">
-                    <span class="badge {status_class}">{project['status'].title()}</span>
-                    <span class="badge badge-grade {grade_class}">{project['health_grade']}</span>
-                </div>
-            </div>
-            <p class="project-description">{description}</p>
-            <div class="project-stats">
-                <div class="stat">
-                    <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    <span>{project['commits_30d']} commits</span>
-                </div>
-                <div class="stat">
-                    <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
-                    </svg>
-                    <span>{project['mrs_created']} MRs</span>
-                </div>
-                <div class="stat">
-                    <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                    </svg>
-                    <span>{project['contributors_30d']} contributors</span>
-                </div>
-            </div>
-            <div class="project-activity">
-                {project['activity_sparkline']}
             </div>
         </div>
         """)

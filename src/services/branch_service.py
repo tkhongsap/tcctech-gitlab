@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Union
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 
 from ..api import GitLabClient
@@ -374,3 +374,149 @@ class BranchService:
             json.dump(log_data, f, indent=2)
         
         logger.info(f"Saved operations log to {path}")
+    
+    def analyze_project_branches(
+        self, 
+        project_id: Union[int, str], 
+        days: int = 30
+    ) -> Dict[str, Any]:
+        """Analyze active branches for a project with activity metrics.
+        
+        Args:
+            project_id: Project ID or path
+            days: Number of days to analyze for activity
+            
+        Returns:
+            Dictionary containing branch analysis data
+        """
+        with OperationLogger(logger, "branch analysis", project_id=project_id):
+            try:
+                # Get all branches
+                branches_data = list(self.client._paginated_get(
+                    f"projects/{project_id}/repository/branches"
+                ))
+                
+                # Date range for analysis
+                end_date = datetime.now()
+                start_date = end_date - timedelta(days=days)
+                
+                active_branches = []
+                total_branches = len(branches_data)
+                
+                for branch_data in branches_data:
+                    branch_name = branch_data['name']
+                    
+                    # Get commits for this branch in the time period
+                    try:
+                        commits = list(self.client._paginated_get(
+                            f"projects/{project_id}/repository/commits",
+                            params={
+                                "ref_name": branch_name,
+                                "since": start_date.isoformat(),
+                                "until": end_date.isoformat()
+                            }
+                        ))
+                        
+                        if commits:  # Branch has activity
+                            contributors = set()
+                            commit_dates = []
+                            
+                            for commit in commits:
+                                contributors.add(commit.get('author_name', 'Unknown'))
+                                commit_dates.append(commit.get('created_at', ''))
+                            
+                            # Calculate branch metrics
+                            last_commit_date = max(commit_dates) if commit_dates else None
+                            days_since_last_commit = 0
+                            
+                            if last_commit_date:
+                                last_commit_dt = datetime.fromisoformat(
+                                    last_commit_date.replace('Z', '+00:00')
+                                )
+                                days_since_last_commit = (end_date - last_commit_dt).days
+                            
+                            branch_info = {
+                                'name': branch_name,
+                                'commit_count': len(commits),
+                                'last_activity': last_commit_date,
+                                'days_since_last_commit': days_since_last_commit,
+                                'contributors': list(contributors),
+                                'contributor_count': len(contributors),
+                                'protected': branch_data.get('protected', False),
+                                'default': branch_data.get('default', False),
+                                'merged': branch_data.get('merged', False),
+                                'activity_level': self._calculate_activity_level(
+                                    len(commits), days_since_last_commit
+                                )
+                            }
+                            
+                            active_branches.append(branch_info)
+                            
+                    except Exception as e:
+                        logger.debug(f"Could not analyze branch {branch_name}: {e}")
+                        continue
+                
+                # Sort by activity (commit count, then recency)
+                active_branches.sort(
+                    key=lambda x: (x['commit_count'], -x['days_since_last_commit']), 
+                    reverse=True
+                )
+                
+                # Calculate summary statistics
+                total_commits = sum(b['commit_count'] for b in active_branches)
+                unique_contributors = set()
+                for branch in active_branches:
+                    unique_contributors.update(branch['contributors'])
+                
+                default_branch = next(
+                    (b for b in active_branches if b['default']), 
+                    None
+                )
+                
+                return {
+                    'total_branches': total_branches,
+                    'active_branches_count': len(active_branches),
+                    'active_branches': active_branches[:10],  # Limit to top 10
+                    'all_active_branches': active_branches,  # Keep full list
+                    'total_commits': total_commits,
+                    'unique_contributors': len(unique_contributors),
+                    'default_branch': default_branch,
+                    'protected_branches': [b for b in active_branches if b['protected']],
+                    'analysis_period_days': days,
+                    'summary': {
+                        'most_active_branch': active_branches[0] if active_branches else None,
+                        'avg_commits_per_branch': total_commits / max(len(active_branches), 1),
+                        'branches_with_recent_activity': len([
+                            b for b in active_branches if b['days_since_last_commit'] < 7
+                        ])
+                    }
+                }
+                
+            except Exception as e:
+                logger.error(f"Failed to analyze branches for project {project_id}: {e}")
+                return {
+                    'total_branches': 0,
+                    'active_branches_count': 0,
+                    'active_branches': [],
+                    'all_active_branches': [],
+                    'error': str(e)
+                }
+    
+    def _calculate_activity_level(self, commit_count: int, days_since_last_commit: int) -> str:
+        """Calculate activity level for a branch.
+        
+        Args:
+            commit_count: Number of commits in the period
+            days_since_last_commit: Days since last commit
+            
+        Returns:
+            Activity level: 'high', 'medium', 'low'
+        """
+        if days_since_last_commit <= 1 and commit_count >= 10:
+            return 'high'
+        elif days_since_last_commit <= 7 and commit_count >= 3:
+            return 'medium' 
+        elif days_since_last_commit <= 14 and commit_count >= 1:
+            return 'low'
+        else:
+            return 'minimal'
