@@ -1,0 +1,13 @@
+Database Performance Optimization
+
+Our application is experiencing slow query performance on the user_activities table. We need to:
+
+1. Add appropriate indexes for common queries
+2. Implement query result caching with Redis
+3. Consider partitioning the table by date
+4. Archive old data (>1 year) to cold storage
+5. Optimize the most expensive queries identified in slow query log
+
+This is becoming a bottleneck for user experience and needs to be addressed soon.
+
+Labels: performance, database, backend, high-priority

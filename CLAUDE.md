@@ -40,6 +40,37 @@ black src/ scripts/ --line-length=100
 
 ### Running the main scripts
 
+#### File-Based Issue Creation (SIMPLIFIED!)
+```bash
+# Add markdown/text files to the issues/ folder, then sync:
+python scripts/sync_issues.py PROJECT_ID
+
+# Preview what will be created
+python scripts/sync_issues.py PROJECT_ID --dry-run
+
+# Use API instead of curl
+python scripts/sync_issues.py PROJECT_ID --use-api
+
+# Generate shell script
+python scripts/sync_issues.py PROJECT_ID --generate-script
+
+# Example: Create issue file
+cat > issues/new-feature.md << EOF
+---
+title: Add User Dashboard
+labels: [feature, frontend]
+weight: 5
+---
+
+Create a dashboard showing user statistics and recent activity.
+
+#ui #react
+EOF
+
+# Then sync to GitLab
+python scripts/sync_issues.py 123
+```
+
 #### Branch Rename (Enhanced)
 ```bash
 # Dry run mode (preview changes)
