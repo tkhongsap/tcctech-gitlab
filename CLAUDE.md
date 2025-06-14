@@ -40,7 +40,7 @@ black src/ scripts/ --line-length=100
 
 ### Running the main scripts
 
-#### File-Based Issue Creation (SIMPLIFIED!)
+#### File-Based Issue Creation
 ```bash
 # Add markdown/text files to the issues/ folder, then sync:
 python scripts/sync_issues.py PROJECT_ID

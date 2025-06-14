@@ -8,7 +8,6 @@ Enhanced GitLab management tools for bulk operations, analytics, and automation.
 - 🚀 **Bulk Branch Renaming** - Rename branches across multiple projects with safety checks
 - 📊 **Repository Analytics** - Generate comprehensive metrics and reports for projects and groups
 - 📝 **Issue Management** - Create issues from templates, CSV files, or interactively
-- 🤖 **Natural Language Issue Creation** - Describe tasks in plain English and auto-generate GitLab issues
 - 🧪 **Comprehensive Testing** - Unit and integration tests with 80%+ coverage target
 - 📈 **Progress Tracking** - Real-time progress bars and operation logging
 - 🔒 **Safety Features** - Dry-run mode, protected branch detection, rollback support
@@ -47,7 +46,7 @@ Enhanced GitLab management tools for bulk operations, analytics, and automation.
    - Contributor analytics
    - Multiple output formats
 
-4. **scripts/sync_issues.py** - File-based issue creation (NEW!)
+4. **scripts/sync_issues.py** - File-based issue creation
    - Read markdown/text files from issues folder
    - Support YAML frontmatter for metadata
    - Create issues using curl or API
