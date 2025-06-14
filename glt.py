@@ -31,11 +31,22 @@ Examples:
   glt --version                          # Show version
   glt --help                            # Show this help
 
-Interactive Commands:
+Interactive Commands (Direct Script Commands):
+  > rename_branches --groups "AI-ML-Services" --old-branch trunk --new-branch main
+  > generate_executive_dashboard --groups 1721,1267,1269
+  > send_report_email dashboard.html manager@company.com "Weekly Report"
+  > sync_issues my-project --use-api --dry-run
+  > analyze_projects --project my-project --format json
+  > export_analytics my-project --output data.xlsx
+
+Interactive Commands (Natural Language):
   > rename branches in AI-ML-Services from trunk to main
   > create issues for project 123
   > generate weekly report for groups 1,2,3
+
+Special Commands:
   > help                                # Show available commands
+  > list-commands                       # List all direct script commands
   > exit                                # Exit the CLI
         """
     )
