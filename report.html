@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Changes Report</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: hsl(0 0% 98%);
+            color: hsl(222.2 84% 4.9%);
+            line-height: 1.5;
+            padding: 2rem 1rem;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: hsl(222.2 84% 4.9%);
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            font-size: 1.125rem;
+            color: hsl(215.4 16.3% 46.9%);
+            margin-bottom: 2rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: hsl(222.2 84% 4.9%);
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: hsl(215.4 16.3% 46.9%);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .table-container {
+            background: white;
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th {
+            background: hsl(210 40% 98%);
+            padding: 1rem 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: hsl(215.4 16.3% 46.9%);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid hsl(214.3 31.8% 91.4%);
+        }
+        
+        .table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid hsl(214.3 31.8% 91.4%);
+            font-size: 0.875rem;
+        }
+        
+        .table tbody tr:hover {
+            background: hsl(210 40% 98%);
+        }
+        
+        .group-header {
+            background: hsl(210 40% 96%) !important;
+            font-weight: 600;
+            color: hsl(222.2 84% 4.9%);
+        }
+        
+        .group-header td {
+            padding: 1rem 0.75rem;
+            font-size: 1rem;
+            border-bottom: 2px solid hsl(214.3 31.8% 91.4%);
+        }
+        
+        .project-name {
+            font-weight: 500;
+            color: hsl(222.2 84% 4.9%);
+        }
+        
+        .branch-name {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            background: hsl(210 40% 98%);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.8125rem;
+            color: hsl(222.2 84% 4.9%);
+        }
+        
+        .code-change {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.8125rem;
+        }
+        
+        .positive { color: hsl(142.1 76.2% 36.3%); }
+        .negative { color: hsl(0 84.2% 60.2%); }
+        .neutral { color: hsl(215.4 16.3% 46.9%); }
+        
+        .contributors {
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .activity-high { 
+            background: hsl(142.1 76.2% 96%);
+            color: hsl(142.1 76.2% 36.3%);
+        }
+        
+        .activity-medium { 
+            background: hsl(47.9 95.8% 96%);
+            color: hsl(47.9 95.8% 53.2%);
+        }
+        
+        .activity-low { 
+            background: hsl(210 40% 98%);
+            color: hsl(215.4 16.3% 46.9%);
+        }
+        
+        .no-changes {
+            color: hsl(215.4 16.3% 46.9%);
+            font-style: italic;
+        }
+        
+        @media (max-width: 768px) {
+            .table-container {
+                overflow-x: auto;
+            }
+            
+            .table {
+                min-width: 800px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">📊 Code Changes Report</h1>
+            <p class="subtitle">Analysis by Group, Project, and Branch • Generated on June 15, 2025 at 12:46 PM</p>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">59</div>
+                <div class="stat-label">Total Branches</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">30</div>
+                <div class="stat-label">Unique Projects</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">21</div>
+                <div class="stat-label">Active (7d)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">41</div>
+                <div class="stat-label">Active (30d)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">59</div>
+                <div class="stat-label">Active (90d)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">+405,837</div>
+                <div class="stat-label">Net Change (7d)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">+480,165</div>
+                <div class="stat-label">Net Change (15d)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">+2,553,767</div>
+                <div class="stat-label">Net Change (30d)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">+2,675,109</div>
+                <div class="stat-label">Net Change (60d)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">+8,299,006</div>
+                <div class="stat-label">Net Change (90d)</div>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Group</th>
+                        <th>Project</th>
+                        <th>Branch</th>
+                        <th>Contributors (90d)</th>
+                        <th>7 Days</th>
+                        <th>15 Days</th>
+                        <th>30 Days</th>
+                        <th>60 Days</th>
+                        <th>90 Days</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="group-header">
+                        <td colspan="9">AI-ML-Services</td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name">ai-survey</td>
+                        <td><span class="branch-name">dev</span></td>
+                        <td class="contributors">6</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+46 -489 <span class="negative">(-443)</span></span></td>
+                        <td><span class="code-change">+35,157 -3,308 <span class="positive">(+31,849)</span></span></td>
+                        <td><span class="code-change">+35,157 -3,308 <span class="positive">(+31,849)</span></span></td>
+                        <td><span class="code-change">+35,157 -3,308 <span class="positive">(+31,849)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name"></td>
+                        <td><span class="branch-name">main</span></td>
+                        <td class="contributors">1</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+9 -394 <span class="negative">(-385)</span></span></td>
+                        <td><span class="code-change">+9 -394 <span class="negative">(-385)</span></span></td>
+                        <td><span class="code-change">+9 -394 <span class="negative">(-385)</span></span></td>
+                        <td><span class="code-change">+9 -394 <span class="negative">(-385)</span></span></td>
+                    </tr>
+                    <tr class="activity-high">
+                        <td></td>
+                        <td class="project-name">azure-ocr-pipeline</td>
+                        <td><span class="branch-name">main</span></td>
+                        <td class="contributors">4</td>
+                        <td><span class="code-change">+1,275 -630 <span class="positive">(+645)</span></span></td>
+                        <td><span class="code-change">+1,275 -630 <span class="positive">(+645)</span></span></td>
+                        <td><span class="code-change">+1,275 -630 <span class="positive">(+645)</span></span></td>
+                        <td><span class="code-change">+1,275 -630 <span class="positive">(+645)</span></span></td>
+                        <td><span class="code-change">+1,275 -630 <span class="positive">(+645)</span></span></td>
+                    </tr>
+                    <tr class="activity-medium">
+                        <td></td>
+                        <td class="project-name"></td>
+                        <td><span class="branch-name">feat/gpt-post-process</span></td>
+                        <td class="contributors">7</td>
+                        <td><span class="code-change">+257 -85 <span class="positive">(+172)</span></span></td>
+                        <td><span class="code-change">+325 -133 <span class="positive">(+192)</span></span></td>
+                        <td><span class="code-change">+6,849 -1,446 <span class="positive">(+5,403)</span></span></td>
+                        <td><span class="code-change">+6,849 -1,446 <span class="positive">(+5,403)</span></span></td>
+                        <td><span class="code-change">+6,849 -1,446 <span class="positive">(+5,403)</span></span></td>
+                    </tr>
+                    <tr class="activity-low">
+                        <td></td>
+                        <td class="project-name"></td>
+                        <td><span class="branch-name">response</span></td>
+                        <td class="contributors">1</td>
+                        <td><span class="code-change">+44 -56 <span class="negative">(-12)</span></span></td>
+                        <td><span class="code-change">+44 -56 <span class="negative">(-12)</span></span></td>
+                        <td><span class="code-change">+44 -56 <span class="negative">(-12)</span></span></td>
+                        <td><span class="code-change">+44 -56 <span class="negative">(-12)</span></span></td>
+                        <td><span class="code-change">+44 -56 <span class="negative">(-12)</span></span></td>
+                    </tr>
+                    <tr class="activity-low">
+                        <td></td>
+                        <td class="project-name"></td>
+                        <td><span class="branch-name">feat/research-model</span></td>
+                        <td class="contributors">1</td>
+                        <td><span class="code-change">+2 -4 <span class="negative">(-2)</span></span></td>
+                        <td><span class="code-change">+1,822 -239 <span class="positive">(+1,583)</span></span></td>
+                        <td><span class="code-change">+1,822 -239 <span class="positive">(+1,583)</span></span></td>
+                        <td><span class="code-change">+1,822 -239 <span class="positive">(+1,583)</span></span></td>
+                        <td><span class="code-change">+1,822 -239 <span class="positive">(+1,583)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name"></td>
+                        <td><span class="branch-name">codex/review-and-update-ocr-and-validation-tests</span></td>
+                        <td class="contributors">13</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+4,029 -1,639 <span class="positive">(+2,390)</span></span></td>
+                        <td><span class="code-change">+16,395 -4,995 <span class="positive">(+11,400)</span></span></td>
+                        <td><span class="code-change">+5,567,156 -18,521 <span class="positive">(+5,548,635)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name"></td>
+                        <td><span class="branch-name">codex/review-validation-py-for-business-logic</span></td>
+                        <td class="contributors">4</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+128 -51 <span class="positive">(+77)</span></span></td>
+                        <td><span class="code-change">+129 -53 <span class="positive">(+76)</span></span></td>
+                        <td><span class="code-change">+129 -53 <span class="positive">(+76)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name"></td>
+                        <td><span class="branch-name">feat/gpt-4.1</span></td>
+                        <td class="contributors">1</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+2,317 -505 <span class="positive">(+1,812)</span></span></td>
+                        <td><span class="code-change">+2,317 -505 <span class="positive">(+1,812)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name">copilot-ai-survey</td>
+                        <td><span class="branch-name">design-frontend</span></td>
+                        <td class="contributors">6</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+35,192 -2,923 <span class="positive">(+32,269)</span></span></td>
+                        <td><span class="code-change">+35,192 -2,923 <span class="positive">(+32,269)</span></span></td>
+                        <td><span class="code-change">+35,192 -2,923 <span class="positive">(+32,269)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name"></td>
+                        <td><span class="branch-name">refactor</span></td>
+                        <td class="contributors">2</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+241 -710 <span class="negative">(-469)</span></span></td>
+                        <td><span class="code-change">+241 -710 <span class="negative">(-469)</span></span></td>
+                        <td><span class="code-change">+241 -710 <span class="negative">(-469)</span></span></td>
+                    </tr>
+                    <tr class="activity-medium">
+                        <td></td>
+                        <td class="project-name">cyber-security-research</td>
+                        <td><span class="branch-name">dev</span></td>
+                        <td class="contributors">5</td>
+                        <td><span class="code-change">+297 -109 <span class="positive">(+188)</span></span></td>
+                        <td><span class="code-change">+297 -109 <span class="positive">(+188)</span></span></td>
+                        <td><span class="code-change">+15,198 -1,207 <span class="positive">(+13,991)</span></span></td>
+                        <td><span class="code-change">+15,198 -1,207 <span class="positive">(+13,991)</span></span></td>
+                        <td><span class="code-change">+15,198 -1,207 <span class="positive">(+13,991)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name"></td>
+                        <td><span class="branch-name">Sui</span></td>
+                        <td class="contributors">2</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+1,492 -40 <span class="positive">(+1,452)</span></span></td>
+                        <td><span class="code-change">+1,492 -40 <span class="positive">(+1,452)</span></span></td>
+                        <td><span class="code-change">+1,585 -40 <span class="positive">(+1,545)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name"></td>
+                        <td><span class="branch-name">feature/chore</span></td>
+                        <td class="contributors">3</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+15,868 -211 <span class="positive">(+15,657)</span></span></td>
+                        <td><span class="code-change">+15,868 -211 <span class="positive">(+15,657)</span></span></td>
+                        <td><span class="code-change">+15,868 -211 <span class="positive">(+15,657)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name"></td>
+                        <td><span class="branch-name">main</span></td>
+                        <td class="contributors">1</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+12,176 -25 <span class="positive">(+12,151)</span></span></td>
+                        <td><span class="code-change">+12,176 -25 <span class="positive">(+12,151)</span></span></td>
+                        <td><span class="code-change">+12,176 -25 <span class="positive">(+12,151)</span></span></td>
+                    </tr>
+                    <tr class="activity-high">
+                        <td></td>
+                        <td class="project-name">document-ai-extractor</td>
+                        <td><span class="branch-name">ton/deploy</span></td>
+                        <td class="contributors">1</td>
+                        <td><span class="code-change">+409 -205 <span class="positive">(+204)</span></span></td>
+                        <td><span class="code-change">+4,909 -2,840 <span class="positive">(+2,069)</span></span></td>
+                        <td><span class="code-change">+1,886,722 -20,940 <span class="positive">(+1,865,782)</span></span></td>
+                        <td><span class="code-change">+1,896,330 -21,343 <span class="positive">(+1,874,987)</span></span></td>
+                        <td><span class="code-change">+1,896,330 -21,343 <span class="positive">(+1,874,987)</span></span></td>
+                    </tr>
+                    <tr class="activity-low">
+                        <td></td>
+                        <td class="project-name"></td>
+                        <td><span class="branch-name">top/agentic-workflow</span></td>
+                        <td class="contributors">1</td>
+                        <td><span class="code-change">+1 -2 <span class="negative">(-1)</span></span></td>
+                        <td><span class="code-change">+323 -298 <span class="positive">(+25)</span></span></td>
+                        <td><span class="code-change">+2,019 -27,979 <span class="negative">(-25,960)</span></span></td>
+                        <td><span class="code-change">+2,019 -27,979 <span class="negative">(-25,960)</span></span></td>
+                        <td><span class="code-change">+2,019 -27,979 <span class="negative">(-25,960)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name"></td>
+                        <td><span class="branch-name">19-workflow-orchestrator-for-agent</span></td>
+                        <td class="contributors">4</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+48,273 -6,807 <span class="positive">(+41,466)</span></span></td>
+                        <td><span class="code-change">+73,238 -10,070 <span class="positive">(+63,168)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name"></td>
+                        <td><span class="branch-name">chris/normalization-validation</span></td>
+                        <td class="contributors">3</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+793 -84 <span class="positive">(+709)</span></span></td>
+                        <td><span class="code-change">+1,852 -3,195 <span class="negative">(-1,343)</span></span></td>
+                        <td><span class="code-change">+1,852 -3,195 <span class="negative">(-1,343)</span></span></td>
+                    </tr>
+                    <tr class="activity-medium">
+                        <td></td>
+                        <td class="project-name">dts-code-buddy</td>
+                        <td><span class="branch-name">11-personal-tip-code-snippet</span></td>
+                        <td class="contributors">8</td>
+                        <td><span class="code-change">+393 -105 <span class="positive">(+288)</span></span></td>
+                        <td><span class="code-change">+393 -105 <span class="positive">(+288)</span></span></td>
+                        <td><span class="code-change">+1,663 -858 <span class="positive">(+805)</span></span></td>
+                        <td><span class="code-change">+18,919 -7,544 <span class="positive">(+11,375)</span></span></td>
+                        <td><span class="code-change">+18,919 -7,544 <span class="positive">(+11,375)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name"></td>
+                        <td><span class="branch-name">9-load-test-cmkl-openai-thaibev</span></td>
+                        <td class="contributors">1</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+2 -2 <span class="neutral">(+0)</span></span></td>
+                        <td><span class="code-change">+1,000 -2 <span class="positive">(+998)</span></span></td>
+                        <td><span class="code-change">+1,000 -2 <span class="positive">(+998)</span></span></td>
+                    </tr>
+                    <tr class="activity-high">
+                        <td></td>
+                        <td class="project-name">dts-po-buddy</td>
+                        <td><span class="branch-name">14-api-generate-gantt-chart-data</span></td>
+                        <td class="contributors">4</td>
+                        <td><span class="code-change">+683 -213 <span class="positive">(+470)</span></span></td>
+                        <td><span class="code-change">+11,609 -3,360 <span class="positive">(+8,249)</span></span></td>
+                        <td><span class="code-change">+15,545 -3,695 <span class="positive">(+11,850)</span></span></td>
+                        <td><span class="code-change">+15,545 -3,695 <span class="positive">(+11,850)</span></span></td>
+                        <td><span class="code-change">+15,545 -3,695 <span class="positive">(+11,850)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name">dts-sensei</td>
+                        <td><span class="branch-name">main</span></td>
+                        <td class="contributors">5</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+2,737 -824 <span class="positive">(+1,913)</span></span></td>
+                        <td><span class="code-change">+10,951 -986 <span class="positive">(+9,965)</span></span></td>
+                    </tr>
+                    <tr class="activity-high">
+                        <td></td>
+                        <td class="project-name">e-recruitment-suite</td>
+                        <td><span class="branch-name">dev</span></td>
+                        <td class="contributors">5</td>
+                        <td><span class="code-change">+103,697 -3,421 <span class="positive">(+100,276)</span></span></td>
+                        <td><span class="code-change">+104,851 -3,569 <span class="positive">(+101,282)</span></span></td>
+                        <td><span class="code-change">+104,851 -3,569 <span class="positive">(+101,282)</span></span></td>
+                        <td><span class="code-change">+104,851 -3,569 <span class="positive">(+101,282)</span></span></td>
+                        <td><span class="code-change">+104,924 -3,573 <span class="positive">(+101,351)</span></span></td>
+                    </tr>
+                    <tr class="activity-low">
+                        <td></td>
+                        <td class="project-name">fastapi-claim-detection</td>
+                        <td><span class="branch-name">dev</span></td>
+                        <td class="contributors">8</td>
+                        <td><span class="code-change">+25 -16 <span class="positive">(+9)</span></span></td>
+                        <td><span class="code-change">+25 -16 <span class="positive">(+9)</span></span></td>
+                        <td><span class="code-change">+1,177 -202 <span class="positive">(+975)</span></span></td>
+                        <td><span class="code-change">+20,653 -4,906 <span class="positive">(+15,747)</span></span></td>
+                        <td><span class="code-change">+20,653 -4,906 <span class="positive">(+15,747)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name"></td>
+                        <td><span class="branch-name">prompt</span></td>
+                        <td class="contributors">1</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+97 -62 <span class="positive">(+35)</span></span></td>
+                        <td><span class="code-change">+97 -62 <span class="positive">(+35)</span></span></td>
+                        <td><span class="code-change">+97 -62 <span class="positive">(+35)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name">flow-product-recommendation</td>
+                        <td><span class="branch-name">main</span></td>
+                        <td class="contributors">3</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+14,529 -366 <span class="positive">(+14,163)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name">flow-RAG</td>
+                        <td><span class="branch-name">16-optimize-query-processing-ranking</span></td>
+                        <td class="contributors">5</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+24,821 -13,146 <span class="positive">(+11,675)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name"></td>
+                        <td><span class="branch-name">17-build-frontend-ui-for-query-testing</span></td>
+                        <td class="contributors">4</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+17,208 -132 <span class="positive">(+17,076)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name"></td>
+                        <td><span class="branch-name">dev</span></td>
+                        <td class="contributors">1</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+1 -1 <span class="neutral">(+0)</span></span></td>
+                        <td><span class="code-change">+1 -1 <span class="neutral">(+0)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name"></td>
+                        <td><span class="branch-name">main</span></td>
+                        <td class="contributors">1</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+1 -1 <span class="neutral">(+0)</span></span></td>
+                        <td><span class="code-change">+1 -1 <span class="neutral">(+0)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name">flow-text-to-image</td>
+                        <td><span class="branch-name">main</span></td>
+                        <td class="contributors">3</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+3,659 -1,247 <span class="positive">(+2,412)</span></span></td>
+                        <td><span class="code-change">+12,983 -2,255 <span class="positive">(+10,728)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name">llm-gpu-access-thaibev</td>
+                        <td><span class="branch-name">main</span></td>
+                        <td class="contributors">3</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+325 -120 <span class="positive">(+205)</span></span></td>
+                        <td><span class="code-change">+531 -120 <span class="positive">(+411)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name">one-customer-engine</td>
+                        <td><span class="branch-name">2-check-logic-of-different-tax-id-but-same-name-or-address</span></td>
+                        <td class="contributors">2</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+3,163 -157 <span class="positive">(+3,006)</span></span></td>
+                    </tr>
+                    <tr class="activity-high">
+                        <td></td>
+                        <td class="project-name">resume-extractor</td>
+                        <td><span class="branch-name">main</span></td>
+                        <td class="contributors">1</td>
+                        <td><span class="code-change">+76,283 -1,489 <span class="positive">(+74,794)</span></span></td>
+                        <td><span class="code-change">+76,283 -1,489 <span class="positive">(+74,794)</span></span></td>
+                        <td><span class="code-change">+76,283 -1,489 <span class="positive">(+74,794)</span></span></td>
+                        <td><span class="code-change">+76,283 -1,489 <span class="positive">(+74,794)</span></span></td>
+                        <td><span class="code-change">+76,283 -1,489 <span class="positive">(+74,794)</span></span></td>
+                    </tr>
+                    <tr class="activity-high">
+                        <td></td>
+                        <td class="project-name"></td>
+                        <td><span class="branch-name">Nem</span></td>
+                        <td class="contributors">3</td>
+                        <td><span class="code-change">+1,527 -443 <span class="positive">(+1,084)</span></span></td>
+                        <td><span class="code-change">+2,681 -591 <span class="positive">(+2,090)</span></span></td>
+                        <td><span class="code-change">+2,681 -591 <span class="positive">(+2,090)</span></span></td>
+                        <td><span class="code-change">+2,681 -591 <span class="positive">(+2,090)</span></span></td>
+                        <td><span class="code-change">+2,754 -595 <span class="positive">(+2,159)</span></span></td>
+                    </tr>
+                    <tr class="activity-high">
+                        <td></td>
+                        <td class="project-name">service-status</td>
+                        <td><span class="branch-name">yp-branch</span></td>
+                        <td class="contributors">1</td>
+                        <td><span class="code-change">+6,646 -5,174 <span class="positive">(+1,472)</span></span></td>
+                        <td><span class="code-change">+7,082 -5,701 <span class="positive">(+1,381)</span></span></td>
+                        <td><span class="code-change">+7,082 -5,701 <span class="positive">(+1,381)</span></span></td>
+                        <td><span class="code-change">+7,082 -5,701 <span class="positive">(+1,381)</span></span></td>
+                        <td><span class="code-change">+7,082 -5,701 <span class="positive">(+1,381)</span></span></td>
+                    </tr>
+                    <tr class="activity-medium">
+                        <td></td>
+                        <td class="project-name"></td>
+                        <td><span class="branch-name">tar-branch</span></td>
+                        <td class="contributors">2</td>
+                        <td><span class="code-change">+115 -112 <span class="positive">(+3)</span></span></td>
+                        <td><span class="code-change">+16,192 -234 <span class="positive">(+15,958)</span></span></td>
+                        <td><span class="code-change">+16,192 -234 <span class="positive">(+15,958)</span></span></td>
+                        <td><span class="code-change">+16,192 -234 <span class="positive">(+15,958)</span></span></td>
+                        <td><span class="code-change">+16,192 -234 <span class="positive">(+15,958)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name"></td>
+                        <td><span class="branch-name">dev</span></td>
+                        <td class="contributors">1</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+93 -0 <span class="positive">(+93)</span></span></td>
+                        <td><span class="code-change">+93 -0 <span class="positive">(+93)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name">TBR-Oracle</td>
+                        <td><span class="branch-name">main</span></td>
+                        <td class="contributors">1</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+93 -0 <span class="positive">(+93)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name">TSPACE shelf-detection</td>
+                        <td><span class="branch-name">main</span></td>
+                        <td class="contributors">1</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+93 -0 <span class="positive">(+93)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name">TSPACE TSR Feeds</td>
+                        <td><span class="branch-name">Main</span></td>
+                        <td class="contributors">1</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+93 -0 <span class="positive">(+93)</span></span></td>
+                    </tr>
+                    <tr class="group-header">
+                        <td colspan="9">iland</td>
+                    </tr>
+                    <tr class="activity-high">
+                        <td></td>
+                        <td class="project-name">llama-index-rag-pipeline</td>
+                        <td><span class="branch-name">dev</span></td>
+                        <td class="contributors">7</td>
+                        <td><span class="code-change">+235,364 -28,238 <span class="positive">(+207,126)</span></span></td>
+                        <td><span class="code-change">+274,862 -44,949 <span class="positive">(+229,913)</span></span></td>
+                        <td><span class="code-change">+300,636 -48,592 <span class="positive">(+252,044)</span></span></td>
+                        <td><span class="code-change">+300,636 -48,592 <span class="positive">(+252,044)</span></span></td>
+                        <td><span class="code-change">+300,636 -48,592 <span class="positive">(+252,044)</span></span></td>
+                    </tr>
+                    <tr class="activity-high">
+                        <td></td>
+                        <td class="project-name"></td>
+                        <td><span class="branch-name">feature/retrieval-postgres</span></td>
+                        <td class="contributors">1</td>
+                        <td><span class="code-change">+2 -31,079 <span class="negative">(-31,077)</span></span></td>
+                        <td><span class="code-change">+2 -31,079 <span class="negative">(-31,077)</span></span></td>
+                        <td><span class="code-change">+2 -31,079 <span class="negative">(-31,077)</span></span></td>
+                        <td><span class="code-change">+2 -31,079 <span class="negative">(-31,077)</span></span></td>
+                        <td><span class="code-change">+2 -31,079 <span class="negative">(-31,077)</span></span></td>
+                    </tr>
+                    <tr class="group-header">
+                        <td colspan="9">Research Repos</td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name">azure-ai-foundry</td>
+                        <td><span class="branch-name">main</span></td>
+                        <td class="contributors">2</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+577 -60 <span class="positive">(+517)</span></span></td>
+                        <td><span class="code-change">+577 -60 <span class="positive">(+517)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name">copilot-survey-bot</td>
+                        <td><span class="branch-name">dev</span></td>
+                        <td class="contributors">5</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+27,272 -1,156 <span class="positive">(+26,116)</span></span></td>
+                        <td><span class="code-change">+61,015 -8,197 <span class="positive">(+52,818)</span></span></td>
+                        <td><span class="code-change">+61,015 -8,197 <span class="positive">(+52,818)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name"></td>
+                        <td><span class="branch-name">redesign-w-backend</span></td>
+                        <td class="contributors">1</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+10,681 -0 <span class="positive">(+10,681)</span></span></td>
+                        <td><span class="code-change">+10,681 -0 <span class="positive">(+10,681)</span></span></td>
+                        <td><span class="code-change">+10,681 -0 <span class="positive">(+10,681)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name">Cybersecuity Log Frontend</td>
+                        <td><span class="branch-name">main</span></td>
+                        <td class="contributors">2</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+32,131 -149 <span class="positive">(+31,982)</span></span></td>
+                        <td><span class="code-change">+32,131 -149 <span class="positive">(+31,982)</span></span></td>
+                        <td><span class="code-change">+32,131 -149 <span class="positive">(+31,982)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name">fine-tune-vision</td>
+                        <td><span class="branch-name">dev</span></td>
+                        <td class="contributors">2</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+546 -115 <span class="positive">(+431)</span></span></td>
+                        <td><span class="code-change">+546 -115 <span class="positive">(+431)</span></span></td>
+                        <td><span class="code-change">+8,046 -3,895 <span class="positive">(+4,151)</span></span></td>
+                        <td><span class="code-change">+8,046 -3,895 <span class="positive">(+4,151)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name">git_101</td>
+                        <td><span class="branch-name">main</span></td>
+                        <td class="contributors">4</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+1,139 -2 <span class="positive">(+1,137)</span></span></td>
+                        <td><span class="code-change">+1,139 -2 <span class="positive">(+1,137)</span></span></td>
+                        <td><span class="code-change">+1,139 -2 <span class="positive">(+1,137)</span></span></td>
+                    </tr>
+                    <tr class="activity-low">
+                        <td></td>
+                        <td class="project-name">issues-generator-automation</td>
+                        <td><span class="branch-name">main</span></td>
+                        <td class="contributors">1</td>
+                        <td><span class="code-change">+93 -0 <span class="positive">(+93)</span></span></td>
+                        <td><span class="code-change">+93 -0 <span class="positive">(+93)</span></span></td>
+                        <td><span class="code-change">+93 -0 <span class="positive">(+93)</span></span></td>
+                        <td><span class="code-change">+93 -0 <span class="positive">(+93)</span></span></td>
+                        <td><span class="code-change">+93 -0 <span class="positive">(+93)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name">landsmap-thailand</td>
+                        <td><span class="branch-name">dev</span></td>
+                        <td class="contributors">2</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+867 -5 <span class="positive">(+862)</span></span></td>
+                        <td><span class="code-change">+867 -5 <span class="positive">(+862)</span></span></td>
+                        <td><span class="code-change">+867 -5 <span class="positive">(+862)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name"></td>
+                        <td><span class="branch-name">main</span></td>
+                        <td class="contributors">1</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+243 -163 <span class="positive">(+80)</span></span></td>
+                        <td><span class="code-change">+243 -163 <span class="positive">(+80)</span></span></td>
+                        <td><span class="code-change">+243 -163 <span class="positive">(+80)</span></span></td>
+                    </tr>
+                    <tr class="activity-high">
+                        <td></td>
+                        <td class="project-name">llama-index-rag-pipeline</td>
+                        <td><span class="branch-name">dev</span></td>
+                        <td class="contributors">5</td>
+                        <td><span class="code-change">+39,603 -21,286 <span class="positive">(+18,317)</span></span></td>
+                        <td><span class="code-change">+79,101 -37,997 <span class="positive">(+41,104)</span></span></td>
+                        <td><span class="code-change">+104,875 -41,640 <span class="positive">(+63,235)</span></span></td>
+                        <td><span class="code-change">+104,875 -41,640 <span class="positive">(+63,235)</span></span></td>
+                        <td><span class="code-change">+104,875 -41,640 <span class="positive">(+63,235)</span></span></td>
+                    </tr>
+                    <tr class="activity-high">
+                        <td></td>
+                        <td class="project-name"></td>
+                        <td><span class="branch-name">feature/postgres</span></td>
+                        <td class="contributors">3</td>
+                        <td><span class="code-change">+29,448 -2,014 <span class="positive">(+27,434)</span></span></td>
+                        <td><span class="code-change">+29,448 -2,014 <span class="positive">(+27,434)</span></span></td>
+                        <td><span class="code-change">+29,448 -2,014 <span class="positive">(+27,434)</span></span></td>
+                        <td><span class="code-change">+29,448 -2,014 <span class="positive">(+27,434)</span></span></td>
+                        <td><span class="code-change">+29,448 -2,014 <span class="positive">(+27,434)</span></span></td>
+                    </tr>
+                    <tr class="activity-high">
+                        <td></td>
+                        <td class="project-name"></td>
+                        <td><span class="branch-name">feature/retrival-postgres</span></td>
+                        <td class="contributors">2</td>
+                        <td><span class="code-change">+4,779 -425 <span class="positive">(+4,354)</span></span></td>
+                        <td><span class="code-change">+4,779 -425 <span class="positive">(+4,354)</span></span></td>
+                        <td><span class="code-change">+4,779 -425 <span class="positive">(+4,354)</span></span></td>
+                        <td><span class="code-change">+4,779 -425 <span class="positive">(+4,354)</span></span></td>
+                        <td><span class="code-change">+4,779 -425 <span class="positive">(+4,354)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name">map-intelligent</td>
+                        <td><span class="branch-name">main</span></td>
+                        <td class="contributors">1</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+93 -0 <span class="positive">(+93)</span></span></td>
+                        <td><span class="code-change">+93 -0 <span class="positive">(+93)</span></span></td>
+                        <td><span class="code-change">+93 -0 <span class="positive">(+93)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name">rag_knowledge_management</td>
+                        <td><span class="branch-name">dev</span></td>
+                        <td class="contributors">2</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+890 -40 <span class="positive">(+850)</span></span></td>
+                    </tr>
+                    <tr class="">
+                        <td></td>
+                        <td class="project-name"></td>
+                        <td><span class="branch-name">model-subquery</span></td>
+                        <td class="contributors">1</td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="no-changes">No changes</span></td>
+                        <td><span class="code-change">+1,110 -4 <span class="positive">(+1,106)</span></span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
