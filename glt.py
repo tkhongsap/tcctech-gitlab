@@ -33,7 +33,8 @@ Examples:
 
 Interactive Commands (Direct Script Commands):
   > rename_branches --groups "AI-ML-Services" --old-branch trunk --new-branch main
-  > generate_executive_dashboard --groups 1721,1267,1269
+  > generate_executive_dashboard --groups 1721,1267,1269,119 --output dashboard.html
+  > generate_executive_dashboard --groups 1721,1267 --days 60 --team-name "AI Team"
   > send_report_email dashboard.html manager@company.com "Weekly Report"
   > sync_issues my-project --use-api --dry-run
   > analyze_projects --project my-project --format json
@@ -43,6 +44,21 @@ Interactive Commands (Natural Language):
   > rename branches in AI-ML-Services from trunk to main
   > create issues for project 123
   > generate weekly report for groups 1,2,3
+  > generate executive dashboard for all groups
+  > create dashboard for AI team
+
+Executive Dashboard Commands:
+  Available Group IDs:
+    1721 = AI-ML-Services       (AI/ML projects and services)
+    1267 = Research Repos       (Research and experimental projects)
+    1269 = Internal Services    (Core platform and infrastructure)
+    119  = iland               (iland-specific projects)
+
+  Common Dashboard Commands:
+  > generate_executive_dashboard --groups 1721,1267,1269,119
+  > generate_executive_dashboard --groups 1721 --days 30 --output ai_dashboard.html
+  > generate_executive_dashboard --groups 1721,1267 --team-name "Development Team"
+  > python scripts/generate_executive_dashboard.py --groups 1721,1267,1269,119
 
 Special Commands:
   > help                                # Show available commands
