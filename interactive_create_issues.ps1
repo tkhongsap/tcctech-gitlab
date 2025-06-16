@@ -1,9 +1,10 @@
-# Simple script to create GitLab issues
-# Using project number 1 from interactive list: ds-and-ml-research-sandbox/ai-ml-services/guard/gitlab-activity-analysis
+# Interactive script to create GitLab issues
+# This will prompt you to select the correct project from the list
 
 Write-Host "Creating Dashboard Service Issue..." -ForegroundColor Green
+Write-Host "Select project #1 (ds-and-ml-research-sandbox/ai-ml-services/guard/gitlab-activity-analysis) when prompted" -ForegroundColor Yellow
 
-python scripts/create_issues.py 1 `
+python scripts/create_issues.py `
   --title "Create Dashboard Service with REST API and Modern Web Interface" `
   --description "Build a complete dashboard solution with both backend API and frontend interface for our GitLab analytics.
 
@@ -26,11 +27,12 @@ python scripts/create_issues.py 1 `
 - Group-wide overviews and comparisons
 - Export capabilities (PDF, Excel)
 
-Leverage all existing analytics logic from /scripts directory." `
+Leverage all existing analytics logic from /scripts directory."
 
 Write-Host "`nCreating Weekly Updates Issue..." -ForegroundColor Green  
+Write-Host "Select project #1 (ds-and-ml-research-sandbox/ai-ml-services/guard/gitlab-activity-analysis) when prompted" -ForegroundColor Yellow
 
-python scripts/create_issues.py 1 `
+python scripts/create_issues.py `
   --title "Create Automated Weekly Team Update System" `
   --description "Build scheduled weekly update system that sends team performance summaries every Monday and Friday morning.
 
@@ -57,6 +59,6 @@ python scripts/create_issues.py 1 `
 - Template-based email formatting (leverage existing templates)
 - MS Teams webhook integration for channel notifications
 
-Build on existing weekly reporting infrastructure in /scripts directory." `
+Build on existing weekly reporting infrastructure in /scripts directory."
 
 Write-Host "Done! Both issues should be created." -ForegroundColor Green 
