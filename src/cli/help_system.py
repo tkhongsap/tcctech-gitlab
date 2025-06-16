@@ -166,6 +166,27 @@ Natural Language Commands:
                 print(f"     Example: {script.examples[0]}")
             print()
         
+        # Add Executive Dashboard section
+        print("""
+📊 Executive Dashboard Commands:
+  Available Group IDs:
+    1721 = AI-ML-Services       (AI/ML projects and services)
+    1267 = Research Repos       (Research and experimental projects)  
+    1269 = Internal Services    (Core platform and infrastructure)
+    119  = iland               (iland-specific projects)
+
+  Common Dashboard Commands:
+    🔧 generate_executive_dashboard --groups 1721,1267,1269,119
+    🔧 generate_executive_dashboard --groups 1721 --days 30 --output ai_dashboard.html
+    🔧 generate_executive_dashboard --groups 1721,1267 --team-name "Development Team"
+    💬 generate executive dashboard for all groups
+    💬 create dashboard for AI team
+
+  Direct Python Usage:
+    python scripts/generate_executive_dashboard.py --groups 1721,1267,1269,119
+    python scripts/generate_executive_dashboard.py --groups 1721,1267 --days 60
+""")
+        
         print("""
 Special Commands:
   🔹 help [command]     - Show help for a specific command
@@ -202,6 +223,11 @@ Examples:
         Args:
             command_name: Name of the command to show help for
         """
+        # Check for special dashboard help
+        if command_name.lower() in ['dashboard', 'executive_dashboard', 'generate_executive_dashboard']:
+            self.show_executive_dashboard_help()
+            return
+        
         # Find the command
         command_info = self.command_parser.get_command_help(command_name)
         
@@ -525,4 +551,83 @@ Type 'exit' when you're done.
             for example in command_info.examples:
                 lines.append(f"  {example}")
         
-        return '\n'.join(lines) 
+        return '\n'.join(lines)
+    
+    def show_executive_dashboard_help(self):
+        """Show detailed help for executive dashboard generation."""
+        print("""
+📊 Executive Dashboard - Detailed Help
+=====================================
+
+The Executive Dashboard generates comprehensive analytics reports for GitLab groups,
+providing insights into project health, team performance, and development metrics.
+
+🎯 Purpose:
+  • Track project activity and health across multiple groups
+  • Monitor team productivity and workload distribution  
+  • Identify issues requiring attention with AI-powered recommendations
+  • Generate executive-level reports for stakeholders
+
+📋 Available Group IDs:
+  1721 = AI-ML-Services       (AI/ML projects and RAG pipelines)
+  1267 = Research Repos       (Experimental and research projects)
+  1269 = Internal Services    (Core platform and infrastructure)
+  119  = iland               (iland-specific llama-index projects)
+
+🔧 Command Syntax:
+  generate_executive_dashboard --groups <group_ids> [options]
+
+📝 Required Parameters:
+  --groups <ids>              Comma-separated group IDs (e.g., 1721,1267,1269,119)
+
+⚙️ Optional Parameters:
+  --output <file>             Output HTML file (default: executive_dashboard.html)
+  --days <number>             Analysis period in days (default: 30)
+  --team-name <name>          Team name for the report (default: "Development Team")
+
+🚀 Common Usage Examples:
+
+  1. All Groups Dashboard:
+     > generate_executive_dashboard --groups 1721,1267,1269,119
+
+  2. AI Team Dashboard (30 days):
+     > generate_executive_dashboard --groups 1721 --team-name "AI Team"
+
+  3. Extended Analysis (60 days):
+     > generate_executive_dashboard --groups 1721,1267 --days 60
+
+  4. Custom Output File:
+     > generate_executive_dashboard --groups 1721,1267,1269,119 --output weekly_report.html
+
+  5. Research Team Focus:
+     > generate_executive_dashboard --groups 1267 --team-name "Research Team" --days 90
+
+💬 Natural Language Alternatives:
+  > generate executive dashboard for all groups
+  > create dashboard for AI team
+  > weekly dashboard for groups 1721,1267
+
+🐍 Direct Python Usage:
+  python scripts/generate_executive_dashboard.py --groups 1721,1267,1269,119
+  python scripts/generate_executive_dashboard.py --groups 1721 --days 60 --output ai_report.html
+
+📊 Generated Report Includes:
+  • Key Performance Indicators (commits, MRs, issues)
+  • Project health scores and grades
+  • Team performance analytics
+  • Issue management insights
+  • AI-powered recommendations
+  • Technology stack analysis
+  • 30-day activity trends
+
+⚠️ Prerequisites:
+  • GITLAB_URL environment variable set
+  • GITLAB_TOKEN environment variable set
+  • Valid GitLab API access to specified groups
+
+💡 Pro Tips:
+  • Use --days 7 for weekly reports
+  • Use --days 90 for quarterly reviews
+  • Combine multiple groups for organization-wide insights
+  • Save different outputs for different stakeholder groups
+""") 

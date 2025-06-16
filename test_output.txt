@@ -1,0 +1,37 @@
+
+================================================================================================================================================================
+📊 CODE CHANGES REPORT BY GROUP AND PROJECT
+================================================================================================================================================================
+Group           Project              Contributors 7 Days               15 Days              30 Days              60 Days              90 Days             
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+AI-ML-Services  azure-ocr-pipeline   13           +1,532 -715 (net: +817) +1,600 -763 (net: +837) +9,387 -2,278 (net: +7,109) +21,631 -5,352 (net: +16,279) +5,566,994 -18,491 (net: +5,548,503)
+                document-ai-ext...   4            No changes           No changes           No changes           +49,452 -7,835 (net: +41,617) +73,238 -10,070 (net: +63,168)
+                e-recruitment-s...   4            +76,991 -1,644 (net: +75,347) +78,145 -1,792 (net: +76,353) +78,145 -1,792 (net: +76,353) +78,145 -1,792 (net: +76,353) +78,218 -1,796 (net: +76,422)
+                resume-extractor     4            +76,769 -1,642 (net: +75,127) +77,923 -1,790 (net: +76,133) +77,923 -1,790 (net: +76,133) +77,923 -1,790 (net: +76,133) +77,996 -1,794 (net: +76,202)
+                ai-survey            6            No changes           +55 -883 (net: -828) +35,166 -3,702 (net: +31,464) +35,166 -3,702 (net: +31,464) +35,166 -3,702 (net: +31,464)
+                copilot-ai-survey    6            No changes           No changes           +35,104 -2,817 (net: +32,287) +35,104 -2,817 (net: +32,287) +35,104 -2,817 (net: +32,287)
+                flow-RAG             6            No changes           No changes           No changes           +1 -1 (net: +0)      +32,946 -524 (net: +32,422)
+                cyber-security-...   4            No changes           No changes           +27,999 -992 (net: +27,007) +27,999 -992 (net: +27,007) +28,092 -992 (net: +27,100)
+                dts-code-buddy       8            +236 -70 (net: +166) +236 -70 (net: +166) +1,506 -823 (net: +683) +18,762 -7,509 (net: +11,253) +18,762 -7,509 (net: +11,253)
+                dts-po-buddy         4            +450 -81 (net: +369) +11,376 -3,228 (net: +8,148) +15,312 -3,563 (net: +11,749) +15,312 -3,563 (net: +11,749) +15,312 -3,563 (net: +11,749)
+                fastapi-claim-d...   7            No changes           No changes           No changes           +13,821 -2,326 (net: +11,495) +13,821 -2,326 (net: +11,495)
+                flow-text-to-image   3            No changes           No changes           No changes           +4,094 -1,473 (net: +2,621) +12,983 -2,255 (net: +10,728)
+                flow-product-re...   3            No changes           No changes           No changes           No changes           +14,529 -366 (net: +14,163)
+                dts-sensei           5            No changes           No changes           No changes           +2,874 -829 (net: +2,045) +10,951 -986 (net: +9,965)
+                one-customer-en...   3            No changes           No changes           No changes           No changes           +3,256 -157 (net: +3,099)
+                llm-gpu-access-...   3            No changes           No changes           No changes           +325 -120 (net: +205) +531 -120 (net: +411)
+                service-status       1            No changes           No changes           No changes           +93 -0 (net: +93)    +93 -0 (net: +93)   
+                TSPACE TSR Feeds     1            No changes           No changes           No changes           No changes           +93 -0 (net: +93)   
+                TSPACE shelf-de...   1            No changes           No changes           No changes           No changes           +93 -0 (net: +93)   
+                TBR-Oracle           1            No changes           No changes           No changes           No changes           +93 -0 (net: +93)   
+                TSPACE Local Sp...   0            No changes           No changes           No changes           No changes           No changes          
+
+📈 SUMMARY STATISTICS
+   Total Projects Analyzed: 21
+   Active Projects (7d): 5
+   Active Projects (30d): 8
+   Active Projects (90d): 20
+   Total Contributors (90d): 87
+   Total Lines Added (90d): 6,018,271
+   Total Lines Deleted (90d): 57,468
+   Net Code Change (90d): +5,960,803

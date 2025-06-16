@@ -182,6 +182,18 @@ class GitLabClient:
             logger.error(f"Request failed: {method} {url} - {e}")
             raise GitLabAPIError(f"Request failed: {e}")
     
+    def get(self, endpoint: str, **kwargs) -> Union[Dict, List]:
+        """Make a GET request to the GitLab API.
+        
+        Args:
+            endpoint: API endpoint (relative to base URL)
+            **kwargs: Additional arguments for requests
+            
+        Returns:
+            Response data as dict or list
+        """
+        return self._request('GET', endpoint, **kwargs)
+    
     def _paginated_get(
         self, 
         endpoint: str, 

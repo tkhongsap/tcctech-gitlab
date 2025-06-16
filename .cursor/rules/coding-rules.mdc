@@ -3,7 +3,7 @@ description:
 globs: 
 alwaysApply: true
 ---
-## 
+# Rule: Coding Rules
 •  After making changes, ALWAYS make sure to start up a new server so I can test it.
 •  Always look for existing code to iterate on instead of creating new code
 •  Do not drastically change the patterns before trying to iterate on existing patterns.

@@ -13,12 +13,25 @@ from collections import defaultdict, Counter
 import math
 import re
 
+# Safe print function for Windows compatibility
+def safe_print(text):
+    """Print text with fallback for encoding issues."""
+    try:
+        print(text)
+    except UnicodeEncodeError:
+        # Replace problematic characters with ASCII alternatives
+        safe_text = text.encode('ascii', errors='replace').decode('ascii')
+        print(safe_text)
+    except Exception:
+        # Ultimate fallback
+        print(str(text).encode('ascii', errors='replace').decode('ascii'))
+
 # Load environment variables from .env file
 try:
     from dotenv import load_dotenv
     load_dotenv()
 except ImportError:
-    print("💡 Tip: Install python-dotenv to load .env files automatically")
+    safe_print("[TIP] Install python-dotenv to load .env files automatically")
     print("   pip install python-dotenv")
     # Simple fallback for loading .env file
     env_file = Path(__file__).parent.parent / '.env'
@@ -77,8 +90,8 @@ def get_env_or_exit(key: str, description: str) -> str:
     """Get environment variable or exit with helpful message."""
     value = os.getenv(key)
     if not value:
-        print(f"❌ Missing required environment variable: {key}")
-        print(f"   {description}")
+        safe_print(f"[ERROR] Missing required environment variable: {key}")
+        safe_print(f"   {description}")
         sys.exit(1)
     return value
 
@@ -114,7 +127,7 @@ def simple_gitlab_request(url: str, token: str, endpoint: str, params: Dict = No
             
         return all_results
     except requests.exceptions.RequestException as e:
-        print(f"❌ GitLab API Error: {e}")
+        safe_print(f"[ERROR] GitLab API Error: {e}")
         return []
 
 def calculate_health_score(metrics: Dict[str, Any]) -> Tuple[int, str]:
@@ -584,7 +597,7 @@ def analyze_project(project: Dict, gitlab_url: str, gitlab_token: str, days: int
         issue_service = IssueService(client)
         enhanced_services_available = True
     except Exception as e:
-        print(f"⚠️ Enhanced services not available for {project_name}: {e}")
+        safe_print(f"[WARNING] Enhanced services not available for {project_name}: {e}")
         enhanced_services_available = False
         branch_service = None
         issue_service = None
@@ -657,24 +670,24 @@ def analyze_project(project: Dict, gitlab_url: str, gitlab_token: str, days: int
     # Enhanced Branch Analysis
     if enhanced_services_available and branch_service:
         try:
-            print(f"    📊 Analyzing branches for {project_name}...")
+            safe_print(f"    [INFO] Analyzing branches for {project_name}...")
             branch_analysis = branch_service.analyze_project_branches(project_id, days)
             metrics['branch_analysis'] = branch_analysis
             metrics['enhancement_metadata']['has_branch_analysis'] = True
         except Exception as e:
-            print(f"    ⚠️ Branch analysis failed for {project_name}: {e}")
+            safe_print(f"    [WARNING] Branch analysis failed for {project_name}: {e}")
             metrics['enhancement_metadata']['analysis_errors'].append(f"Branch analysis: {str(e)}")
             metrics['branch_analysis'] = {'error': str(e), 'active_branches': [], 'total_branches': 0}
     
     # Enhanced Issue Analysis
     if enhanced_services_available and issue_service:
         try:
-            print(f"    📋 Analyzing issues for {project_name}...")
+            safe_print(f"    [INFO] Analyzing issues for {project_name}...")
             issue_analysis = issue_service.analyze_project_issues(project_id, days)
             metrics['issue_analysis'] = issue_analysis
             metrics['enhancement_metadata']['has_issue_analysis'] = True
         except Exception as e:
-            print(f"    ⚠️ Issue analysis failed for {project_name}: {e}")
+            safe_print(f"    [WARNING] Issue analysis failed for {project_name}: {e}")
             metrics['enhancement_metadata']['analysis_errors'].append(f"Issue analysis: {str(e)}")
             metrics['issue_analysis'] = {'error': str(e), 'recommendations': [], 'total_open': metrics['open_issues']}
     
@@ -713,14 +726,14 @@ def analyze_project(project: Dict, gitlab_url: str, gitlab_token: str, days: int
 
 def analyze_groups(group_ids: List[int], gitlab_url: str, gitlab_token: str, days: int = 30) -> Dict[str, Any]:
     """Analyze multiple GitLab groups with enhanced group information."""
-    print(f"📊 Analyzing {len(group_ids)} groups over {days} days...")
+    safe_print(f"[INFO] Analyzing {len(group_ids)} groups over {days} days...")
     
     # Initialize GitLab client and group enhancement service
     try:
         client = GitLabClient(gitlab_url, gitlab_token)
         group_service = GroupEnhancementService(client)
     except Exception as e:
-        print(f"⚠️ Could not initialize enhanced services, falling back to simple requests: {e}")
+        safe_print(f"[WARNING] Could not initialize enhanced services, falling back to simple requests: {e}")
         client = None
         group_service = None
     
@@ -755,7 +768,7 @@ def analyze_groups(group_ids: List[int], gitlab_url: str, gitlab_token: str, day
         # Use GROUP_NAMES mapping first if available
         group_display_name = GROUP_NAMES.get(group_id, None)
         
-        print(f"  📁 Analyzing group {group_id}{f' ({group_display_name})' if group_display_name else ''}...")
+        safe_print(f"  [INFO] Analyzing group {group_id}{f' ({group_display_name})' if group_display_name else ''}...")
         
         # Get enhanced group info
         if group_service:
@@ -765,7 +778,7 @@ def analyze_groups(group_ids: List[int], gitlab_url: str, gitlab_token: str, day
                 group_description = enhanced_group['business_description']
                 group_metadata = enhanced_group
             except Exception as e:
-                print(f"⚠️ Could not get enhanced group info for {group_id}, using fallback: {e}")
+                safe_print(f"[WARNING] Could not get enhanced group info for {group_id}, using fallback: {e}")
                 group_info = simple_gitlab_request(
                     gitlab_url, gitlab_token,
                     f"groups/{group_id}",
@@ -810,7 +823,7 @@ def analyze_groups(group_ids: List[int], gitlab_url: str, gitlab_token: str, day
         }
         
         for project in projects:
-            print(f"    🔍 Analyzing project: {project['name']}")
+            safe_print(f"    [INFO] Analyzing project: {project['name']}")
             
             project_metrics = analyze_project(project, gitlab_url, gitlab_token, days)
             
@@ -865,22 +878,22 @@ def analyze_groups(group_ids: List[int], gitlab_url: str, gitlab_token: str, day
     report_data['projects'].sort(key=lambda x: x['health_score'], reverse=True)
     
     # Collect comprehensive issue analytics
-    print("\n📊 Collecting issue analytics across all projects...")
+    safe_print("\n[INFO] Collecting issue analytics across all projects...")
     report_data['issue_analytics'] = collect_issue_analytics(report_data['projects'], gitlab_url, gitlab_token)
     
     # Generate AI recommendations
-    print("🤖 Generating AI recommendations...")
+    safe_print("[INFO] Generating AI recommendations...")
     report_data['ai_recommendations'] = generate_ai_recommendations(
         report_data['issue_analytics'], 
         report_data['projects']
     )
     
     # Analyze team performance
-    print("👥 Analyzing team performance...")
+    safe_print("[INFO] Analyzing team performance...")
     report_data['team_analytics'] = analyze_team_performance(report_data['projects'], gitlab_url, gitlab_token, days)
     
     # Collect all issues for Issues Management section
-    print("📋 Collecting all open issues...")
+    safe_print("[INFO] Collecting all open issues...")
     report_data['all_issues'] = collect_all_issues(report_data['projects'], gitlab_url, gitlab_token)
     
     return report_data
@@ -3141,7 +3154,7 @@ Examples:
     try:
         group_ids = [int(gid.strip()) for gid in args.groups.split(',')]
     except ValueError:
-        print("❌ Invalid group IDs. Please provide comma-separated integers.")
+        safe_print("[ERROR] Invalid group IDs. Please provide comma-separated integers.")
         return 1
     
     # Get GitLab configuration
@@ -3149,8 +3162,8 @@ Examples:
     gitlab_token = get_env_or_exit('GITLAB_TOKEN', 'Your GitLab API token')
     
     try:
-        print(f"🚀 Starting executive dashboard generation...")
-        print(f"   Analyzing {len(group_ids)} groups over {args.days} days")
+        safe_print(">> Starting executive dashboard generation...")
+        safe_print(f"   Analyzing {len(group_ids)} groups over {args.days} days")
         
         # Analyze groups
         report_data = analyze_groups(group_ids, gitlab_url, gitlab_token, args.days)
@@ -3165,24 +3178,24 @@ Examples:
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(html_content)
         
-        print(f"✅ Dashboard saved to: {output_path}")
+        safe_print(f"[SUCCESS] Dashboard saved to: {output_path}")
         
         # Print summary
         summary = report_data['summary']
-        print(f"\n📊 Analysis Summary:")
-        print(f"   Total Projects: {summary['total_projects']}")
-        print(f"   Active Projects: {summary['active_projects']}")
-        print(f"   Total Commits: {summary['total_commits']}")
-        print(f"   Unique Contributors: {summary['unique_contributors']}")
-        print(f"   Health Distribution: A+({summary['health_distribution']['A+']}) A({summary['health_distribution']['A']}) B({summary['health_distribution']['B']}) C({summary['health_distribution']['C']}) D({summary['health_distribution']['D']})")
+        safe_print(f"\n[SUMMARY] Analysis Summary:")
+        safe_print(f"   Total Projects: {summary['total_projects']}")
+        safe_print(f"   Active Projects: {summary['active_projects']}")
+        safe_print(f"   Total Commits: {summary['total_commits']}")
+        safe_print(f"   Unique Contributors: {summary['unique_contributors']}")
+        safe_print(f"   Health Distribution: A+({summary['health_distribution']['A+']}) A({summary['health_distribution']['A']}) B({summary['health_distribution']['B']}) C({summary['health_distribution']['C']}) D({summary['health_distribution']['D']})")
         
         return 0
         
     except KeyboardInterrupt:
-        print(f"\n⏹️ Operation cancelled by user")
+        safe_print(f"\n[CANCELLED] Operation cancelled by user")
         return 1
     except Exception as e:
-        print(f"❌ Error: {e}")
+        safe_print(f"[ERROR] Error: {e}")
         import traceback
         traceback.print_exc()
         return 1
