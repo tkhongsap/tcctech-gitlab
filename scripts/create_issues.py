@@ -5,7 +5,7 @@ import sys
 import argparse
 import json
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
 from datetime import datetime
 
 # Add project root to path
