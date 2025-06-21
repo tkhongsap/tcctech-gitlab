@@ -44,6 +44,12 @@ class WeeklyReportEmailTemplate:
         if include_charts:
             charts_html = self._generate_charts_section(report_data)
         
+        # Get detailed tables if available
+        detailed_tables = report_data.get('detailed_tables', {})
+        detailed_tables_html = ""
+        if detailed_tables:
+            detailed_tables_html = self._generate_detailed_tables_section(detailed_tables)
+        
         html_content = f"""
 <!DOCTYPE html>
 <html lang="en">
@@ -60,6 +66,7 @@ class WeeklyReportEmailTemplate:
         {self._generate_header(team_name, metadata)}
         {self._generate_executive_summary_section(executive_summary)}
         {self._generate_team_activity_section(team_activity)}
+        {detailed_tables_html}
         {self._generate_project_health_section(project_breakdown)}
         {self._generate_individual_highlights_section(individual_metrics)}
         {charts_html}
@@ -305,6 +312,80 @@ class WeeklyReportEmailTemplate:
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
+        /* Activity Tables */
+        .activity-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 13px;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .activity-table th {
+            background: #f8f9fa;
+            color: #495057;
+            font-weight: 600;
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 2px solid #dee2e6;
+            font-size: 12px;
+        }
+        
+        .activity-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: middle;
+        }
+        
+        .activity-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .activity-table .status-active {
+            color: #28a745;
+            font-weight: 600;
+        }
+        
+        .activity-table .status-inactive {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        
+        .activity-table .lines-positive {
+            color: #28a745;
+        }
+        
+        .activity-table .lines-negative {
+            color: #dc3545;
+        }
+        
+        .inactive-summary {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .inactive-group {
+            margin-bottom: 12px;
+        }
+        
+        .inactive-group h5 {
+            color: #dc3545;
+            margin: 0 0 5px 0;
+            font-size: 14px;
+        }
+        
+        .inactive-projects {
+            color: #6c757d;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        
         /* Footer */
         .footer {
             background: #f8f9fa;
@@ -336,6 +417,15 @@ class WeeklyReportEmailTemplate:
             .project-grid,
             .contributors-list {
                 flex-direction: column;
+            }
+            
+            .activity-table {
+                font-size: 11px;
+            }
+            
+            .activity-table th,
+            .activity-table td {
+                padding: 8px 4px;
             }
         }
         """
@@ -728,3 +818,164 @@ class WeeklyReportEmailTemplate:
             </div>
         </div>
         """
+    
+    def _generate_detailed_tables_section(self, tables: Dict[str, List[Dict]]) -> str:
+        """Generate detailed activity tables section for email."""
+        branch_data = tables.get('project_branch_activity', [])
+        contrib_data = tables.get('project_contributor_activity', [])
+        
+        # Separate active and inactive data
+        active_branches = [item for item in branch_data if item.get('commits_total', item.get('commits', 0)) > 0]
+        inactive_branches = [item for item in branch_data if item.get('commits_total', item.get('commits', 0)) == 0]
+        active_contribs = [item for item in contrib_data if item['commits'] > 0 or item['mrs'] > 0 or item['net_lines'] != 0]
+        inactive_contribs = [item for item in contrib_data if item['commits'] == 0 and item['mrs'] == 0 and item['net_lines'] == 0]
+        
+        # Sort active data
+        active_branches.sort(key=lambda x: (x.get('commits_total', x.get('commits', 0)), x['contributors'], x['net_lines']), reverse=True)
+        active_contribs.sort(key=lambda x: (x['contributor'], -(x['commits'] + x['mrs'])))
+        
+        content_html = ""
+        
+        # Active Projects & Branches Table
+        if active_branches:
+            content_html += "<h3 style='color: #28a745; margin: 20px 0 10px 0; font-size: 18px;'>🟢 Active Projects & Branches</h3>"
+            content_html += "<table class='activity-table'>"
+            content_html += """
+            <thead>
+                <tr>
+                    <th>Group</th>
+                    <th>Project</th>
+                    <th>Branch</th>
+                    <th>Commits</th>
+                    <th>Contributors</th>
+                    <th>Lines±</th>
+                </tr>
+            </thead>
+            <tbody>
+            """
+            
+            # Limit to top 15 for email
+            for item in active_branches[:15]:
+                net_lines = item['net_lines']
+                lines_str = f"+{net_lines}" if net_lines > 0 else str(net_lines)
+                lines_class = "lines-positive" if net_lines > 0 else "lines-negative"
+                
+                content_html += f"""
+                <tr>
+                    <td>{item['group'][:12]}</td>
+                    <td>{item['project'][:18]}</td>
+                    <td>{item['branch'][:10]}</td>
+                    <td style="text-align: center;">{item.get('commits_total', item.get('commits', 0))}</td>
+                    <td style="text-align: center;">{item['contributors']}</td>
+                    <td style="text-align: center;" class="{lines_class}">{lines_str}</td>
+                </tr>
+                """
+            
+            content_html += "</tbody></table>"
+            
+            if len(active_branches) > 15:
+                content_html += f"<p style='font-size: 12px; color: #6c757d; margin: 5px 0;'>... and {len(active_branches) - 15} more active branches</p>"
+        
+        # Active Contributors by Project Table
+        if active_contribs:
+            content_html += "<h3 style='color: #007bff; margin: 25px 0 10px 0; font-size: 18px;'>👥 Active Contributors</h3>"
+            content_html += "<table class='activity-table'>"
+            content_html += """
+            <thead>
+                <tr>
+                    <th>Contributor</th>
+                    <th>Project</th>
+                    <th>Group</th>
+                    <th>Commits</th>
+                    <th>MRs</th>
+                    <th>Lines±</th>
+                    <th>Issues±</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+            """
+            
+            # Limit to top 20 for email
+            for item in active_contribs[:20]:
+                net_lines = item['net_lines']
+                lines_str = f"+{net_lines}" if net_lines > 0 else str(net_lines)
+                lines_class = "lines-positive" if net_lines > 0 else "lines-negative"
+                
+                issues_opened = item['issues_opened']
+                issues_closed = item['issues_closed']
+                if issues_opened > 0 or issues_closed > 0:
+                    issues_str = f"+{issues_opened}/-{issues_closed}"
+                else:
+                    issues_str = "0"
+                
+                content_html += f"""
+                <tr>
+                    <td>{item['contributor'][:12] if item['contributor'] != '-' else '-'}</td>
+                    <td>{item['project'][:15]}</td>
+                    <td>{item['group'][:12]}</td>
+                    <td style="text-align: center;">{item['commits']}</td>
+                    <td style="text-align: center;">{item['mrs']}</td>
+                    <td style="text-align: center;" class="{lines_class}">{lines_str}</td>
+                    <td style="text-align: center;">{issues_str}</td>
+                    <td style="text-align: center;"><strong>{item['total_activity']}</strong></td>
+                </tr>
+                """
+            
+            content_html += "</tbody></table>"
+            
+            if len(active_contribs) > 20:
+                content_html += f"<p style='font-size: 12px; color: #6c757d; margin: 5px 0;'>... and {len(active_contribs) - 20} more active contributors</p>"
+        
+        # Inactive Projects Summary
+        if inactive_contribs:
+            content_html += "<h3 style='color: #dc3545; margin: 25px 0 10px 0; font-size: 18px;'>🔴 Inactive Projects Summary</h3>"
+            content_html += "<div class='inactive-summary'>"
+            
+            # Group inactive projects by group
+            inactive_by_group = {}
+            for item in inactive_contribs:
+                group = item['group']
+                if group not in inactive_by_group:
+                    inactive_by_group[group] = set()
+                inactive_by_group[group].add(item['project'])
+            
+            for group, projects in inactive_by_group.items():
+                unique_projects = sorted(list(projects))
+                content_html += f"""
+                <div class="inactive-group">
+                    <h5>{group}</h5>
+                    <div class="inactive-projects">
+                        {len(unique_projects)} inactive projects: {', '.join(unique_projects[:6])}
+                        {'...' if len(unique_projects) > 6 else ''}
+                    </div>
+                </div>
+                """
+            
+            content_html += "</div>"
+        
+        # Activity summary
+        active_projects_count = len(set([(p['group'], p['project']) for p in active_contribs]))
+        inactive_projects_count = len(set([(p['group'], p['project']) for p in inactive_contribs]))
+        total_projects = active_projects_count + inactive_projects_count
+        
+        if total_projects > 0:
+            content_html += f"""
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                <h4 style="margin: 0 0 10px 0; color: #495057;">📊 Activity Summary</h4>
+                <div style="display: flex; justify-content: space-around; font-size: 14px;">
+                    <div><strong style="color: #28a745;">{active_projects_count}</strong> Active Projects ({active_projects_count/total_projects*100:.1f}%)</div>
+                    <div><strong style="color: #dc3545;">{inactive_projects_count}</strong> Inactive Projects ({inactive_projects_count/total_projects*100:.1f}%)</div>
+                </div>
+            </div>
+            """
+        
+        return f"""
+        <div class="section">
+            <h2 class="section-title">
+                <span class="icon">📊</span>
+                Project Activity Details
+            </h2>
+            {content_html}
+        </div>
+        """ if content_html else ""

@@ -46,6 +46,22 @@ black src/ scripts/ --line-length=100
 
 ### Running the main scripts
 
+#### GitLab Tools CLI (Unified Interface)
+```bash
+# Interactive mode
+glt
+
+# Natural language commands
+glt rename branches in AI-ML-Services from trunk to main
+glt create dashboard for AI team
+glt analyze project 123
+glt send weekly report to team@company.com
+
+# Direct script commands
+glt --script rename_branches --groups AI-ML-Services --dry-run
+glt --script create_issues ProjectName --template feature
+```
+
 #### File-Based Issue Creation
 ```bash
 # Add markdown/text files to the issues/ folder, then sync:
@@ -181,6 +197,22 @@ python scripts/analyze_projects.py compare 123,456,789 --output comparison.html
 python scripts/export_analytics.py projects 123,456 --output analytics.xlsx
 ```
 
+#### Code Changes Reports
+```bash
+# Generate code changes report for groups
+python scripts/generate_code_changes_report.py --groups 1721,1267 --output report.html
+
+# Include specific time period
+python scripts/generate_code_changes_report.py --groups 1721 --days 30 --output monthly_changes.html
+
+# Generate and automatically send via email
+python scripts/generate_and_send_report.py --groups 1721,1267 --recipients team@company.com
+
+# With custom email subject
+python scripts/generate_and_send_report.py --groups 1721 --recipients manager@company.com \
+  --subject "Weekly Code Activity Report"
+```
+
 ## High-Level Architecture
 
 ### Module Structure
@@ -200,20 +232,34 @@ The codebase follows a modular architecture to promote reusability and maintaina
   - `branch_service.py`: Branch operations (to be implemented)
   - `weekly_reports.py`: Weekly productivity reporting with team metrics
   - `email_service.py`: Email delivery system for reports
+  - `analytics.py`: Basic analytics functionality
   - `analytics_advanced.py`: Advanced analytics with health scoring
+  - `group_enhancement.py`: Group-level operation enhancements
+
+- **src/cli/**: CLI components for unified interface
+  - `command_executor.py`: Executes CLI commands
+  - `command_parser.py`: Natural language command parsing
+  - `command_registry.py`: Registry of available commands
+  - `help_system.py`: Interactive help system
+  - `logging_config.py`: CLI-specific logging
+  - `repl.py`: Interactive REPL functionality
 
 - **src/utils/**: Shared utilities
   - `config.py`: Configuration management that merges YAML config with env variables
   - `logger.py`: Advanced logging with color support and operation tracking
   - `progress.py`: Progress bars and spinners for long operations
   - `validators.py`: Input validation for issues, projects, and files
+  - `cache.py`: File-based caching for API responses
 
 - **scripts/**: CLI entry points
   - `rename_branches.py`: Enhanced branch renaming with progress tracking
   - `create_issues.py`: Full-featured issue creation with templates
   - `sync_issues.py`: Sync markdown files from issues folder to GitLab
+  - `sync_issues_simple.py`: Pre-configured sync script for specific projects
   - `weekly_reports.py`: Generate and send weekly productivity reports
   - `generate_executive_dashboard.py`: Create executive dashboards with analytics
+  - `generate_code_changes_report.py`: Generate code activity reports
+  - `generate_and_send_report.py`: Combined report generation and email delivery
   - `analyze_projects.py`: Deep project and group analytics
   - `export_analytics.py`: Export analytics to Excel and other formats
   - `send_report_email.py`: Send HTML reports via email
@@ -331,3 +377,27 @@ Tests are organized by module type:
 
 ### Running Tests
 The `run_tests.py` script provides a convenient way to run all tests with coverage reporting. Individual test suites can be run for faster feedback during development.
+
+## Setup Scripts
+
+### Quick Setup
+```bash
+# Run the quickstart script for basic setup
+./quickstart.sh
+
+# Install all dependencies
+./install_dependencies.sh
+```
+
+### Windows PowerShell Scripts
+For Windows users, PowerShell scripts are available:
+```powershell
+# Interactive issue creation with prompts
+.\interactive_create_issues.ps1
+
+# Simplified issue creation
+.\simple_create_issues.ps1
+
+# Example scripts for testing
+.\example_create_issues.ps1
+```

@@ -2,9 +2,9 @@
 
 import smtplib
 import ssl
-from email.mime.text import MimeText
-from email.mime.multipart import MimeMultipart
-from email.mime.base import MimeBase
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
 from email import encoders
 from typing import List, Optional, Dict, Any
 import logging
@@ -41,7 +41,7 @@ class EmailService:
         }
         
         # Get from config file
-        email_config = self.config.config.get('email', {})
+        email_config = self.config._config.get('email', {})
         
         # Update with environment variables
         import os
@@ -160,9 +160,9 @@ class EmailService:
         subject: str,
         cc: Optional[List[str]] = None,
         bcc: Optional[List[str]] = None
-    ) -> MimeMultipart:
+    ) -> MIMEMultipart:
         """Create email message."""
-        message = MimeMultipart('alternative')
+        message = MIMEMultipart('alternative')
         
         # Headers
         message['Subject'] = subject
@@ -173,17 +173,17 @@ class EmailService:
             message['Cc'] = ', '.join(cc)
         
         # Add HTML content
-        html_part = MimeText(html_content, 'html', 'utf-8')
+        html_part = MIMEText(html_content, 'html', 'utf-8')
         message.attach(html_part)
         
         # Add plain text version (simplified)
         plain_text = self._html_to_plain_text(html_content)
-        text_part = MimeText(plain_text, 'plain', 'utf-8')
+        text_part = MIMEText(plain_text, 'plain', 'utf-8')
         message.attach(text_part)
         
         return message
     
-    def _add_attachment(self, message: MimeMultipart, file_path: str) -> None:
+    def _add_attachment(self, message: MIMEMultipart, file_path: str) -> None:
         """Add file attachment to email message."""
         try:
             path = Path(file_path)
@@ -192,7 +192,7 @@ class EmailService:
                 return
             
             with open(path, 'rb') as attachment:
-                part = MimeBase('application', 'octet-stream')
+                part = MIMEBase('application', 'octet-stream')
                 part.set_payload(attachment.read())
             
             encoders.encode_base64(part)
@@ -209,7 +209,7 @@ class EmailService:
     
     def _send_email(
         self,
-        message: MimeMultipart,
+        message: MIMEMultipart,
         recipients: List[str],
         cc: Optional[List[str]] = None,
         bcc: Optional[List[str]] = None
