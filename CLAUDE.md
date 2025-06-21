@@ -2,6 +2,36 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Interactive Menu Interface
+
+### GitLab Tools CLI Menu
+Use the interactive menu interface for easy access to all GitLab tools:
+
+```bash
+# Launch interactive menu
+python glt_menu.py
+
+# Options available:
+# 1. 🔄 Rename Branches - Rename branches across multiple projects
+# 2. 📊 Generate Executive Dashboard - Create HTML dashboards with analytics
+# 3. 📈 Generate Weekly Report - Team productivity reports with email delivery
+# 4. 📝 Create Issues - Interactive or template-based issue creation
+# 5. 🔍 Analyze Projects - Deep project and group analytics
+# 6. 📤 Export Analytics - Export data to Excel and other formats
+# 7. 📧 Send Report Email - Email HTML reports to teams
+# 8. 📋 Sync Issues from Files - Create issues from markdown files
+# 9. 🔗 Generate Code Changes Report - Track code activity across projects
+# 10. 📊 Combined Report Generation - Generate and send reports automatically
+# 11. 🛠️ Project Health Analysis - Automated health scoring with recommendations
+# 12. ❓ Help - Show detailed help for all tools
+```
+
+### Menu Features
+- **Group ID Display**: Shows group IDs and descriptions for easy selection
+- **Default Email**: Pre-configured with totrakool.k@thaibev.com for weekly reports
+- **Progress Tracking**: Real-time progress bars for long operations
+- **Dry Run Mode**: Preview changes before execution
+
 ## Common Development Tasks
 
 ### Setting up the environment
@@ -12,24 +42,40 @@ pip install -r requirements.txt
 # Copy environment template and configure
 cp .env.example .env
 # Edit .env with your GitLab URL and API token
+
+# Required environment variables:
+# GITLAB_URL=https://your-gitlab-instance.com
+# GITLAB_API_TOKEN=glpat-xxxxxxxxxxxxxxxxxxxx
+# GITLAB_TOKEN=glpat-xxxxxxxxxxxxxxxxxxxx  # Alternative name
+
+# Optional email configuration for reports:
+# SMTP_SERVER=smtp.gmail.com
+# SMTP_PORT=587
+# SMTP_USERNAME=your-email@company.com
+# SMTP_PASSWORD=your-app-password
 ```
 
 ### Running tests
 ```bash
-# Run all tests
+# Run all tests (uses pytest.ini configuration)
 pytest
 
-# Run with coverage
-pytest --cov=src --cov-report=html
-
 # Run specific test file
-pytest tests/unit/test_api_client.py
+pytest tests/unit/api/test_client.py
 
-# Use the test runner script
+# Run by test markers
+pytest -m unit          # Unit tests only
+pytest -m integration   # Integration tests only
+pytest -m api          # API tests only
+
+# Use the comprehensive test runner script
 python run_tests.py
 
 # Run specific test suite
-python run_tests.py tests/unit/scripts/
+python run_tests.py tests/unit/services/
+
+# Skip slow tests
+pytest -m "not slow"
 ```
 
 ### Linting and type checking
@@ -60,6 +106,16 @@ glt send weekly report to team@company.com
 # Direct script commands
 glt --script rename_branches --groups AI-ML-Services --dry-run
 glt --script create_issues ProjectName --template feature
+```
+
+#### Interactive Menu Interface (Recommended)
+```bash
+# Launch numbered menu interface (easier than CLI arguments)
+python glt_menu.py
+
+# Select options by number (1-12)
+# Includes group ID display and default settings
+# Built-in dry-run modes for safety
 ```
 
 #### File-Based Issue Creation
@@ -111,6 +167,12 @@ python scripts/rename_branches.py --old-branch develop --new-branch main
 python scripts/rename_branches.py --log-level DEBUG
 ```
 
+**Enhanced Features:**
+- **Group-level summaries**: Shows statistics grouped by GitLab group
+- **Progress tracking**: Real-time progress bars with operation counts
+- **Safety checks**: Protected branch detection and confirmation prompts
+- **Detailed logging**: Operation tracking with colored output
+
 #### Issue Creation (Enhanced)
 ```bash
 # Interactive mode (default)
@@ -144,31 +206,58 @@ python scripts/create_issues.py ProjectName \
 python scripts/create_issues.py ProjectName --import issues.csv --dry-run
 ```
 
-#### Weekly Productivity Reports (NEW!)
+#### Interactive Menu Interface (NEW!)
+```bash
+# Launch interactive menu with numbered options
+python glt_menu.py
+
+# Direct access to specific tools:
+# 1. Rename Branches
+# 2. Generate Executive Dashboard  
+# 3. Weekly Productivity Reports
+# 4. Code Changes Reports
+# 5. Project Analytics
+# And more...
+```
+
+#### Weekly Productivity Reports (Enhanced!)
 ```bash
 # Generate weekly report for specific groups and save as HTML
-python scripts/weekly_reports.py --groups 1,2,3 --output weekly_report.html
+python scripts/weekly_reports.py --groups 1721,1267,1269 --output weekly_report.html
 
-# Send email report to team
-python scripts/weekly_reports.py --groups 1,2,3 --email team@company.com,manager@company.com
+# Send email report to team (default: totrakool.k@thaibev.com)
+python scripts/weekly_reports.py --groups 1721,1267,1269 --email team@company.com,manager@company.com
 
 # Generate report for specific team members
-python scripts/weekly_reports.py --groups 1,2,3 --team john.doe,jane.smith --output report.json
+python scripts/weekly_reports.py --groups 1721,1267,1269 --team john.doe,jane.smith --output report.json
 
 # Generate 2-week report with email delivery
-python scripts/weekly_reports.py --groups 1,2,3 --weeks 2 --email team@company.com \
+python scripts/weekly_reports.py --groups 1721,1267,1269 --weeks 2 --email team@company.com \
   --team-name "AI Development Team"
 
 # Test email configuration
 python scripts/weekly_reports.py --test-email your.email@company.com
 
 # Generate report with attachments
-python scripts/weekly_reports.py --groups 1,2,3 --email team@company.com \
+python scripts/weekly_reports.py --groups 1721,1267,1269 --email team@company.com \
   --email-attachments "analytics.xlsx,metrics.pdf"
 
 # Dry run mode (generate but don't send email)
-python scripts/weekly_reports.py --groups 1,2,3 --email team@company.com --dry-run
+python scripts/weekly_reports.py --groups 1721,1267,1269 --email team@company.com --dry-run
 ```
+
+**Enhanced Analytics Features:**
+- **Contributor Deduplication**: Maps multiple emails/usernames to unique contributors
+- **Branch-Specific Metrics**: Three approaches for accurate branch analytics:
+  - Total commits per branch
+  - Unique commits (not shared with other branches)  
+  - Git diff analysis for branch-specific changes
+- **Date Filtering**: Client-side filtering ensures accurate weekly metrics
+- **Active/Inactive Separation**: Clearly distinguishes projects with recent activity
+- **Detailed Tables**: Group/Project/Branch and Group/Project/Contributor breakdowns
+- **Person-Focused Views**: Contributor-first tables showing who works on what
+- **Net Code Changes**: Lines added/removed with commit ownership tracking
+- **Issue Tracking**: Issues opened/closed during the reporting period
 
 #### Executive Dashboard Generation
 ```bash
@@ -252,17 +341,22 @@ The codebase follows a modular architecture to promote reusability and maintaina
   - `cache.py`: File-based caching for API responses
 
 - **scripts/**: CLI entry points
-  - `rename_branches.py`: Enhanced branch renaming with progress tracking
+  - `rename_branches.py`: Enhanced branch renaming with group-level summaries
   - `create_issues.py`: Full-featured issue creation with templates
   - `sync_issues.py`: Sync markdown files from issues folder to GitLab
   - `sync_issues_simple.py`: Pre-configured sync script for specific projects
-  - `weekly_reports.py`: Generate and send weekly productivity reports
+  - `weekly_reports.py`: Advanced weekly reports with branch analytics and contributor insights
   - `generate_executive_dashboard.py`: Create executive dashboards with analytics
   - `generate_code_changes_report.py`: Generate code activity reports
   - `generate_and_send_report.py`: Combined report generation and email delivery
   - `analyze_projects.py`: Deep project and group analytics
   - `export_analytics.py`: Export analytics to Excel and other formats
   - `send_report_email.py`: Send HTML reports via email
+
+- **glt_menu.py**: Interactive menu interface
+  - Numbered options for all GitLab tools
+  - Default email configuration (totrakool.k@thaibev.com)
+  - Group ID selection with descriptions
 
 - **templates/**: Template files
   - **issues/**: Issue templates
@@ -280,6 +374,9 @@ The codebase follows a modular architecture to promote reusability and maintaina
 5. **Comprehensive Logging**: Structured logging with operation context
 6. **Email-First Reporting**: Weekly reports optimized for email delivery with embedded charts
 7. **Health Scoring**: Automated project health assessment with actionable recommendations
+8. **Timezone-Aware Processing**: All datetime operations use UTC with proper timezone handling
+9. **Client-Side Data Filtering**: API responses are filtered client-side for accuracy
+10. **Contributor Identity Normalization**: Multiple identities mapped to single contributors
 
 ### API Client Features
 - Automatic pagination for all list operations
@@ -301,14 +398,17 @@ The codebase follows a modular architecture to promote reusability and maintaina
 3. **Use ProgressTracker** for any operation processing multiple items
 4. **Log operations** using OperationLogger context manager
 5. **Validate configuration** before starting operations
+6. **Use contributor deduplication** for accurate team metrics
+7. **Apply client-side date filtering** for precise weekly reports
 
 ## Weekly Productivity Reports Features
 
 ### Core Capabilities
-- **Team Activity Metrics**: Commits, merge requests, issues across all repositories
+- **Advanced Branch Analytics**: Three-method analysis (git diff, ownership tracking, dual metrics)
+- **Team Activity Metrics**: Commits, merge requests, issues across all repositories  
 - **Project Health Scoring**: Automated health assessment with A-F grades
-- **Individual Contributor Analytics**: Productivity and collaboration scoring
-- **Executive Summary**: Key metrics and highlights for leadership
+- **Individual Contributor Analytics**: Person-focused view with contributor deduplication
+- **Executive Summary**: Key metrics and highlights with accurate date filtering
 - **Actionable Insights**: Automated recommendations for team improvement
 
 ### Email Delivery
@@ -348,6 +448,82 @@ email:
   from_name: "Development Team Analytics"
 ```
 
+## Enhanced Branch Analytics
+
+### Three-Method Analysis System
+The weekly reports now provide three different approaches for analyzing branch-specific contributions:
+
+#### 1. Git Diff Approach
+Shows changes unique to each branch compared to its base branch using GitLab's Compare API:
+```bash
+# Shows only changes unique to feature branches
+Lines±(Diff): +1,234  # Changes not in main branch
+```
+
+#### 2. Commit Ownership Method  
+Tracks which branch first processed each commit to avoid double-counting:
+```bash
+# Example output showing ownership
+| Branch | Total | Unique | Owned | Inherited |
+|--------|-------|--------|-------|-----------|
+| main   | 50    | 10     | 35    | 15        |
+| feature| 45    | 5      | 15    | 30        |
+```
+
+#### 3. Dual Metrics Display
+Provides both total and unique commit counts for comprehensive insight:
+- **Total**: All commits on the branch
+- **Unique**: Commits only on this branch (not shared with others)
+
+### Contributor Analytics Enhancements
+
+#### Person-Focused View
+Contributors are now grouped alphabetically with all their projects listed together:
+```bash
+| Contributor     | Project              | Group      | Commits | MRs |
+|-----------------|----------------------|------------|---------|-----|
+| John Doe        | project-alpha        | AI-ML      | 25      | 3   |
+| John Doe        | project-beta         | AI-ML      | 15      | 1   |
+| Jane Smith      | project-gamma        | Research   | 30      | 5   |
+```
+
+#### Smart Filtering
+- Removes pure issue-only entries (0 commits, 0 MRs, 0 lines) from active contributor tables
+- Focuses on actual code contributions for clearer insights
+
+#### Contributor Deduplication
+Automatically maps multiple identities to single contributors:
+```yaml
+# Example mapping configuration
+contributors:
+  "Totrakool Khongsap":
+    - "ta.khongsap@gmail.com"
+    - "tkhongsap" 
+    - "totrakool.k@thaibev.com"
+```
+
+### Implementation Details
+
+#### Date Filtering
+All metrics use client-side date filtering for accuracy:
+```python
+# Ensures commits are only counted within the specified week
+if start_date <= commit_date <= end_date:
+    commits.append(commit)
+```
+
+#### API Parameter Fixes
+Corrected GitLab API calls for proper branch-specific data:
+```python
+# Fixed from params={} to direct parameters
+commits = client._paginated_get(
+    f'projects/{project_id}/repository/commits',
+    since=start_date.isoformat(),
+    until=end_date.isoformat(),
+    ref=branch_name  # Correct parameter for branch-specific commits
+)
+```
+
 ## File-Based Issue Creation
 
 ### Overview
@@ -376,17 +552,49 @@ Tests are organized by module type:
 - `tests/unit/utils/` - Utility function tests
 
 ### Running Tests
-The `run_tests.py` script provides a convenient way to run all tests with coverage reporting. Individual test suites can be run for faster feedback during development.
+The `run_tests.py` script provides a convenient way to run all tests with coverage reporting:
+
+```bash
+# Run all tests with coverage
+python run_tests.py
+
+# Run specific test suite
+python run_tests.py tests/unit/api/
+
+# Use pytest directly
+pytest tests/unit/services/ -v
+
+# Generate HTML coverage report
+pytest --cov=src --cov-report=html
+```
+
+Individual test suites can be run for faster feedback during development.
 
 ## Setup Scripts
 
 ### Quick Setup
 ```bash
-# Run the quickstart script for basic setup
-./quickstart.sh
+# Install dependencies
+pip install -r requirements.txt
 
-# Install all dependencies
-./install_dependencies.sh
+# Copy environment template and configure
+cp .env.example .env
+# Edit .env with your GitLab URL and API token
+```
+
+### Installation via setup.py
+```bash
+# Install in development mode
+pip install -e .
+
+# Install for production
+pip install .
+
+# This adds console entry points:
+# - glt (main CLI)
+# - gitlab-rename-branches
+# - gitlab-create-issues  
+# - gitlab-analyze
 ```
 
 ### Windows PowerShell Scripts

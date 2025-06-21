@@ -95,6 +95,66 @@ def get_env_or_exit(key: str, description: str) -> str:
         sys.exit(1)
     return value
 
+def build_contributor_mapping() -> Tuple[Dict[str, str], Dict[str, str]]:
+    """Build contributor mapping for name normalization."""
+    mapping = {}
+    email_mapping = {}
+    
+    # Add common known mappings for this specific case
+    known_mappings = {
+        'ta.khongsap@gmail.com': 'Totrakool Khongsap',
+        'tkhongsap': 'Totrakool Khongsap',
+        'i1032745@THAIBEV.COM': 'Totrakool Khongsap',
+        'totrakool.k@thaibev.com': 'Totrakool Khongsap'
+    }
+    
+    for key, canonical in known_mappings.items():
+        if '@' in key:
+            email_mapping[key.lower()] = canonical
+        else:
+            mapping[key.lower()] = canonical
+    
+    return mapping, email_mapping
+
+def normalize_contributor_name(name: str, email: str = '', name_mapping: Dict[str, str] = None, email_mapping: Dict[str, str] = None) -> str:
+    """Normalize contributor name using mapping and email."""
+    if name_mapping is None or email_mapping is None:
+        name_mapping, email_mapping = build_contributor_mapping()
+    
+    # First check email-based mapping (most reliable)
+    if email:
+        email_lower = email.lower()
+        if email_lower in email_mapping:
+            return email_mapping[email_lower]
+    
+    # Check explicit name mapping
+    if name in name_mapping:
+        return name_mapping[name]
+    
+    # Check case-insensitive name mapping
+    name_lower = name.lower()
+    if name_lower in name_mapping:
+        return name_mapping[name_lower]
+    
+    # Try to match by email domain patterns
+    if email:
+        # Extract username from email
+        email_username = email.split('@')[0]
+        if email_username in name_mapping:
+            return name_mapping[email_username]
+        
+        # Simple heuristics for common patterns
+        email_lower = email.lower()
+        name_lower = name.lower()
+        
+        # If email starts with name, they're likely the same person
+        if email_lower.startswith(name_lower.replace(' ', '.')):
+            return name
+        if email_lower.startswith(name_lower.replace(' ', '')):
+            return name
+    
+    return name
+
 def simple_gitlab_request(url: str, token: str, endpoint: str, params: Dict = None) -> Any:
     """Make a simple GitLab API request with pagination support."""
     import requests
@@ -445,79 +505,56 @@ def generate_ai_recommendations(issue_analytics: Dict, project_metrics: List[Dic
     return recommendations
 
 def analyze_team_performance(projects: List[Dict], gitlab_url: str, gitlab_token: str, days: int = 30) -> Dict[str, Any]:
-    """Analyze detailed team member contributions and workload."""
+    """Analyze detailed team member contributions and workload with accurate date filtering."""
     from datetime import timezone
     team_analytics = {}
     
-    # Calculate start date
-    start_date = datetime.now(timezone.utc) - timedelta(days=days)
+    # Calculate date range (aligned with weekly reports logic)
+    end_date = datetime.now(timezone.utc)
+    start_date = end_date - timedelta(days=days)
+    
+    # Build contributor mapping for normalization
+    name_mapping, email_mapping = build_contributor_mapping()
     
     for project in projects:
         project_id = project.get('id')
         project_name = project.get('name', 'Unknown')
         
-        # Get commits by author
-        commits = simple_gitlab_request(
-            gitlab_url, gitlab_token,
-            f"projects/{project_id}/repository/commits",
-            {"since": start_date.isoformat()}
-        )
-        
-        for commit in commits:
-            author = commit.get('author_name', 'Unknown')
-            if author not in team_analytics:
-                team_analytics[author] = {
-                    'commits': 0,
-                    'projects': set(),
-                    'issues_assigned': 0,
-                    'issues_resolved': 0,
-                    'merge_requests': 0,
-                    'recent_activity': []
+        try:
+            # Get commits with consistent API parameters (since and until)
+            all_commits = simple_gitlab_request(
+                gitlab_url, gitlab_token,
+                f"projects/{project_id}/repository/commits",
+                {
+                    "since": start_date.isoformat(),
+                    "until": end_date.isoformat()
                 }
+            )
             
-            team_analytics[author]['commits'] += 1
-            team_analytics[author]['projects'].add(project_name)
-            team_analytics[author]['recent_activity'].append({
-                'type': 'commit',
-                'project': project_name,
-                'date': commit['created_at'],
-                'message': commit['title']
-            })
-        
-        # Get merge requests
-        mrs = simple_gitlab_request(
-            gitlab_url, gitlab_token,
-            f"projects/{project_id}/merge_requests",
-            {"created_after": start_date.isoformat()}
-        )
-        
-        for mr in mrs:
-            author = mr.get('author', {}).get('name', 'Unknown')
-            if author not in team_analytics:
-                team_analytics[author] = {
-                    'commits': 0,
-                    'projects': set(),
-                    'issues_assigned': 0,
-                    'issues_resolved': 0,
-                    'merge_requests': 0,
-                    'recent_activity': []
-                }
-            team_analytics[author]['merge_requests'] += 1
-            team_analytics[author]['projects'].add(project_name)
-        
-        # Get issues assigned to team members
-        issues = simple_gitlab_request(
-            gitlab_url, gitlab_token,
-            f"projects/{project_id}/issues",
-            {"scope": "all"}
-        )
-        
-        for issue in issues:
-            assignee = issue.get('assignee')
-            if assignee:
-                assignee_name = assignee.get('name', 'Unknown')
-                if assignee_name not in team_analytics:
-                    team_analytics[assignee_name] = {
+            # Client-side date filtering for accuracy (aligned with weekly reports)
+            commits = []
+            for commit in all_commits:
+                try:
+                    commit_date = datetime.fromisoformat(
+                        commit['created_at'].replace('Z', '+00:00')
+                    )
+                    if start_date <= commit_date <= end_date:
+                        commits.append(commit)
+                except (ValueError, KeyError) as e:
+                    safe_print(f"[WARNING] Failed to parse commit date: {e}")
+                    continue
+            
+            for commit in commits:
+                author_name = commit.get('author_name', 'Unknown')
+                author_email = commit.get('author_email', '')
+                
+                # Normalize contributor name (aligned with weekly reports)
+                normalized_author = normalize_contributor_name(
+                    author_name, author_email, name_mapping, email_mapping
+                )
+                
+                if normalized_author not in team_analytics:
+                    team_analytics[normalized_author] = {
                         'commits': 0,
                         'projects': set(),
                         'issues_assigned': 0,
@@ -526,12 +563,113 @@ def analyze_team_performance(projects: List[Dict], gitlab_url: str, gitlab_token
                         'recent_activity': []
                     }
                 
-                if issue['state'] == 'opened':
-                    team_analytics[assignee_name]['issues_assigned'] += 1
-                else:
-                    team_analytics[assignee_name]['issues_resolved'] += 1
+                team_analytics[normalized_author]['commits'] += 1
+                team_analytics[normalized_author]['projects'].add(project_name)
+                team_analytics[normalized_author]['recent_activity'].append({
+                    'type': 'commit',
+                    'project': project_name,
+                    'date': commit['created_at'],
+                    'message': commit['title']
+                })
+            
+            # Get merge requests with consistent date filtering
+            all_mrs = simple_gitlab_request(
+                gitlab_url, gitlab_token,
+                f"projects/{project_id}/merge_requests",
+                {
+                    "created_after": start_date.isoformat(),
+                    "created_before": end_date.isoformat()
+                }
+            )
+            
+            # Client-side date filtering for merge requests
+            mrs = []
+            for mr in all_mrs:
+                try:
+                    created_at = datetime.fromisoformat(
+                        mr['created_at'].replace('Z', '+00:00')
+                    )
+                    if start_date <= created_at <= end_date:
+                        mrs.append(mr)
+                except (ValueError, KeyError) as e:
+                    safe_print(f"[WARNING] Failed to parse MR date: {e}")
+                    continue
+            
+            for mr in mrs:
+                author_name = mr.get('author', {}).get('name', 'Unknown')
+                author_email = mr.get('author', {}).get('email', '')
                 
-                team_analytics[assignee_name]['projects'].add(project_name)
+                # Normalize contributor name
+                normalized_author = normalize_contributor_name(
+                    author_name, author_email, name_mapping, email_mapping
+                )
+                
+                if normalized_author not in team_analytics:
+                    team_analytics[normalized_author] = {
+                        'commits': 0,
+                        'projects': set(),
+                        'issues_assigned': 0,
+                        'issues_resolved': 0,
+                        'merge_requests': 0,
+                        'recent_activity': []
+                    }
+                
+                team_analytics[normalized_author]['merge_requests'] += 1
+                team_analytics[normalized_author]['projects'].add(project_name)
+            
+            # Get issues with date filtering for created/resolved within period
+            all_issues = simple_gitlab_request(
+                gitlab_url, gitlab_token,
+                f"projects/{project_id}/issues",
+                {
+                    "created_after": start_date.isoformat(),
+                    "created_before": end_date.isoformat(),
+                    "scope": "all"
+                }
+            )
+            
+            for issue in all_issues:
+                try:
+                    created_at = datetime.fromisoformat(
+                        issue['created_at'].replace('Z', '+00:00')
+                    )
+                    
+                    # Check if created within our time period
+                    if start_date <= created_at <= end_date:
+                        assignee = issue.get('assignee')
+                        if assignee:
+                            assignee_name = assignee.get('name', 'Unknown')
+                            assignee_email = assignee.get('email', '')
+                            
+                            # Normalize contributor name
+                            normalized_assignee = normalize_contributor_name(
+                                assignee_name, assignee_email, name_mapping, email_mapping
+                            )
+                            
+                            if normalized_assignee not in team_analytics:
+                                team_analytics[normalized_assignee] = {
+                                    'commits': 0,
+                                    'projects': set(),
+                                    'issues_assigned': 0,
+                                    'issues_resolved': 0,
+                                    'merge_requests': 0,
+                                    'recent_activity': []
+                                }
+                            
+                            if issue['state'] == 'opened':
+                                team_analytics[normalized_assignee]['issues_assigned'] += 1
+                            else:
+                                team_analytics[normalized_assignee]['issues_resolved'] += 1
+                            
+                            team_analytics[normalized_assignee]['projects'].add(project_name)
+                
+                except (ValueError, KeyError) as e:
+                    safe_print(f"[WARNING] Failed to parse issue date: {e}")
+                    continue
+                    
+        except Exception as e:
+            safe_print(f"[WARNING] Failed to analyze project {project_name}: {e}")
+            continue
     
     # Convert sets to lists for JSON serialization
     for member in team_analytics:
@@ -602,20 +740,45 @@ def analyze_project(project: Dict, gitlab_url: str, gitlab_token: str, days: int
         branch_service = None
         issue_service = None
     
-    # Get commits
-    commits = simple_gitlab_request(
+    # Get commits with consistent API parameters and client-side filtering (aligned with weekly reports)
+    name_mapping, email_mapping = build_contributor_mapping()
+    
+    all_commits = simple_gitlab_request(
         gitlab_url, gitlab_token,
         f"projects/{project_id}/repository/commits",
-        {"since": start_date.isoformat(), "until": end_date.isoformat()}
+        {
+            "since": start_date.isoformat(),
+            "until": end_date.isoformat()
+        }
     )
+    
+    # Client-side date filtering for accuracy (aligned with weekly reports)
+    commits = []
+    for commit in all_commits:
+        try:
+            commit_date = datetime.fromisoformat(
+                commit['created_at'].replace('Z', '+00:00')
+            )
+            if start_date <= commit_date <= end_date:
+                commits.append(commit)
+        except (ValueError, KeyError) as e:
+            safe_print(f"[WARNING] Failed to parse commit date in project {project_name}: {e}")
+            continue
     
     if commits:
         metrics['commits_30d'] = len(commits)
         
-        # Process commits
+        # Process commits with contributor normalization
         for commit in commits:
-            author = commit.get('author_name', 'Unknown')
-            metrics['contributors'][author] += 1
+            author_name = commit.get('author_name', 'Unknown')
+            author_email = commit.get('author_email', '')
+            
+            # Normalize contributor name (aligned with weekly reports)
+            normalized_author = normalize_contributor_name(
+                author_name, author_email, name_mapping, email_mapping
+            )
+            
+            metrics['contributors'][normalized_author] += 1
             
             # Track daily commits
             commit_date = datetime.fromisoformat(commit['created_at'].replace('Z', '+00:00')).date()
@@ -627,45 +790,73 @@ def analyze_project(project: Dict, gitlab_url: str, gitlab_token: str, days: int
         last_commit_date = datetime.fromisoformat(commits[0]['created_at'].replace('Z', '+00:00'))
         metrics['days_since_last_commit'] = (end_date - last_commit_date).days
     
-    # Get merge requests
+    # Get merge requests with consistent API parameters (aligned with weekly reports)
     all_mrs = simple_gitlab_request(
         gitlab_url, gitlab_token,
         f"projects/{project_id}/merge_requests",
-        {"scope": "all"}
+        {
+            "created_after": start_date.isoformat(),
+            "created_before": end_date.isoformat(),
+            "scope": "all"
+        }
     )
     
-    # Filter MRs for the time period and count open MRs
-    for mr in all_mrs:
-        created_at = datetime.fromisoformat(mr['created_at'].replace('Z', '+00:00'))
-        
-        if mr['state'] == 'opened':
-            metrics['open_mrs'] += 1
-        
-        if start_date <= created_at <= end_date:
-            metrics['mrs_created'] += 1
-            if mr['state'] == 'merged':
-                metrics['mrs_merged'] += 1
-            elif mr['state'] == 'closed':
-                metrics['mrs_closed'] += 1
+    # Get all MRs to count open ones (need separate call for current state)
+    all_current_mrs = simple_gitlab_request(
+        gitlab_url, gitlab_token,
+        f"projects/{project_id}/merge_requests",
+        {"state": "opened"}
+    )
+    metrics['open_mrs'] = len(all_current_mrs) if all_current_mrs else 0
     
-    # Get issues
+    # Process MRs with client-side date filtering for accuracy
+    for mr in all_mrs:
+        try:
+            created_at = datetime.fromisoformat(mr['created_at'].replace('Z', '+00:00'))
+            
+            # Client-side date filtering (aligned with weekly reports)
+            if start_date <= created_at <= end_date:
+                metrics['mrs_created'] += 1
+                if mr['state'] == 'merged':
+                    metrics['mrs_merged'] += 1
+                elif mr['state'] == 'closed':
+                    metrics['mrs_closed'] += 1
+        except (ValueError, KeyError) as e:
+            safe_print(f"[WARNING] Failed to parse MR date in project {project_name}: {e}")
+            continue
+    
+    # Get issues with consistent API parameters (aligned with weekly reports)
     all_issues = simple_gitlab_request(
         gitlab_url, gitlab_token,
         f"projects/{project_id}/issues",
-        {"scope": "all"}
+        {
+            "created_after": start_date.isoformat(),
+            "created_before": end_date.isoformat(),
+            "scope": "all"
+        }
     )
     
-    # Count open issues and filter for time period
+    # Get all current open issues (need separate call for current state)
+    all_current_issues = simple_gitlab_request(
+        gitlab_url, gitlab_token,
+        f"projects/{project_id}/issues",
+        {"state": "opened"}
+    )
+    metrics['open_issues'] = len(all_current_issues) if all_current_issues else 0
+    
+    # Process issues with client-side date filtering for accuracy
     for issue in all_issues:
-        created_at = datetime.fromisoformat(issue['created_at'].replace('Z', '+00:00'))
-        
-        if issue['state'] == 'opened':
-            metrics['open_issues'] += 1
-        
-        if start_date <= created_at <= end_date:
-            metrics['issues_created'] += 1
-            if issue['state'] == 'closed':
-                metrics['issues_closed'] += 1
+        try:
+            created_at = datetime.fromisoformat(issue['created_at'].replace('Z', '+00:00'))
+            
+            # Client-side date filtering (aligned with weekly reports)
+            if start_date <= created_at <= end_date:
+                metrics['issues_created'] += 1
+                if issue['state'] == 'closed':
+                    metrics['issues_closed'] += 1
+        except (ValueError, KeyError) as e:
+            safe_print(f"[WARNING] Failed to parse issue date in project {project_name}: {e}")
+            continue
     
     # Enhanced Branch Analysis
     if enhanced_services_available and branch_service:
@@ -1200,6 +1391,9 @@ def generate_shadcn_dashboard(report_data: Dict[str, Any], team_name: str = "Dev
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Executive Dashboard - {team_name}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
     {generate_shadcn_styles()}
     </style>
@@ -1805,27 +1999,31 @@ def generate_enhanced_project_cards(projects: List[Dict]) -> str:
 def generate_shadcn_styles() -> str:
     """Generate shadcn/ui-inspired CSS styles."""
     return """
-        /* CSS Variables */
+        /* Modern Design System Variables */
         :root {
             --background: 0 0% 100%;
-            --foreground: 222.2 84% 4.9%;
+            --foreground: 240 10% 3.9%;
             --card: 0 0% 100%;
-            --card-foreground: 222.2 84% 4.9%;
+            --card-foreground: 240 10% 3.9%;
             --popover: 0 0% 100%;
-            --popover-foreground: 222.2 84% 4.9%;
-            --primary: 222.2 47.4% 11.2%;
-            --primary-foreground: 210 40% 98%;
-            --secondary: 210 40% 96.1%;
-            --secondary-foreground: 222.2 47.4% 11.2%;
-            --muted: 210 40% 96.1%;
-            --muted-foreground: 215.4 16.3% 46.9%;
-            --accent: 210 40% 96.1%;
-            --accent-foreground: 222.2 47.4% 11.2%;
-            --destructive: 0 84.2% 60.2%;
-            --destructive-foreground: 210 40% 98%;
-            --border: 214.3 31.8% 91.4%;
-            --input: 214.3 31.8% 91.4%;
-            --ring: 222.2 84% 4.9%;
+            --popover-foreground: 240 10% 3.9%;
+            --primary: 240 5.9% 10%;
+            --primary-foreground: 0 0% 98%;
+            --secondary: 240 4.8% 95.9%;
+            --secondary-foreground: 240 5.9% 10%;
+            --muted: 240 4.8% 95.9%;
+            --muted-foreground: 240 3.8% 46.1%;
+            --accent: 240 4.8% 95.9%;
+            --accent-foreground: 240 5.9% 10%;
+            --destructive: 0 72.2% 50.6%;
+            --destructive-foreground: 0 0% 98%;
+            --success: 142.1 76.2% 36.3%;
+            --success-foreground: 355.7 100% 97.3%;
+            --warning: 32.1 94.6% 43.7%;
+            --warning-foreground: 355.7 100% 97.3%;
+            --border: 240 5.9% 90%;
+            --input: 240 5.9% 90%;
+            --ring: 240 10% 3.9%;
             --radius: 0.5rem;
         }
 
@@ -1837,11 +2035,11 @@ def generate_shadcn_styles() -> str:
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             font-size: 14px;
             line-height: 1.5;
             color: hsl(var(--foreground));
-            background-color: hsl(var(--background));
+            background-color: hsl(var(--muted));
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
@@ -1975,11 +2173,11 @@ def generate_shadcn_styles() -> str:
         }
 
         .kpi-change.positive {
-            color: #10b981;
+            color: hsl(var(--success));
         }
 
         .kpi-change.negative {
-            color: #ef4444;
+            color: hsl(var(--destructive));
         }
 
         .kpi-change.neutral {
@@ -2112,31 +2310,52 @@ def generate_shadcn_styles() -> str:
         }
 
         .badge-active {
-            background-color: #10b981;
-            color: white;
+            background-color: hsl(var(--success));
+            color: hsl(var(--success-foreground));
         }
 
         .badge-maintenance {
-            background-color: #f59e0b;
-            color: white;
+            background-color: hsl(var(--warning));
+            color: hsl(var(--warning-foreground));
         }
 
         .badge-inactive {
-            background-color: #6b7280;
-            color: white;
+            background-color: hsl(var(--muted-foreground));
+            color: hsl(var(--background));
         }
 
         .badge-grade {
             background-color: hsl(var(--secondary));
             color: hsl(var(--secondary-foreground));
             font-weight: 700;
+            border: 1px solid hsl(var(--border));
         }
 
-        .badge-grade-a-plus { color: #10b981; }
-        .badge-grade-a { color: #22c55e; }
-        .badge-grade-b { color: #3b82f6; }
-        .badge-grade-c { color: #f59e0b; }
-        .badge-grade-d { color: #ef4444; }
+        .badge-grade-a-plus { 
+            background-color: hsl(var(--success) / 0.1);
+            color: hsl(var(--success)); 
+            border-color: hsl(var(--success) / 0.3);
+        }
+        .badge-grade-a { 
+            background-color: hsl(var(--success) / 0.1);
+            color: hsl(var(--success)); 
+            border-color: hsl(var(--success) / 0.3);
+        }
+        .badge-grade-b { 
+            background-color: hsl(var(--primary) / 0.1);
+            color: hsl(var(--primary)); 
+            border-color: hsl(var(--primary) / 0.3);
+        }
+        .badge-grade-c { 
+            background-color: hsl(var(--warning) / 0.1);
+            color: hsl(var(--warning)); 
+            border-color: hsl(var(--warning) / 0.3);
+        }
+        .badge-grade-d { 
+            background-color: hsl(var(--destructive) / 0.1);
+            color: hsl(var(--destructive)); 
+            border-color: hsl(var(--destructive) / 0.3);
+        }
 
         .project-description {
             color: hsl(var(--muted-foreground));
@@ -2421,18 +2640,18 @@ def generate_shadcn_styles() -> str:
         }
 
         .recommendation-high .recommendation-priority {
-            background: hsl(0 85% 60%);
-            color: white;
+            background: hsl(var(--destructive));
+            color: hsl(var(--destructive-foreground));
         }
 
         .recommendation-medium .recommendation-priority {
-            background: hsl(38 95% 60%);
-            color: white;
+            background: hsl(var(--warning));
+            color: hsl(var(--warning-foreground));
         }
 
         .recommendation-low .recommendation-priority {
-            background: hsl(200 85% 60%);
-            color: white;
+            background: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
         }
 
         .recommendation-info .recommendation-priority {
@@ -2441,8 +2660,8 @@ def generate_shadcn_styles() -> str:
         }
 
         .recommendation-success .recommendation-priority {
-            background: hsl(120 85% 40%);
-            color: white;
+            background: hsl(var(--success));
+            color: hsl(var(--success-foreground));
         }
 
         .recommendation-message,
