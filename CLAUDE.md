@@ -14,16 +14,13 @@ python glt_menu.py
 # Options available:
 # 1. 🔄 Rename Branches - Rename branches across multiple projects
 # 2. 📊 Generate Executive Dashboard - Create HTML dashboards with analytics
-# 3. 📈 Generate Weekly Report - Team productivity reports with email delivery
-# 4. 📝 Create Issues - Interactive or template-based issue creation
-# 5. 🔍 Analyze Projects - Deep project and group analytics
-# 6. 📤 Export Analytics - Export data to Excel and other formats
-# 7. 📧 Send Report Email - Email HTML reports to teams
-# 8. 📋 Sync Issues from Files - Create issues from markdown files
-# 9. 🔗 Generate Code Changes Report - Track code activity across projects
-# 10. 📊 Combined Report Generation - Generate and send reports automatically
-# 11. 🛠️ Project Health Analysis - Automated health scoring with recommendations
-# 12. ❓ Help - Show detailed help for all tools
+# 3. 📅 Generate Weekly Report - Team productivity reports with email delivery
+# 4. 📧 Send Report Email - Email HTML reports to teams
+# 5. 🎯 Create Issues - Interactive or template-based issue creation
+# 6. 📈 Analyze Projects - Deep project and group analytics
+# 7. 💾 Export Analytics - Export data to Excel and other formats
+# 8. 📋 Generate Code Changes Report - Track code activity across projects
+# 9. 👋 Exit - Exit the program
 ```
 
 ### Menu Features
@@ -597,15 +594,3 @@ pip install .
 # - gitlab-analyze
 ```
 
-### Windows PowerShell Scripts
-For Windows users, PowerShell scripts are available:
-```powershell
-# Interactive issue creation with prompts
-.\interactive_create_issues.ps1
-
-# Simplified issue creation
-.\simple_create_issues.ps1
-
-# Example scripts for testing
-.\example_create_issues.ps1
-```
