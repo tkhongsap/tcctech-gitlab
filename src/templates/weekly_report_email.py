@@ -57,6 +57,9 @@ class WeeklyReportEmailTemplate:
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weekly Productivity Report - {team_name}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         {self._get_email_styles()}
     </style>
@@ -65,7 +68,7 @@ class WeeklyReportEmailTemplate:
     <div class="email-container">
         {self._generate_header(team_name, metadata)}
         {self._generate_executive_summary_section(executive_summary)}
-        {self._generate_team_activity_section(team_activity)}
+        {self._generate_team_activity_section(team_activity, detailed_tables)}
         {detailed_tables_html}
         {self._generate_project_health_section(project_breakdown)}
         {self._generate_individual_highlights_section(individual_metrics)}
@@ -80,8 +83,33 @@ class WeeklyReportEmailTemplate:
         return html_content.strip()
     
     def _get_email_styles(self) -> str:
-        """Get CSS styles optimized for email clients."""
+        """Get modern shadcn/ui-inspired CSS styles optimized for email clients."""
         return """
+        /* Modern Design System Variables */
+        :root {
+            --background: #ffffff;
+            --foreground: #0f172a;
+            --card: #ffffff;
+            --card-foreground: #0f172a;
+            --primary: #0f172a;
+            --primary-foreground: #f8fafc;
+            --secondary: #f1f5f9;
+            --secondary-foreground: #0f172a;
+            --muted: #f8fafc;
+            --muted-foreground: #64748b;
+            --accent: #f1f5f9;
+            --accent-foreground: #0f172a;
+            --border: #e2e8f0;
+            --input: #e2e8f0;
+            --ring: #0f172a;
+            --success: #22c55e;
+            --success-foreground: #ffffff;
+            --warning: #f59e0b;
+            --warning-foreground: #ffffff;
+            --destructive: #ef4444;
+            --destructive-foreground: #ffffff;
+        }
+        
         /* Reset and base styles */
         * {
             margin: 0;
@@ -90,48 +118,56 @@ class WeeklyReportEmailTemplate:
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             line-height: 1.6;
-            color: #333333;
-            background-color: #f4f6f9;
+            color: var(--foreground);
+            background-color: #f8fafc;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
         
         .email-container {
             max-width: 800px;
             margin: 0 auto;
-            background-color: #ffffff;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background-color: var(--background);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
         }
         
         /* Header */
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
+            background: linear-gradient(135deg, var(--primary) 0%, #334155 100%);
+            color: var(--primary-foreground);
+            padding: 40px 32px;
             text-align: center;
+            border-bottom: 1px solid var(--border);
         }
         
         .header h1 {
-            font-size: 28px;
-            margin-bottom: 8px;
-            font-weight: 600;
+            font-size: 32px;
+            margin-bottom: 12px;
+            font-weight: 700;
+            letter-spacing: -0.025em;
         }
         
         .header .period {
-            font-size: 16px;
+            font-size: 18px;
             opacity: 0.9;
-            margin-bottom: 4px;
+            margin-bottom: 8px;
+            font-weight: 500;
         }
         
         .header .generated {
             font-size: 14px;
-            opacity: 0.8;
+            opacity: 0.75;
+            font-weight: 400;
         }
         
         /* Sections */
         .section {
-            padding: 25px 30px;
-            border-bottom: 1px solid #e9ecef;
+            padding: 32px;
+            border-bottom: 1px solid var(--border);
         }
         
         .section:last-child {
@@ -139,260 +175,307 @@ class WeeklyReportEmailTemplate:
         }
         
         .section-title {
-            font-size: 20px;
-            color: #2c3e50;
-            margin-bottom: 15px;
-            font-weight: 600;
+            font-size: 24px;
+            color: var(--foreground);
+            margin-bottom: 24px;
+            font-weight: 700;
             display: flex;
             align-items: center;
+            letter-spacing: -0.025em;
         }
         
         .section-title .icon {
-            margin-right: 8px;
-            font-size: 22px;
+            margin-right: 12px;
+            font-size: 24px;
         }
         
         /* Metrics grid */
         .metrics-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin: 15px 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 20px;
+            margin: 24px 0;
         }
         
         .metric-card {
-            flex: 1;
-            min-width: 140px;
-            background: #f8f9fa;
-            padding: 15px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 24px 20px;
             border-radius: 8px;
             text-align: center;
-            border-left: 4px solid #3498db;
+            transition: box-shadow 0.2s ease-in-out;
+        }
+        
+        .metric-card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
         
         .metric-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 4px;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--foreground);
+            margin-bottom: 8px;
+            letter-spacing: -0.025em;
         }
         
         .metric-label {
-            font-size: 12px;
-            color: #6c757d;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            font-size: 14px;
+            color: var(--muted-foreground);
+            font-weight: 500;
+            text-transform: none;
+            letter-spacing: 0;
         }
         
         .metric-change {
-            font-size: 11px;
-            margin-top: 4px;
+            font-size: 12px;
+            margin-top: 8px;
+            font-weight: 500;
         }
         
-        .change-positive { color: #28a745; }
-        .change-negative { color: #dc3545; }
-        .change-neutral { color: #6c757d; }
+        .change-positive { color: var(--success); }
+        .change-negative { color: var(--destructive); }
+        .change-neutral { color: var(--muted-foreground); }
         
         /* Project health */
         .project-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin: 15px 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
         }
         
         .project-card {
-            flex: 1;
-            min-width: 200px;
-            background: white;
-            border: 1px solid #dee2e6;
-            border-radius: 6px;
-            padding: 12px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            transition: box-shadow 0.2s ease-in-out;
+        }
+        
+        .project-card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
         
         .project-name {
             font-weight: 600;
-            color: #495057;
-            margin-bottom: 6px;
-            font-size: 14px;
+            color: var(--foreground);
+            margin-bottom: 12px;
+            font-size: 16px;
         }
         
         .project-health {
             display: flex;
             align-items: center;
-            gap: 6px;
-            margin-bottom: 4px;
+            gap: 8px;
+            margin-bottom: 8px;
         }
         
         .health-badge {
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
             font-weight: 600;
-            text-transform: uppercase;
+            text-transform: capitalize;
         }
         
-        .health-healthy { background: #d4edda; color: #155724; }
-        .health-warning { background: #fff3cd; color: #856404; }
-        .health-critical { background: #f8d7da; color: #721c24; }
+        .health-healthy { 
+            background: rgba(34, 197, 94, 0.1); 
+            color: var(--success); 
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+        .health-warning { 
+            background: rgba(245, 158, 11, 0.1); 
+            color: var(--warning); 
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+        .health-critical { 
+            background: rgba(239, 68, 68, 0.1); 
+            color: var(--destructive); 
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
         
         .project-metrics {
-            font-size: 12px;
-            color: #6c757d;
+            font-size: 14px;
+            color: var(--muted-foreground);
+            font-weight: 500;
         }
         
         /* Contributors */
         .contributors-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin: 15px 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
         }
         
         .contributor-card {
-            background: white;
-            border: 1px solid #dee2e6;
-            border-radius: 6px;
-            padding: 10px;
-            min-width: 140px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            transition: box-shadow 0.2s ease-in-out;
+        }
+        
+        .contributor-card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
         
         .contributor-name {
             font-weight: 600;
-            color: #495057;
-            margin-bottom: 4px;
-            font-size: 13px;
+            color: var(--foreground);
+            margin-bottom: 8px;
+            font-size: 15px;
         }
         
         .contributor-stats {
-            font-size: 11px;
-            color: #6c757d;
+            font-size: 13px;
+            color: var(--muted-foreground);
+            font-weight: 500;
         }
         
         /* Insights */
         .insights-list {
             list-style: none;
-            margin: 15px 0;
+            margin: 24px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
         
         .insights-list li {
-            background: #f8f9fa;
-            padding: 10px 15px;
-            margin-bottom: 8px;
-            border-radius: 6px;
-            border-left: 3px solid #17a2b8;
+            background: var(--muted);
+            padding: 16px 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-foreground);
             font-size: 14px;
+            font-weight: 500;
         }
         
         .priority-high {
-            border-left-color: #dc3545;
-            background: #f8d7da;
+            border-left-color: var(--destructive);
+            background: rgba(239, 68, 68, 0.05);
+            color: var(--destructive);
         }
         
         .priority-medium {
-            border-left-color: #ffc107;
-            background: #fff3cd;
+            border-left-color: var(--warning);
+            background: rgba(245, 158, 11, 0.05);
+            color: var(--warning);
         }
         
         .priority-low {
-            border-left-color: #28a745;
-            background: #d4edda;
+            border-left-color: var(--success);
+            background: rgba(34, 197, 94, 0.05);
+            color: var(--success);
         }
         
         /* Charts */
         .chart-container {
             text-align: center;
-            margin: 20px 0;
+            margin: 24px 0;
         }
         
         .chart-image {
             max-width: 100%;
             height: auto;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
         
         /* Activity Tables */
         .activity-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 15px 0;
-            font-size: 13px;
-            background: #ffffff;
-            border-radius: 8px;
+            margin: 24px 0;
+            font-size: 14px;
+            background: var(--card);
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
         }
         
         .activity-table th {
-            background: #f8f9fa;
-            color: #495057;
+            background: var(--muted);
+            color: var(--foreground);
             font-weight: 600;
-            padding: 12px 8px;
+            padding: 16px 12px;
             text-align: left;
-            border-bottom: 2px solid #dee2e6;
-            font-size: 12px;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+            letter-spacing: 0.025em;
         }
         
         .activity-table td {
-            padding: 10px 8px;
-            border-bottom: 1px solid #e9ecef;
+            padding: 14px 12px;
+            border-bottom: 1px solid var(--border);
             vertical-align: middle;
+            color: var(--foreground);
         }
         
         .activity-table tr:hover {
-            background-color: #f8f9fa;
+            background-color: var(--muted);
+        }
+        
+        .activity-table tr:last-child td {
+            border-bottom: none;
         }
         
         .activity-table .status-active {
-            color: #28a745;
+            color: var(--success);
             font-weight: 600;
         }
         
         .activity-table .status-inactive {
-            color: #dc3545;
+            color: var(--destructive);
             font-weight: 600;
         }
         
         .activity-table .lines-positive {
-            color: #28a745;
+            color: var(--success);
+            font-weight: 600;
         }
         
         .activity-table .lines-negative {
-            color: #dc3545;
+            color: var(--destructive);
+            font-weight: 600;
         }
         
         .inactive-summary {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 10px 0;
-            border-left: 4px solid #dc3545;
+            background: rgba(239, 68, 68, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-left: 4px solid var(--destructive);
         }
         
         .inactive-group {
-            margin-bottom: 12px;
+            margin-bottom: 16px;
         }
         
         .inactive-group h5 {
-            color: #dc3545;
-            margin: 0 0 5px 0;
-            font-size: 14px;
+            color: var(--destructive);
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            font-weight: 600;
         }
         
         .inactive-projects {
-            color: #6c757d;
-            font-size: 12px;
-            line-height: 1.4;
+            color: var(--muted-foreground);
+            font-size: 14px;
+            line-height: 1.5;
+            font-weight: 500;
         }
         
         /* Footer */
         .footer {
-            background: #f8f9fa;
-            padding: 20px 30px;
+            background: var(--muted);
+            padding: 32px;
             text-align: center;
-            font-size: 12px;
-            color: #6c757d;
+            font-size: 14px;
+            color: var(--muted-foreground);
+            border-top: 1px solid var(--border);
         }
         
         /* Responsive */
@@ -400,38 +483,52 @@ class WeeklyReportEmailTemplate:
             .email-container {
                 margin: 0;
                 box-shadow: none;
+                border-radius: 0;
             }
             
             .header, .section {
-                padding: 20px;
+                padding: 24px 20px;
+            }
+            
+            .section-title {
+                font-size: 20px;
             }
             
             .metrics-grid {
-                flex-direction: column;
-            }
-            
-            .metric-card {
-                min-width: auto;
+                grid-template-columns: 1fr;
+                gap: 16px;
             }
             
             .project-grid,
             .contributors-list {
-                flex-direction: column;
+                grid-template-columns: 1fr;
             }
             
             .activity-table {
-                font-size: 11px;
+                font-size: 12px;
             }
             
             .activity-table th,
             .activity-table td {
-                padding: 8px 4px;
+                padding: 12px 8px;
+            }
+            
+            .metric-value {
+                font-size: 28px;
+            }
+            
+            .header h1 {
+                font-size: 28px;
+            }
+            
+            .header .period {
+                font-size: 16px;
             }
         }
         """
     
     def _generate_header(self, team_name: str, metadata: Dict) -> str:
-        """Generate email header section."""
+        """Generate modern email header section."""
         period_start = datetime.fromisoformat(metadata.get('period_start', '')).strftime('%B %d')
         period_end = datetime.fromisoformat(metadata.get('period_end', '')).strftime('%B %d, %Y')
         generated_at = datetime.fromisoformat(metadata.get('generated_at', '')).strftime('%Y-%m-%d %H:%M')
@@ -508,11 +605,18 @@ class WeeklyReportEmailTemplate:
         </div>
         """
     
-    def _generate_team_activity_section(self, activity: Dict) -> str:
-        """Generate team activity metrics section."""
+    def _generate_team_activity_section(self, activity: Dict, detailed_tables: Dict = None) -> str:
+        """Generate team activity metrics section with aggregated data from detailed tables."""
         commits = activity.get('commits', {})
         merge_requests = activity.get('merge_requests', {})
         issues = activity.get('issues', {})
+        
+        # Use aggregated contributor data from detailed tables if available
+        aggregated_contributors = None
+        if detailed_tables and 'project_contributor_activity' in detailed_tables:
+            aggregated_contributors = self._aggregate_contributors_from_tables(
+                detailed_tables['project_contributor_activity']
+            )
         
         return f"""
         <div class="section">
@@ -546,7 +650,7 @@ class WeeklyReportEmailTemplate:
             <div style="margin-top: 15px;">
                 <h4 style="color: #495057; margin-bottom: 8px;">Top Contributors This Week</h4>
                 <div style="font-size: 13px;">
-                    {self._format_top_contributors(commits.get('by_author', {}))}
+                    {self._format_top_contributors_from_tables(aggregated_contributors) if aggregated_contributors else self._format_top_contributors(commits.get('by_author', {}))}
                 </div>
             </div>
         </div>
@@ -789,7 +893,7 @@ class WeeklyReportEmailTemplate:
         """
     
     def _format_top_contributors(self, by_author: Dict) -> str:
-        """Format top contributors list."""
+        """Format top contributors list from team activity data."""
         if not by_author:
             return "<em>No activity this week</em>"
         
@@ -799,6 +903,54 @@ class WeeklyReportEmailTemplate:
             result += f"<div style='margin-bottom: 3px;'><strong>{author}</strong>: {commits} commits</div>"
         
         return result
+    
+    def _format_top_contributors_from_tables(self, aggregated_contributors: Dict) -> str:
+        """Format top contributors list from aggregated detailed table data."""
+        if not aggregated_contributors:
+            return "<em>No activity this week</em>"
+        
+        # Sort by total commits
+        sorted_contributors = sorted(
+            aggregated_contributors.items(), 
+            key=lambda x: x[1]['commits'], 
+            reverse=True
+        )[:5]
+        
+        result = ""
+        for contributor, data in sorted_contributors:
+            commits = data['commits']
+            result += f"<div style='margin-bottom: 3px;'><strong>{contributor}</strong>: {commits} commits</div>"
+        
+        return result
+    
+    def _aggregate_contributors_from_tables(self, contrib_data: List[Dict]) -> Dict[str, Dict]:
+        """Aggregate contributor data from detailed tables by contributor name."""
+        aggregated = {}
+        
+        for item in contrib_data:
+            contributor = item['contributor']
+            if contributor == '-':
+                continue
+                
+            if contributor not in aggregated:
+                aggregated[contributor] = {
+                    'commits': 0,
+                    'mrs': 0,
+                    'net_lines': 0,
+                    'issues_opened': 0,
+                    'issues_closed': 0,
+                    'total_activity': 0
+                }
+            
+            # Sum up all activities for this contributor
+            aggregated[contributor]['commits'] += item['commits']
+            aggregated[contributor]['mrs'] += item['mrs']
+            aggregated[contributor]['net_lines'] += item['net_lines']
+            aggregated[contributor]['issues_opened'] += item['issues_opened']
+            aggregated[contributor]['issues_closed'] += item['issues_closed']
+            aggregated[contributor]['total_activity'] += item['total_activity']
+        
+        return aggregated
     
     def _format_project_card(self, project: Dict) -> str:
         """Format individual project card."""

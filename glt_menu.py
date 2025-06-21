@@ -51,6 +51,21 @@ class Colors:
                     setattr(cls, attr, '')
 
 
+class BoxChars:
+    """Unicode box-drawing characters for professional borders."""
+    TOP_LEFT = '╭'
+    TOP_RIGHT = '╮'
+    BOTTOM_LEFT = '╰'
+    BOTTOM_RIGHT = '╯'
+    HORIZONTAL = '─'
+    VERTICAL = '│'
+    CROSS = '┼'
+    T_DOWN = '┬'
+    T_UP = '┴'
+    T_RIGHT = '├'
+    T_LEFT = '┤'
+
+
 class GitLabMenu:
     """Simple menu interface for GitLab tools."""
     
@@ -58,6 +73,7 @@ class GitLabMenu:
         """Initialize the menu system."""
         self.config = Config()
         self.dry_run = False
+        self.box_width = 70  # Default box width
         
         # Initialize colors
         Colors.disable_if_no_color()
@@ -68,15 +84,57 @@ class GitLabMenu:
             ("📊", "Generate Executive Dashboard", "Create HTML dashboards with analytics and metrics", self.generate_dashboard),
             ("📅", "Generate Weekly Report", "Create team productivity reports for weekly syncs", self.weekly_report),
             ("📧", "Send Report Email", "Email HTML reports to team members", self.send_email),
-            ("📝", "Sync Issues from Markdown", "Create GitLab issues from markdown files in issues/ folder", self.sync_issues),
             ("🎯", "Create Issues", "Create GitLab issues interactively or from templates", self.create_issues),
             ("📈", "Analyze Projects", "Deep analysis of projects and groups with insights", self.analyze_projects),
             ("💾", "Export Analytics", "Export project data to Excel or JSON formats", self.export_analytics),
             ("📋", "Generate Code Changes Report", "Analyze code changes with lines added/removed metrics", self.code_changes_report),
-            ("✨ ", "Generate and Send Report", "Generate and email code changes report in one step", self.generate_and_send),
-            ("🔧", "Toggle Dry-Run Mode", "Enable/disable dry-run mode for safe testing", self.toggle_dry_run),
             ("👋", "Exit", "Exit the program", self.exit_program)
         ]
+    
+    def draw_box(self, lines: List[str], width: Optional[int] = None, color: str = Colors.GRAY) -> None:
+        """Draw a box around the given lines of text."""
+        if width is None:
+            width = self.box_width
+        
+        # Print top border
+        print(f"{color}{BoxChars.TOP_LEFT}{BoxChars.HORIZONTAL * (width - 2)}{BoxChars.TOP_RIGHT}{Colors.RESET}")
+        
+        # Print content lines
+        for line in lines:
+            # Strip ANSI codes to calculate actual length
+            import re
+            ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+            clean_line = ansi_escape.sub('', line)
+            
+            padding = width - len(clean_line) - 4  # 4 for "│ " and " │"
+            print(f"{color}{BoxChars.VERTICAL}{Colors.RESET} {line}{' ' * padding} {color}{BoxChars.VERTICAL}{Colors.RESET}")
+        
+        # Print bottom border
+        print(f"{color}{BoxChars.BOTTOM_LEFT}{BoxChars.HORIZONTAL * (width - 2)}{BoxChars.BOTTOM_RIGHT}{Colors.RESET}")
+    
+    def center_text(self, text: str, width: int) -> str:
+        """Center text within the given width."""
+        import re
+        ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+        clean_text = ansi_escape.sub('', text)
+        padding = (width - len(clean_text)) // 2
+        return f"{' ' * padding}{text}"
+    
+    def pad_text(self, text: str, width: int, align: str = 'left') -> str:
+        """Pad text to the given width."""
+        import re
+        ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+        clean_text = ansi_escape.sub('', text)
+        padding_needed = width - len(clean_text)
+        
+        if align == 'center':
+            left_pad = padding_needed // 2
+            right_pad = padding_needed - left_pad
+            return f"{' ' * left_pad}{text}{' ' * right_pad}"
+        elif align == 'right':
+            return f"{' ' * padding_needed}{text}"
+        else:  # left
+            return f"{text}{' ' * padding_needed}"
     
     def clear_screen(self):
         """Clear the terminal screen."""
@@ -85,34 +143,65 @@ class GitLabMenu:
     
     def show_header(self):
         """Display the menu header."""
-        border = "═" * 64
-        print(f"\n{Colors.CYAN}{border}{Colors.RESET}")
-        print(f"{Colors.BOLD}{Colors.WHITE} GitLab Tools Menu Interface{Colors.RESET}")
-        print(f"{Colors.CYAN}{border}{Colors.RESET}")
+        import os
+        cwd = os.getcwd()
+        
+        # Welcome box content
+        lines = [
+            f"{Colors.BOLD}{Colors.WHITE}✻ Welcome to GitLab Tools!{Colors.RESET}",
+            "",
+            f"{Colors.GRAY}Type a number to select an option{Colors.RESET}",
+            "",
+            f"{Colors.DIM}{Colors.GRAY}cwd: {cwd}{Colors.RESET}"
+        ]
+        
+        print()  # Add spacing
+        self.draw_box(lines, color=Colors.GRAY)
+        
+        # Show dry-run warning if enabled
         if self.dry_run:
-            print(f"{Colors.YELLOW}{Colors.BOLD}⚠️  DRY-RUN MODE ENABLED{Colors.RESET} {Colors.GRAY}- No changes will be made{Colors.RESET}")
-            print(f"{Colors.CYAN}{border}{Colors.RESET}")
+            print()
+            warning_lines = [
+                f"{Colors.YELLOW}{Colors.BOLD}⚠️  DRY-RUN MODE ENABLED{Colors.RESET}",
+                f"{Colors.GRAY}No changes will be made to your GitLab instance{Colors.RESET}"
+            ]
+            self.draw_box(warning_lines, color=Colors.YELLOW)
     
     def show_menu(self):
         """Display the menu options."""
-        print(f"\n{Colors.WHITE}Please select an option:{Colors.RESET}\n")
+        print()
+        
+        # Build menu lines
+        menu_lines = []
+        menu_lines.append(f"{Colors.BOLD}{Colors.WHITE}Available Options:{Colors.RESET}")
+        menu_lines.append("")
+        
         for idx, (emoji, name, desc, _) in enumerate(self.menu_options, 1):
-            print(f"  {Colors.BLUE}{Colors.BOLD}{idx:2d}.{Colors.RESET} {emoji} {Colors.WHITE}{name}{Colors.RESET}")
-            print(f"      {Colors.GRAY}→ {desc}{Colors.RESET}\n")
-        print(f"{Colors.CYAN}{'─' * 64}{Colors.RESET}")
+            menu_lines.append(f"  {Colors.BLUE}{Colors.BOLD}{idx:2d}.{Colors.RESET} {emoji} {Colors.WHITE}{name}{Colors.RESET}")
+            menu_lines.append(f"      {Colors.DIM}{Colors.GRAY}{desc}{Colors.RESET}")
+            if idx < len(self.menu_options):
+                menu_lines.append("")
+        
+        self.draw_box(menu_lines, color=Colors.DIM + Colors.GRAY)
+        
+        # Add tip section
+        print()
+        print(f"{Colors.DIM}{Colors.GRAY}※ Tip: Most operations support --dry-run flag for safe testing without making actual changes{Colors.RESET}")
     
     def get_choice(self) -> Optional[int]:
         """Get user's menu choice."""
         try:
-            choice = input(f"\n{Colors.CYAN}Enter your choice (1-{len(self.menu_options)}): {Colors.RESET}")
+            print()
+            prompt = f"{Colors.CYAN}➤ Enter your choice (1-{len(self.menu_options)}): {Colors.RESET}"
+            choice = input(prompt)
             choice_num = int(choice)
             if 1 <= choice_num <= len(self.menu_options):
                 return choice_num
             else:
-                print(f"{Colors.RED}❌ Invalid choice. Please enter a number between 1 and {len(self.menu_options)}.{Colors.RESET}")
+                print(f"\n{Colors.RED}❌ Invalid choice. Please enter a number between 1 and {len(self.menu_options)}.{Colors.RESET}")
                 return None
         except ValueError:
-            print(f"{Colors.RED}❌ Invalid input. Please enter a number.{Colors.RESET}")
+            print(f"\n{Colors.RED}❌ Invalid input. Please enter a number.{Colors.RESET}")
             return None
         except KeyboardInterrupt:
             print(f"\n\n{Colors.YELLOW}👋 Goodbye!{Colors.RESET}")
@@ -125,8 +214,14 @@ class GitLabMenu:
         if self.dry_run and '--dry-run' not in args:
             cmd.append('--dry-run')
         
-        print(f"\n{Colors.CYAN}🔧 Executing:{Colors.RESET} {Colors.GRAY}{' '.join(cmd)}{Colors.RESET}")
-        print(f"{Colors.CYAN}{'─' * 64}{Colors.RESET}")
+        print()
+        execution_lines = [
+            f"{Colors.CYAN}🔧 Executing Command{Colors.RESET}",
+            "",
+            f"{Colors.GRAY}{' '.join(cmd)}{Colors.RESET}"
+        ]
+        self.draw_box(execution_lines, color=Colors.CYAN)
+        print()
         
         try:
             result = subprocess.run(cmd, check=False)
@@ -139,12 +234,13 @@ class GitLabMenu:
         except Exception as e:
             print(f"\n{Colors.RED}❌ Error running command: {e}{Colors.RESET}")
         
-        input(f"\n{Colors.GRAY}Press Enter to continue...{Colors.RESET}")
+        input(f"\n{Colors.DIM}{Colors.GRAY}Press Enter to continue...{Colors.RESET}")
     
     def get_input(self, prompt: str, required: bool = True) -> Optional[str]:
         """Get input from user with optional requirement."""
         try:
-            value = input(f"{Colors.CYAN}{prompt}{Colors.RESET}").strip()
+            formatted_prompt = f"{Colors.CYAN}➤ {prompt}{Colors.RESET}"
+            value = input(formatted_prompt).strip()
             if required and not value:
                 print(f"{Colors.RED}❌ This field is required.{Colors.RESET}")
                 return None
@@ -155,8 +251,14 @@ class GitLabMenu:
     
     def rename_branches(self):
         """Handle branch renaming."""
-        print(f"\n{Colors.BOLD}{Colors.WHITE}🔄 Rename Branches{Colors.RESET}")
-        print(f"{Colors.GRAY}{'─' * 40}{Colors.RESET}")
+        print()
+        header_lines = [
+            f"{Colors.BOLD}{Colors.WHITE}🔄 Rename Branches{Colors.RESET}",
+            "",
+            f"{Colors.GRAY}Rename branches across multiple projects in groups{Colors.RESET}"
+        ]
+        self.draw_box(header_lines)
+        print()
         
         groups = self.get_input("Enter group names (comma-separated, or press Enter for all): ", required=False)
         old_branch = self.get_input("Enter old branch name (default: trunk): ", required=False) or "trunk"
@@ -171,14 +273,27 @@ class GitLabMenu:
     
     def generate_dashboard(self):
         """Generate executive dashboard."""
-        print(f"\n{Colors.BOLD}{Colors.WHITE}📊 Generate Executive Dashboard{Colors.RESET}")
-        print(f"{Colors.GRAY}{'─' * 40}{Colors.RESET}")
-        print(f"\n{Colors.GRAY}Available Group IDs:{Colors.RESET}")
-        print(f"  {Colors.BLUE}1721{Colors.RESET} = AI-ML-Services")
-        print(f"  {Colors.BLUE}1267{Colors.RESET} = Research Repos")
-        print(f"  {Colors.BLUE}1269{Colors.RESET} = Internal Services")
+        print()
+        header_lines = [
+            f"{Colors.BOLD}{Colors.WHITE}📊 Generate Executive Dashboard{Colors.RESET}",
+            "",
+            f"{Colors.GRAY}Create HTML dashboards with analytics and metrics{Colors.RESET}"
+        ]
+        self.draw_box(header_lines)
+        print()
         
-        groups = self.get_input("\nEnter group IDs (comma-separated): ")
+        # Group IDs reference box
+        group_lines = [
+            f"{Colors.WHITE}Available Group IDs:{Colors.RESET}",
+            "",
+            f"  {Colors.BLUE}1721{Colors.RESET} = AI-ML-Services",
+            f"  {Colors.BLUE}1267{Colors.RESET} = Research Repos",
+            f"  {Colors.BLUE}1269{Colors.RESET} = Internal Services"
+        ]
+        self.draw_box(group_lines, color=Colors.DIM + Colors.GRAY)
+        print()
+        
+        groups = self.get_input("Enter group IDs (comma-separated): ")
         if not groups:
             return
         
@@ -194,14 +309,27 @@ class GitLabMenu:
     
     def weekly_report(self):
         """Generate weekly report."""
-        print(f"\n{Colors.BOLD}{Colors.WHITE}📅 Generate Weekly Report{Colors.RESET}")
-        print(f"{Colors.GRAY}{'─' * 40}{Colors.RESET}")
-        print(f"\n{Colors.GRAY}Available Group IDs:{Colors.RESET}")
-        print(f"  {Colors.BLUE}1721{Colors.RESET} = AI-ML-Services")
-        print(f"  {Colors.BLUE}1267{Colors.RESET} = Research Repos")
-        print(f"  {Colors.BLUE}1269{Colors.RESET} = Internal Services")
+        print()
+        header_lines = [
+            f"{Colors.BOLD}{Colors.WHITE}📅 Generate Weekly Report{Colors.RESET}",
+            "",
+            f"{Colors.GRAY}Create team productivity reports for weekly syncs{Colors.RESET}"
+        ]
+        self.draw_box(header_lines)
+        print()
         
-        groups = self.get_input("\nEnter group IDs (comma-separated): ")
+        # Group IDs reference box
+        group_lines = [
+            f"{Colors.WHITE}Available Group IDs:{Colors.RESET}",
+            "",
+            f"  {Colors.BLUE}1721{Colors.RESET} = AI-ML-Services",
+            f"  {Colors.BLUE}1267{Colors.RESET} = Research Repos",
+            f"  {Colors.BLUE}1269{Colors.RESET} = Internal Services"
+        ]
+        self.draw_box(group_lines, color=Colors.DIM + Colors.GRAY)
+        print()
+        
+        groups = self.get_input("Enter group IDs (comma-separated): ")
         if not groups:
             return
         
@@ -373,16 +501,16 @@ class GitLabMenu:
         
         self.run_script('scripts/generate_and_send_report.py', args)
     
-    def toggle_dry_run(self):
-        """Toggle dry-run mode."""
-        self.dry_run = not self.dry_run
-        status = f"{Colors.GREEN}enabled{Colors.RESET}" if self.dry_run else f"{Colors.RED}disabled{Colors.RESET}"
-        print(f"\n{Colors.BOLD}{Colors.WHITE}🔧 Dry-run mode {status}{Colors.RESET}")
-        input(f"\n{Colors.GRAY}Press Enter to continue...{Colors.RESET}")
     
     def exit_program(self):
         """Exit the program."""
-        print(f"\n{Colors.YELLOW}👋 Goodbye!{Colors.RESET}")
+        print()
+        goodbye_lines = [
+            f"{Colors.BOLD}{Colors.WHITE}👋 Thanks for using GitLab Tools!{Colors.RESET}",
+            "",
+            f"{Colors.GRAY}Have a great day!{Colors.RESET}"
+        ]
+        self.draw_box(goodbye_lines, color=Colors.YELLOW)
         sys.exit(0)
     
     def run(self):
