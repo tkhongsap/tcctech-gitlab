@@ -38,6 +38,7 @@ class BranchRenamer:
             'skipped': 0,
             'failed': 0
         }
+        self.group_stats = {}  # Track stats per group
         self.operations_log = []
     
     def rename_branch_in_project(
@@ -133,6 +134,14 @@ class BranchRenamer:
         """
         logger.info(f"Processing group: {group_name}")
         
+        # Initialize group stats
+        self.group_stats[group_name] = {
+            'total': 0,
+            'renamed': 0,
+            'skipped': 0,
+            'failed': 0
+        }
+        
         # Find group
         group = self.client.search_group_by_name(group_name)
         if not group:
@@ -177,6 +186,9 @@ class BranchRenamer:
             disable=not show_progress
         )
         
+        # Store current stats to track changes
+        stats_before = self.stats.copy()
+        
         for i, project in progress_tracker:
             self.stats['total'] += 1
             if not show_progress:
@@ -184,6 +196,12 @@ class BranchRenamer:
             
             if self.rename_branch_in_project(project, old_branch, new_branch):
                 success_count += 1
+        
+        # Calculate group-specific stats
+        self.group_stats[group_name]['total'] = self.stats['total'] - stats_before['total']
+        self.group_stats[group_name]['renamed'] = self.stats['renamed'] - stats_before['renamed']
+        self.group_stats[group_name]['skipped'] = self.stats['skipped'] - stats_before['skipped']
+        self.group_stats[group_name]['failed'] = self.stats['failed'] - stats_before['failed']
         
         return success_count > 0
     
@@ -200,6 +218,20 @@ class BranchRenamer:
         print(f"{Colors.GREEN}Successfully renamed: {self.stats['renamed']}{Colors.RESET}")
         print(f"{Colors.YELLOW}Skipped: {self.stats['skipped']}{Colors.RESET}")
         print(f"{Colors.RED}Failed: {self.stats['failed']}{Colors.RESET}")
+        
+        # Print group breakdown
+        if self.group_stats:
+            print(f"\n{Colors.BOLD}Group Breakdown:{Colors.RESET}")
+            print(f"{Colors.BOLD}{'-'*60}{Colors.RESET}")
+            
+            for group_name, group_stat in self.group_stats.items():
+                print(f"\n{Colors.BOLD}{group_name}:{Colors.RESET}")
+                print(f"  Projects processed: {group_stat['total']}")
+                print(f"  {Colors.GREEN}Successfully renamed: {group_stat['renamed']}{Colors.RESET}")
+                print(f"  {Colors.YELLOW}Skipped: {group_stat['skipped']}{Colors.RESET}")
+                print(f"  {Colors.RED}Failed: {group_stat['failed']}{Colors.RESET}")
+            
+            print(f"{Colors.BOLD}{'='*60}{Colors.RESET}")
         
         if self.stats['failed'] > 0:
             print(f"\n{Colors.RED}Warning: Some operations failed. Check the logs for details.{Colors.RESET}")
@@ -221,6 +253,7 @@ class BranchRenamer:
                 'timestamp': timestamp,
                 'dry_run': self.dry_run,
                 'statistics': self.stats,
+                'group_statistics': self.group_stats,
                 'operations': [
                     {
                         'project': project,
@@ -248,9 +281,30 @@ class BranchRenamer:
             f"| Skipped | {self.stats['skipped']} |",
             f"| Failed | {self.stats['failed']} |",
             f"",
+        ]
+        
+        # Add group breakdown to report
+        if self.group_stats:
+            lines.extend([
+                f"## Group Breakdown",
+                f"",
+                f"| Group | Total | Renamed | Skipped | Failed |",
+                f"|-------|-------|---------|---------|--------|"
+            ])
+            
+            for group_name, group_stat in self.group_stats.items():
+                lines.append(
+                    f"| {group_name} | {group_stat['total']} | "
+                    f"{group_stat['renamed']} | {group_stat['skipped']} | "
+                    f"{group_stat['failed']} |"
+                )
+            
+            lines.extend(["", ""])
+        
+        lines.extend([
             f"## Details",
             f""
-        ]
+        ])
         
         if hasattr(self, 'operations_log'):
             for project, old, new, result in self.operations_log:

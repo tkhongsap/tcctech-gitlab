@@ -2,7 +2,7 @@
 
 import logging
 from typing import Dict, List, Any, Optional, Tuple
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from collections import defaultdict, Counter
 import statistics
 import json
@@ -47,7 +47,7 @@ class AdvancedAnalytics:
             metrics = ['commits', 'issues', 'merge_requests']
         
         with OperationLogger(logger, "trend analysis", project_id=project_id):
-            end_date = datetime.now()
+            end_date = datetime.now(timezone.utc)
             start_date = end_date - timedelta(days=days)
             
             trends = {
@@ -389,7 +389,7 @@ class AdvancedAnalytics:
     def _count_overdue_issues(self, issues: List[Dict]) -> int:
         """Count issues that are past their due date."""
         overdue = 0
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
         
         for issue in issues:
             if issue['state'] == 'opened' and issue.get('due_date'):
@@ -617,7 +617,7 @@ class AdvancedAnalytics:
         
         content = self._generate_dashboard_content(analytics_data)
         html = html_template.format(
-            timestamp=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            timestamp=datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S'),
             content=content
         )
         

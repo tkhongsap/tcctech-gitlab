@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import List, Dict, Any
+from collections import defaultdict
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -19,6 +20,220 @@ from src.utils import Config, setup_logging, get_logger
 from src.utils.logger import Colors
 
 logger = get_logger(__name__)
+
+
+def _format_table(headers: List[str], rows: List[List[str]], title: str = "") -> str:
+    """Format data as a table."""
+    if not rows:
+        return f"\n{title}\nNo data available."
+    
+    # Calculate column widths
+    col_widths = [len(header) for header in headers]
+    for row in rows:
+        for i, cell in enumerate(row):
+            if i < len(col_widths):
+                col_widths[i] = max(col_widths[i], len(str(cell)))
+    
+    # Create separator
+    separator = "+" + "+".join("-" * (w + 2) for w in col_widths) + "+"
+    
+    # Format header
+    header_row = "|" + "|".join(f" {headers[i]:<{col_widths[i]}} " for i in range(len(headers))) + "|"
+    
+    # Format rows
+    formatted_rows = []
+    for row in rows:
+        formatted_row = "|" + "|".join(f" {str(row[i]):<{col_widths[i]}} " for i in range(len(row))) + "|"
+        formatted_rows.append(formatted_row)
+    
+    # Combine everything
+    result = []
+    if title:
+        result.append(f"\n{title}")
+    result.append(separator)
+    result.append(header_row)
+    result.append(separator)
+    result.extend(formatted_rows)
+    result.append(separator)
+    
+    return "\n".join(result)
+
+
+def _display_detailed_tables(tables: Dict[str, List[Dict]]):
+    """Display detailed activity tables separated by active/inactive."""
+    
+    # Project Branch Activity Table
+    if tables.get('project_branch_activity'):
+        branch_data = tables['project_branch_activity']
+        
+        # Separate active and inactive branches (use commits_total for backwards compatibility)
+        active_branches = [item for item in branch_data if item.get('commits_total', item.get('commits', 0)) > 0]
+        inactive_branches = [item for item in branch_data if item.get('commits_total', item.get('commits', 0)) == 0]
+        
+        # Sort active branches by total activity (commits + contributors)
+        active_branches.sort(key=lambda x: (
+            x.get('commits_total', x.get('commits', 0)), 
+            x['contributors'], 
+            x.get('net_lines', 0)
+        ), reverse=True)
+        
+        # Enhanced headers with new metrics
+        headers = ["Group", "Project", "Branch", "Total", "Unique", "Contributors", "Lines±(Own)", "Lines±(Diff)", "Status"]
+        
+        # Display Active Projects
+        if active_branches:
+            print(f"\n{Colors.BOLD}📊 ACTIVE Projects & Branch Activity (Ranked by Activity){Colors.RESET}")
+            active_rows = []
+            
+            for item in active_branches[:30]:  # Show top 30 active
+                # Backwards compatibility for field names
+                total_commits = item.get('commits_total', item.get('commits', 0))
+                unique_commits = item.get('commits_unique', 0)
+                
+                # Line changes with ownership method
+                net_lines_own = item.get('net_lines', 0)
+                lines_own_str = f"+{net_lines_own}" if net_lines_own > 0 else str(net_lines_own)
+                
+                # Line changes with git diff method
+                net_lines_diff = item.get('net_lines_git_diff', 0)
+                if net_lines_diff == 0 and total_commits > 0:
+                    lines_diff_str = "N/A"  # Couldn't calculate diff
+                else:
+                    lines_diff_str = f"+{net_lines_diff}" if net_lines_diff > 0 else str(net_lines_diff)
+                
+                active_rows.append([
+                    item['group'][:15],
+                    item['project'][:20],
+                    item['branch'][:12],
+                    str(total_commits),
+                    str(unique_commits),
+                    str(item['contributors']),
+                    lines_own_str,
+                    lines_diff_str,
+                    f"{Colors.GREEN}Active{Colors.RESET}"
+                ])
+            
+            active_table = _format_table(headers, active_rows)
+            print(active_table)
+            
+            # Add legend for new columns
+            print(f"\n{Colors.BOLD}📖 Legend:{Colors.RESET}")
+            print(f"  Total: All commits on this branch")
+            print(f"  Unique: Commits only on this branch (not shared with others)")  
+            print(f"  Lines±(Own): Line changes using commit ownership method")
+            print(f"  Lines±(Diff): Line changes using git diff vs base branch method")
+            
+            if len(active_branches) > 30:
+                print(f"... and {len(active_branches) - 30} more active branches")
+        
+        # Display Inactive Projects
+        if inactive_branches:
+            print(f"\n{Colors.BOLD}📋 INACTIVE Projects (No Commits This Week){Colors.RESET}")
+            inactive_rows = []
+            
+            # Sort inactive by project name for easy scanning
+            inactive_branches.sort(key=lambda x: (x['group'], x['project']))
+            
+            for item in inactive_branches[:20]:  # Show up to 20 inactive
+                inactive_rows.append([
+                    item['group'][:15],
+                    item['project'][:20],
+                    item['branch'][:12],
+                    "0",  # Total commits
+                    "0",  # Unique commits
+                    "0",  # Contributors
+                    "0",  # Lines±(Own)
+                    "0",  # Lines±(Diff)
+                    f"{Colors.RED}Inactive{Colors.RESET}"
+                ])
+            
+            inactive_table = _format_table(headers, inactive_rows)
+            print(inactive_table)
+            
+            if len(inactive_branches) > 20:
+                print(f"... and {len(inactive_branches) - 20} more inactive branches")
+    
+    # Project Contributor Activity Table
+    if tables.get('project_contributor_activity'):
+        contrib_data = tables['project_contributor_activity']
+        
+        # Separate active and inactive projects - filter out pure issue-only activity
+        active_contribs = [item for item in contrib_data if item['commits'] > 0 or item['mrs'] > 0 or item['net_lines'] != 0]
+        inactive_contribs = [item for item in contrib_data if item['commits'] == 0 and item['mrs'] == 0 and item['net_lines'] == 0]
+        
+        # Sort by contributor name (primary), then by commits+MRs within each contributor (secondary)
+        active_contribs.sort(key=lambda x: (x['contributor'], -(x['commits'] + x['mrs'])))
+        
+        headers = ["Contributor", "Project", "Group", "Commits", "MRs", "Lines±", "Issues±", "Total"]
+        
+        # Display Active Contributors
+        if active_contribs:
+            print(f"\n{Colors.BOLD}👥 ACTIVE Contributors (Grouped by Person){Colors.RESET}")
+            active_rows = []
+            
+            for item in active_contribs[:40]:  # Show top 40 active
+                # Format net lines
+                net_lines = item['net_lines']
+                lines_str = f"+{net_lines}" if net_lines > 0 else str(net_lines)
+                
+                # Format issues
+                issues_opened = item['issues_opened']
+                issues_closed = item['issues_closed']
+                if issues_opened > 0 or issues_closed > 0:
+                    issues_str = f"+{issues_opened}/-{issues_closed}"
+                else:
+                    issues_str = "0"
+                
+                active_rows.append([
+                    item['contributor'][:15] if item['contributor'] != '-' else '-',
+                    item['project'][:20],
+                    item['group'][:15],
+                    str(item['commits']),
+                    str(item['mrs']),
+                    lines_str,
+                    issues_str,
+                    str(item['total_activity'])
+                ])
+            
+            active_table = _format_table(headers, active_rows)
+            print(active_table)
+            
+            if len(active_contribs) > 40:
+                print(f"... and {len(active_contribs) - 40} more active contributors")
+        
+        # Display Inactive Projects Summary
+        if inactive_contribs:
+            print(f"\n{Colors.BOLD}📋 INACTIVE Projects (No Activity This Week){Colors.RESET}")
+            # Group inactive projects by group for summary
+            inactive_by_group = {}
+            for item in inactive_contribs:
+                group = item['group']
+                if group not in inactive_by_group:
+                    inactive_by_group[group] = []
+                inactive_by_group[group].append(item['project'])
+            
+            for group, projects in inactive_by_group.items():
+                unique_projects = list(set(projects))
+                unique_projects.sort()
+                print(f"  {Colors.RED}{group}{Colors.RESET}: {len(unique_projects)} inactive projects")
+                # Show first few project names
+                if len(unique_projects) <= 5:
+                    print(f"    → {', '.join(unique_projects)}")
+                else:
+                    print(f"    → {', '.join(unique_projects[:5])} ... and {len(unique_projects) - 5} more")
+        
+        # Enhanced Summary stats
+        active_projects = len(set([(p['group'], p['project']) for p in active_contribs]))
+        inactive_projects = len(set([(p['group'], p['project']) for p in inactive_contribs]))
+        total_projects = active_projects + inactive_projects
+        
+        print(f"\n{Colors.BOLD}📊 Project Activity Summary:{Colors.RESET}")
+        print(f"  {Colors.GREEN}Active projects: {active_projects}{Colors.RESET} ({active_projects/total_projects*100:.1f}%)")
+        print(f"  {Colors.RED}Inactive projects: {inactive_projects}{Colors.RESET} ({inactive_projects/total_projects*100:.1f}%)")
+        
+        if active_contribs:
+            most_active = active_contribs[0]
+            print(f"  🏆 Most active: {most_active['project']} (Activity score: {most_active['total_activity']})")
 
 
 def parse_groups(groups_arg: str) -> List[int]:
@@ -492,6 +707,65 @@ Examples:
         print(f"  Active Contributors: {key_metrics.get('active_contributors', 0)}")
         print(f"  Healthy Projects: {key_metrics.get('healthy_projects', 0)}")
         print(f"  Projects Needing Attention: {key_metrics.get('projects_needing_attention', 0)}")
+        
+        # Add code and issue metrics if available
+        contributors = report_data.get('individual_metrics', {}).get('contributors', {})
+        if contributors:
+            total_net_lines = sum(c.get('net_lines_changed', 0) for c in contributors.values())
+            total_issues_opened = sum(c.get('issues_opened_this_week', 0) for c in contributors.values())
+            total_issues_closed = sum(c.get('issues_closed_this_week', 0) for c in contributors.values())
+            
+            lines_str = f"+{total_net_lines}" if total_net_lines > 0 else str(total_net_lines)
+            print(f"  Net Lines Changed: {lines_str}")
+            print(f"  Issues Opened: {total_issues_opened}")
+            print(f"  Issues Closed: {total_issues_closed}")
+            
+            if total_issues_opened > 0:
+                resolution_rate = (total_issues_closed / total_issues_opened) * 100
+                print(f"  Issue Resolution Rate: {resolution_rate:.1f}%")
+        
+        # Display contributor list
+        contributors = report_data.get('individual_metrics', {}).get('contributors', {})
+        if contributors and not args.dry_run:
+            print(f"\n{Colors.BOLD}Contributors List (Total: {len(contributors)}):{Colors.RESET}")
+            sorted_contributors = sorted(contributors.items(), key=lambda x: x[1]['commits'], reverse=True)
+            
+            # Show all contributors if 56 or less, otherwise top 30
+            limit = len(contributors) if len(contributors) <= 56 else 30
+            
+            for i, (name, stats) in enumerate(sorted_contributors[:limit], 1):
+                emails = list(stats.get('emails', set()))[:2]  # Show first 2 emails
+                emails_str = f" ({', '.join(emails)})" if emails else ""
+                
+                usernames = list(stats.get('usernames', set()))
+                username_str = f" [@{', @'.join(usernames)}]" if usernames else ""
+                
+                print(f"  {i:2d}. {name}{emails_str}{username_str}: {stats['commits']} commits, "
+                      f"{stats.get('merge_requests_created', 0)} MRs")
+                
+            if len(contributors) > limit:
+                print(f"  ... and {len(contributors) - limit} more contributors")
+                
+            # Show potential duplicates
+            print(f"\n{Colors.YELLOW}Potential duplicate entries to check:{Colors.RESET}")
+            email_to_names = defaultdict(set)
+            for name, stats in contributors.items():
+                for email in stats.get('emails', set()):
+                    email_to_names[email].add(name)
+            
+            duplicates_found = False
+            for email, names in email_to_names.items():
+                if len(names) > 1:
+                    print(f"  {email}: {', '.join(sorted(names))}")
+                    duplicates_found = True
+            
+            if not duplicates_found:
+                print("  No obvious duplicates found based on email addresses")
+        
+        # Display detailed tables
+        detailed_tables = report_data.get('detailed_tables', {})
+        if detailed_tables and not args.dry_run:
+            _display_detailed_tables(detailed_tables)
         
         return 0
         
