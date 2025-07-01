@@ -44,7 +44,13 @@ def main():
     parser.add_argument(
         "--use-board-labels",
         action="store_true",
-        help="Use GitLab board labels to determine issue states"
+        default=True,
+        help="Use GitLab board labels to determine issue states (default: True)"
+    )
+    parser.add_argument(
+        "--no-board-labels",
+        action="store_true",
+        help="Disable board label usage and use simple assignee-based logic"
     )
     parser.add_argument(
         "--board-id",
@@ -71,10 +77,13 @@ def main():
             config=gitlab_config
         )
         
+        # Determine if we should use board labels
+        use_board_labels = args.use_board_labels and not args.no_board_labels
+        
         # Create board service if using board labels
         board_service = None
         board_info = None
-        if args.use_board_labels:
+        if use_board_labels:
             board_service = BoardService(client, config.to_dict())
         
         # Fetch issues
@@ -115,7 +124,7 @@ def main():
         
         # Get board info and workflow labels if using board labels
         workflow_labels = {}
-        if args.use_board_labels and board_service and not args.group:
+        if use_board_labels and board_service and not args.group:
             # For single project, get board info
             if args.board_id:
                 board_info = {'id': args.board_id, 'name': 'Specified Board'}
@@ -128,12 +137,16 @@ def main():
         
         for idx, issue in enumerate(issue_models):
             # Determine workflow state
-            if args.use_board_labels and board_service:
+            if use_board_labels and board_service:
                 # Use the raw issue data for label checking
                 workflow_state = board_service.get_issue_workflow_state(issues[idx], workflow_labels)
             else:
                 # Legacy behavior: assignee = in_progress, no assignee = open
                 workflow_state = 'in_progress' if issue.assignee else 'to_do'
+            
+            # Only count issues that are in active workflow states (not completed)
+            if workflow_state not in ['to_do', 'in_progress']:
+                continue
             
             workflow_stats[workflow_state] += 1
             
@@ -153,7 +166,7 @@ def main():
             args.group,
             workflow_stats,
             board_info,
-            args.use_board_labels
+            use_board_labels
         )
         
         logger.info(f"Report saved to {args.output}")
@@ -189,12 +202,13 @@ def generate_markdown_report(
         f.write(f"- **Total Open Issues**: {total_issues}\n")
         
         if use_board_labels:
-            # Show workflow state breakdown
+            # Show workflow state breakdown (only active states)
             f.write("\n### Workflow State Breakdown:\n")
-            state_order = ['to_do', 'in_progress', 'in_review', 'blocked', 'done', 'other']
+            state_order = ['to_do', 'in_progress']
             for state in state_order:
                 if state in workflow_stats and workflow_stats[state] > 0:
-                    state_display = state.replace('_', ' ').title()
+                    # Map 'to_do' to 'Open' for display
+                    state_display = 'Open' if state == 'to_do' else state.replace('_', ' ').title()
                     f.write(f"- **{state_display}**: {workflow_stats[state]}\n")
         else:
             # Legacy stats
@@ -209,14 +223,16 @@ def generate_markdown_report(
         f.write("## Issue Assignments by Member\n\n")
         
         if use_board_labels:
-            # Dynamic columns based on workflow states found
-            states_with_issues = [s for s in ['to_do', 'in_progress', 'in_review', 'blocked'] 
+            # Only show active workflow states in table
+            states_with_issues = [s for s in ['to_do', 'in_progress'] 
                                 if any(s in stats for stats in assignee_stats.values())]
             
             # Table header
             f.write("| ID | Assignee |")
             for state in states_with_issues:
-                f.write(f" {state.replace('_', ' ').title()} |")
+                # Map 'to_do' to 'Open' for display
+                state_display = 'Open' if state == 'to_do' else state.replace('_', ' ').title()
+                f.write(f" {state_display} |")
             f.write(" Total |\n")
             
             # Separator

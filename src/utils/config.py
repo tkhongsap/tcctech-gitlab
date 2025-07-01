@@ -156,6 +156,14 @@ class Config:
         
         return True
     
+    def to_dict(self) -> Dict[str, Any]:
+        """Return configuration as dictionary.
+        
+        Returns:
+            Copy of the configuration dictionary
+        """
+        return self._config.copy()
+    
     def __repr__(self) -> str:
         """String representation of configuration."""
         return f"Config(config_path={self.config_path})"
