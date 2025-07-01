@@ -336,6 +336,19 @@ class GitLabClient:
             json={'default_branch': branch}
         )
     
+    # Board operations
+    def get_boards(self, project_id: Union[int, str]) -> Iterator[Dict]:
+        """Get all boards for a project."""
+        return self._paginated_get(f'projects/{project_id}/boards')
+    
+    def get_board(self, project_id: Union[int, str], board_id: int) -> Dict:
+        """Get a single board by ID."""
+        return self._request('GET', f'projects/{project_id}/boards/{board_id}')
+    
+    def get_board_lists(self, project_id: Union[int, str], board_id: int) -> Iterator[Dict]:
+        """Get all lists (columns) for a board."""
+        return self._paginated_get(f'projects/{project_id}/boards/{board_id}/lists')
+    
     def rename_branch(
         self, 
         project_id: Union[int, str], 

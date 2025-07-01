@@ -55,6 +55,51 @@ issue_operations:
   # Add creation timestamp to issue description
   add_timestamp: true
 
+# Board label mappings for workflow state detection
+board_label_mappings:
+  to_do:
+    - "To Do"
+    - "TODO"
+    - "Backlog"
+    - "Open"
+    - "New"
+    - "To-Do"
+    - "Ready"
+  
+  in_progress:
+    - "In Progress"
+    - "Doing" 
+    - "In Development"
+    - "InProgress"
+    - "WIP"
+    - "Work In Progress"
+    - "Active"
+    - "Started"
+  
+  in_review:
+    - "In Review"
+    - "Code Review"
+    - "Review"
+    - "Testing"
+    - "QA"
+    - "Awaiting Review"
+    - "Under Review"
+  
+  blocked:
+    - "Blocked"
+    - "On Hold"
+    - "Waiting"
+    - "Pending"
+    - "Stalled"
+  
+  done:
+    - "Done"
+    - "Closed"
+    - "Complete"
+    - "Completed"
+    - "Finished"
+    - "Resolved"
+
 # Groups to process (can be overridden via CLI)
 groups:
   - name: "AI-ML-Services"
