@@ -177,3 +177,28 @@ class TestConfig:
         
         # Should handle gracefully
         assert config.data == {}
+    
+    def test_config_to_dict(self, test_config):
+        """Test to_dict method returns configuration dictionary."""
+        config_dict = test_config.to_dict()
+        
+        # Should return a dictionary
+        assert isinstance(config_dict, dict)
+        
+        # Should contain expected keys
+        assert 'gitlab' in config_dict
+        assert 'features' in config_dict
+        
+        # Should be a copy (modifying shouldn't affect original)
+        config_dict['new_key'] = 'new_value'
+        assert 'new_key' not in test_config.to_dict()
+    
+    def test_config_data_property(self, test_config):
+        """Test data property for backward compatibility."""
+        # data property should work the same as to_dict()
+        assert test_config.data == test_config.to_dict()
+        
+        # Should also be a copy
+        data = test_config.data
+        data['test'] = 'value'
+        assert 'test' not in test_config.data
