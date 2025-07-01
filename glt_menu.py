@@ -424,7 +424,7 @@ class GitLabMenu:
         print("1. Single project")
         print("2. Entire group")
         
-        scope = self.get_input("\nSelect scope (1-2, default: 1): ", required=False) or "1"
+        scope = self.get_input("\nSelect scope (1-2, default: 2): ", required=False) or "2"
         
         if scope == "1":
             project_id = self.get_input("Enter project ID or path: ")
@@ -432,9 +432,7 @@ class GitLabMenu:
                 return
             args = [project_id]
         else:
-            group_id = self.get_input("Enter group ID: ")
-            if not group_id:
-                return
+            group_id = self.get_input("Enter group ID (default: 1266): ", required=False) or "1266"
             args = [group_id, '--group']
         
         output_file = self.get_input("Enter output filename (default: issue_assignments.md): ", required=False)
@@ -515,28 +513,6 @@ class GitLabMenu:
         
         args = ['--groups', groups, '--output', output, '--days', days]
         self.run_script('scripts/generate_code_changes_report.py', args)
-    
-    def generate_and_send(self):
-        """Generate and send report."""
-        print("\n📧 Generate and Send Report")
-        print("-" * 40)
-        
-        groups = self.get_input("Enter group IDs (comma-separated): ")
-        if not groups:
-            return
-        
-        recipients = self.get_input("Enter email recipients (comma-separated): ")
-        if not recipients:
-            return
-        
-        subject = self.get_input("Enter email subject (optional): ", required=False)
-        days = self.get_input("Enter number of days (default: 7): ", required=False) or "7"
-        
-        args = ['--groups', groups, '--recipients', recipients, '--days', days]
-        if subject:
-            args.extend(['--subject', subject])
-        
-        self.run_script('scripts/generate_and_send_report.py', args)
     
     
     def exit_program(self):

@@ -232,4 +232,65 @@ class TestGitLabClient:
         # Check timeout is set (this is implementation specific)
         # In real implementation, you'd check session.timeout or similar
         assert client.config['timeout'] == 60
+    
+    @patch('src.api.client.GitLabClient._paginated_get')
+    def test_get_boards(self, mock_paginated_get):
+        """Test getting project boards."""
+        # Mock response
+        mock_paginated_get.return_value = iter([
+            {'id': 1, 'name': 'Development'},
+            {'id': 2, 'name': 'Release'}
+        ])
+        
+        client = GitLabClient("https://gitlab.example.com", "token")
+        boards = list(client.get_boards('123'))
+        
+        assert len(boards) == 2
+        assert boards[0]['name'] == 'Development'
+        mock_paginated_get.assert_called_once_with('projects/123/boards')
+    
+    @patch('src.api.client.GitLabClient._paginated_get') 
+    def test_get_board_lists(self, mock_paginated_get):
+        """Test getting board lists."""
+        # Mock response
+        mock_paginated_get.return_value = iter([
+            {'id': 1, 'label': {'name': 'To Do'}},
+            {'id': 2, 'label': {'name': 'In Progress'}}
+        ])
+        
+        client = GitLabClient("https://gitlab.example.com", "token")
+        lists = list(client.get_board_lists('123', 456))
+        
+        assert len(lists) == 2
+        assert lists[0]['label']['name'] == 'To Do'
+        mock_paginated_get.assert_called_once_with('projects/123/boards/456/lists')
+    
+    @patch('src.api.client.GitLabClient._paginated_get')
+    def test_get_board_issues(self, mock_paginated_get):
+        """Test getting board issues."""
+        # Mock response
+        mock_paginated_get.return_value = iter([
+            {'id': 1, 'title': 'Test Issue 1'},
+            {'id': 2, 'title': 'Test Issue 2'}
+        ])
+        
+        client = GitLabClient("https://gitlab.example.com", "token")
+        issues = list(client.get_board_issues('123', 456))
+        
+        assert len(issues) == 2
+        assert issues[0]['title'] == 'Test Issue 1'
+        mock_paginated_get.assert_called_once_with('projects/123/boards/456/issues')
+    
+    @patch('src.api.client.GitLabClient._paginated_get')
+    def test_get_board_issues_with_list(self, mock_paginated_get):
+        """Test getting issues from specific board list."""
+        mock_paginated_get.return_value = iter([
+            {'id': 1, 'title': 'List Issue'}
+        ])
+        
+        client = GitLabClient("https://gitlab.example.com", "token")
+        issues = list(client.get_board_issues('123', 456, list_id=789))
+        
+        assert len(issues) == 1
+        mock_paginated_get.assert_called_once_with('projects/123/boards/456/lists/789/issues')
         assert client.config['verify_ssl'] is False

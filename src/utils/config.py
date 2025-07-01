@@ -164,6 +164,15 @@ class Config:
         """
         return self._config.copy()
     
+    @property
+    def data(self) -> Dict[str, Any]:
+        """Return configuration data for backward compatibility.
+        
+        Returns:
+            Copy of the configuration dictionary
+        """
+        return self._config.copy()
+    
     def __repr__(self) -> str:
         """String representation of configuration."""
         return f"Config(config_path={self.config_path})"
