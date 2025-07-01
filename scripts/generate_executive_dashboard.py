@@ -55,6 +55,7 @@ from src.api.client import GitLabClient
 from src.services.group_enhancement import GroupEnhancementService
 from src.services.branch_service import BranchService
 from src.services.issue_service import IssueService
+from src.services.board_service import BoardService
 
 # Project descriptions (can be expanded with more projects)
 PROJECT_DESCRIPTIONS = {
@@ -331,14 +332,24 @@ def collect_issue_analytics(projects: List[Dict], gitlab_url: str, gitlab_token:
         'total_open': 0,
         'by_priority': {'critical': 0, 'high': 0, 'medium': 0, 'low': 0},
         'by_type': {'bug': 0, 'feature': 0, 'enhancement': 0, 'other': 0},
-        'by_state': {'opened': 0, 'in_progress': 0, 'blocked': 0},
+        'by_state': {'to_do': 0, 'in_progress': 0, 'in_review': 0, 'blocked': 0, 'other': 0},
         'overdue': 0,
         'unassigned': 0,
         'stale_issues': 0,
         'project_issues': {},
         'assignee_workload': {},
-        'all_issues': []
+        'all_issues': [],
+        'board_labels_used': False
     }
+    
+    # Create GitLab client and board service
+    try:
+        client = GitLabClient(gitlab_url, gitlab_token)
+        board_service = BoardService(client)
+        analytics['board_labels_used'] = True
+    except Exception as e:
+        safe_print(f"Warning: Could not initialize board service, using basic state detection: {e}")
+        board_service = None
     
     for project in projects:
         project_id = project.get('id')
@@ -364,6 +375,31 @@ def collect_issue_analytics(projects: List[Dict], gitlab_url: str, gitlab_token:
             
             analytics['by_priority'][priority] += 1
             analytics['by_type'][issue_type] += 1
+            
+            # Determine workflow state
+            if board_service:
+                # Try to get board for this project (cached)
+                if not hasattr(board_service, '_project_boards'):
+                    board_service._project_boards = {}
+                
+                if project_id not in board_service._project_boards:
+                    board = board_service.get_default_board(project_id)
+                    if board:
+                        board_labels = board_service.get_board_workflow_labels(project_id, board['id'])
+                        board_service._project_boards[project_id] = board_labels
+                    else:
+                        board_service._project_boards[project_id] = None
+                
+                board_labels = board_service._project_boards[project_id]
+                workflow_state = board_service.get_issue_workflow_state(issue, board_labels)
+            else:
+                # Fallback: use assignee to determine state
+                workflow_state = 'in_progress' if issue.get('assignee') else 'to_do'
+                # Check for blocked label
+                if any('blocked' in label.lower() for label in labels):
+                    workflow_state = 'blocked'
+            
+            analytics['by_state'][workflow_state] += 1
             
             # Check if overdue
             if _is_overdue(issue.get('due_date')):
@@ -394,6 +430,7 @@ def collect_issue_analytics(projects: List[Dict], gitlab_url: str, gitlab_token:
                 'labels': labels,
                 'assignee': assignee,
                 'state': issue['state'],
+                'workflow_state': workflow_state,
                 'created_at': issue['created_at'],
                 'updated_at': issue['updated_at'],
                 'due_date': issue.get('due_date'),

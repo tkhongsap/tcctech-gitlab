@@ -336,6 +336,19 @@ class GitLabClient:
             json={'default_branch': branch}
         )
     
+    # Board operations
+    def get_boards(self, project_id: Union[int, str]) -> Iterator[Dict]:
+        """Get all boards for a project."""
+        return self._paginated_get(f'projects/{project_id}/boards')
+    
+    def get_board(self, project_id: Union[int, str], board_id: int) -> Dict:
+        """Get a single board by ID."""
+        return self._request('GET', f'projects/{project_id}/boards/{board_id}')
+    
+    def get_board_lists(self, project_id: Union[int, str], board_id: int) -> Iterator[Dict]:
+        """Get all lists (columns) for a board."""
+        return self._paginated_get(f'projects/{project_id}/boards/{board_id}/lists')
+    
     def rename_branch(
         self, 
         project_id: Union[int, str], 
@@ -463,3 +476,52 @@ class GitLabClient:
         params.update(kwargs)
         
         return self._paginated_get(endpoint, **params)
+    
+    # Board operations
+    def get_boards(self, project_id: Union[int, str]) -> Iterator[Dict]:
+        """Get project boards.
+        
+        Args:
+            project_id: Project ID
+            
+        Yields:
+            Board dictionaries
+        """
+        return self._paginated_get(f'projects/{project_id}/boards')
+    
+    def get_board_lists(self, project_id: Union[int, str], board_id: int) -> Iterator[Dict]:
+        """Get board lists (columns).
+        
+        Args:
+            project_id: Project ID
+            board_id: Board ID
+            
+        Yields:
+            Board list dictionaries with label information
+        """
+        return self._paginated_get(f'projects/{project_id}/boards/{board_id}/lists')
+    
+    def get_board_issues(
+        self, 
+        project_id: Union[int, str], 
+        board_id: int, 
+        list_id: Optional[int] = None,
+        **kwargs
+    ) -> Iterator[Dict]:
+        """Get issues from a board or specific board list.
+        
+        Args:
+            project_id: Project ID
+            board_id: Board ID
+            list_id: Optional list ID to filter by specific column
+            **kwargs: Additional filters
+            
+        Yields:
+            Issue dictionaries
+        """
+        if list_id:
+            endpoint = f'projects/{project_id}/boards/{board_id}/lists/{list_id}/issues'
+        else:
+            endpoint = f'projects/{project_id}/boards/{board_id}/issues'
+        
+        return self._paginated_get(endpoint, **kwargs)

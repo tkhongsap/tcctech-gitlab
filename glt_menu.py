@@ -85,6 +85,7 @@ class GitLabMenu:
             ("📅", "Generate Weekly Report", "Create team productivity reports for weekly syncs", self.weekly_report),
             ("📧", "Send Report Email", "Email HTML reports to team members", self.send_email),
             ("🎯", "Create Issues", "Create GitLab issues interactively or from templates", self.create_issues),
+            ("📋", "List Project Issues", "Generate markdown table of issue assignments by member", self.list_project_issues),
             ("📈", "Analyze Projects", "Deep analysis of projects and groups with insights", self.analyze_projects),
             ("💾", "Export Analytics", "Export project data to Excel or JSON formats", self.export_analytics),
             ("📋", "Generate Code Changes Report", "Analyze code changes with lines added/removed metrics", self.code_changes_report),
@@ -413,6 +414,42 @@ class GitLabMenu:
                 args.extend(['--import', csv_file])
         
         self.run_script('scripts/create_issues.py', args)
+    
+    def list_project_issues(self):
+        """List project issues with assignee statistics."""
+        print("\n📋 List Project Issues")
+        print("-" * 40)
+        
+        print("\nScope:")
+        print("1. Single project")
+        print("2. Entire group")
+        
+        scope = self.get_input("\nSelect scope (1-2, default: 1): ", required=False) or "1"
+        
+        if scope == "1":
+            project_id = self.get_input("Enter project ID or path: ")
+            if not project_id:
+                return
+            args = [project_id]
+        else:
+            group_id = self.get_input("Enter group ID: ")
+            if not group_id:
+                return
+            args = [group_id, '--group']
+        
+        output_file = self.get_input("Enter output filename (default: issue_assignments.md): ", required=False)
+        if output_file:
+            args.extend(['--output', output_file])
+        
+        include_unassigned = self.get_input("Include unassigned issues? (y/N): ", required=False)
+        if include_unassigned and include_unassigned.lower() == 'y':
+            args.append('--include-unassigned')
+        
+        use_board_labels = self.get_input("Use board labels for state tracking? (Y/n): ", required=False)
+        if use_board_labels and use_board_labels.lower() == 'n':
+            args.append('--no-board-labels')
+        
+        self.run_script('scripts/list_project_issues.py', args)
     
     def analyze_projects(self):
         """Analyze projects."""
