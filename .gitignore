@@ -86,6 +86,14 @@ output/
 temp/
 tmp/
 
+# Generated markdown reports (root directory)
+*_board_issues.md
+*_issues.md
+issue_assignments.md
+
+# Claude Code configuration
+.claude/
+
 # Database
 *.db
 *.sqlite
